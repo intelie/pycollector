@@ -9,9 +9,8 @@ conf = [{
                'host': 'my_machine',
                'log_type': 'apache',
            },
-           'event_config':
-           [{
-               'event_type': 'acessos',
+           'events_config': [{
+                'eventtype': 'acessos',
                 'patterns': [
                         {'regexp': '^.*GET /sale/wizardControl.html?prd_code1=9052&_origem=vitrine.*$',
                         'group_names': ["group1", "group2"]},
@@ -20,8 +19,8 @@ conf = [{
                 'consolidation_conf': {
                     'enable_consolidation': True,
                     'consolidation_field': 'count',
-                    'user_defined_fields': {
                     'passo': 'passo 1',
+                    'user_defined_fields': {
                     'produto': 'antivirus'}
                 },
                 'one_event_per_line_conf': {

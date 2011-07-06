@@ -1,0 +1,19 @@
+ _                   _____       _ _           _             
+| |                 /  __ \     | | |         | |            
+| |     ___   __ _  | /  \/ ___ | | | ___  ___| |_ ___  _ __ 
+| |    / _ \ / _` | | |    / _ \| | |/ _ \/ __| __/ _ \| '__|
+| |___| (_) | (_| | | \__/\ (_) | | |  __/ (__| || (_) | |   
+\_____/\___/ \__, |  \____/\___/|_|_|\___|\___|\__\___/|_|   
+              __/ |                                          
+             |___/                                           
+
+============
+This is going to be a generic log collector, with a lot of features.
+
+
+Current Step
+============
+Test creation:
+    * One to one events
+    * Consolidation events
+
