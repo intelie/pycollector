@@ -77,8 +77,7 @@ class TestOneEventPerLine(unittest.TestCase):
         self.assertDictContainsSubset(expected_subset, event)
 
         
-#TODO: mudar event-type para eventtype
-#melhorar organizacao dos confs
+#TODO: melhorar organizacao dos confs
 
 if __name__ == "__main__":
     unittest.main()
