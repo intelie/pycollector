@@ -3,10 +3,9 @@
 
 import unittest
 import sys; sys.path.append("../src")
-try:
-    import event
-except:
-    print "Unable to import 'event' module."
+
+from event import create_event
+from exception import *
 
 
 class TestOneEventPerLine(unittest.TestCase):
@@ -69,17 +68,17 @@ class TestOneEventPerLine(unittest.TestCase):
     def testWithoutRegexps(self):
         line = 'imagination is more important than knowledge'
         conf = {'events_conf' : [{'eventtype' : 'my-type'}]}
-        with self.assertRaises('RegexpNotFound'):
-            create_event(line, conf)
+        self.assertRaises(RegexpNotFound, create_event, line, conf)
 
 
     def testWithMultipleRegexps(self):
         line = 'go, go, go, marine!'
         conf = {'events_conf' : [{'eventtype' : 'my-type',
-                                  'regexps' : ['^go.*$', 
+                                  'regexps' : ['^this won\'t match$', 
                                                '^.*marine!$']}]}
         event = create_event(line, conf)
-        self.assertDictEqual(expected_subset, event)
+        expected_event = {'eventtype' : 'my-type', 'line' : line}
+        self.assertDictEqual(expected_event, event)
 
 
     def testWithEmptyListOfRegexps(self):
@@ -88,7 +87,7 @@ class TestOneEventPerLine(unittest.TestCase):
                                   'regexps' : []}]}
         event = create_event(line, conf)
         expected_event = None
-        self.assertDictEqual(expected_event, event)
+        self.assertEqual(expected_event, event)
 
 
     def testEventWithRegexpGroups(self):
@@ -110,7 +109,7 @@ class TestOneEventPerLine(unittest.TestCase):
         expected_event = {'eventtype' : 'comédia dramática', 
                           'title' : 'a vida é bela', 
                           'line' : line}
-        self.assertDictContainsSubset(expected_subset, event)
+        self.assertDictEqual(expected_event, event)
 
 
 if __name__ == "__main__":

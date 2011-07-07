@@ -3,10 +3,8 @@
 
 import unittest
 import sys; sys.path.append("../src")
-try:
-    import event
-except:
-    print "Unable to import 'event' module."
+
+from event import create_event
 
 
 class TestOneEventPerMultiLine(unittest.TestCase):
