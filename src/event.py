@@ -1,5 +1,5 @@
+# -*- coding: utf-8 -*-
 
 
-def create_event(event_type, regexp):
+def create_event(lines, conf):
     return "To Implement"
-

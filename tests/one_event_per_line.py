@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
+
+
 import unittest
-
-
 import sys; sys.path.append("../src")
 try:
     import event
@@ -95,11 +96,22 @@ class TestOneEventPerLine(unittest.TestCase):
         conf = {'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : ['.*(?P<who>you).*(?P<verb>can).*']}]}
         event = create_event(line, conf)
-        self.assertDictContainsSubset({'who' : 'you', 'verb' : 'can'}, event)
+        expected_subset = {'who' : 'you', 'verb' : 'can'}
+        self.assertDictContainsSubset(expected_subset, event)
 
 
-#TODO: melhorar organizacao dos confs
-      
+    def testWithTwoEventsConfs(self):
+        line = 'a vida é bela'
+        conf = {'events_conf' : [{'eventtype' : 'suspense',
+                                  'regexps' : ['', '^pânico \d$']},
+                                 {'eventtype' : 'comédia dramática',
+                                  'regexps' : ['^.*(?P<title>a vida é bela).*$']}]}
+        event = create_event(line, conf)    
+        expected_event = {'eventtype' : 'comédia dramática', 
+                          'title' : 'a vida é bela', 
+                          'line' : line}
+        self.assertDictContainsSubset(expected_subset, event)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
+
+
 import unittest
-
-
 import sys; sys.path.append("../src")
 try:
     import event
@@ -69,7 +70,7 @@ class TestOneEventPerMultiLine(unittest.TestCase):
         lines = ['bono is a singer', 
                  'einstein was a physicist',
                  'eric clapton is a musician']
-        conf = {'global_fields' : {'college' : 'princeton'}
+        conf = {'global_fields' : {'college' : 'princeton'},
                 'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : ['^.*mathematician.*$',
                                                '^.*physicist.*$']}],
@@ -79,7 +80,6 @@ class TestOneEventPerMultiLine(unittest.TestCase):
                           'scientists': 1,
                           'college' : 'princeton'}
         self.assertDictEqual(expected_event, event)
-
 
 
 if __name__ == "__main__":
