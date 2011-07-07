@@ -18,6 +18,30 @@ class TestOneEventPerLine(unittest.TestCase):
         self.assertDictEqual(expected_event, event)
 
 
+    def testWithGlobalDefinedConf(self):
+        line = 'lex parsimoniae'
+        conf = {'global_fields': {'global' : 'global-value'},
+                'events_conf': [{'eventtype': 'acessos',
+                                 'regexps': ['^lex.*$']}]}
+        event = create_event(line, conf)
+        expected_subset = {'global' : 'global-value'}
+        self.assertDictContainsSubset(expected_subset, event)
+
+
+    def testWithUserDefinedConf(self):
+        line = 'lex parsimoniae'
+        conf = {'events_conf': [{'eventtype': 'acessos',
+                                 'regexps': ['^lex.*$'],
+                                 'one_event_per_line_conf': {
+                                    'user_defined_fields': {
+                                        'passo': 'passo 1',
+                                        'produto': 'antivirus'}}}]}
+        event = create_event(line, conf)
+        expected_subset = {'passo' : 'passo 1', 
+                           'produto' : 'antivirus'}
+        self.assertDictContainsSubset(expected_subset, event)
+
+
     def testWithUserDefinedAndGlobalConfs(self):
         line = 'lex parsimoniae'
         conf = {
@@ -75,7 +99,7 @@ class TestOneEventPerLine(unittest.TestCase):
 
 
 #TODO: melhorar organizacao dos confs
-        
+      
 
 if __name__ == "__main__":
     unittest.main()
