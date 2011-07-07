@@ -6,21 +6,26 @@ import re
 from exception import *
 
 
-def create_event(data, conf):
-    if isinstance(data, str):
-        line = data
-    elif isinstance(data, list):
-        lines = data
-    
-    event = {}
-    events_conf = conf['events_conf']
-    no_match = True
-    if line:
-        for event_conf in events_conf:
-            if 'regexps' in event_conf:        
-                regexps = event_conf['regexps']                
-            else:
+class LogLinesManager:
+    def __init__(self, conf):
+        self.validate_conf(conf)
+        self.conf = conf
+        self.to_send = None
+
+
+    def validate_conf(self, conf):
+        for event_conf in conf['events_conf']:
+            if not 'regexps' in event_conf:   
                 raise RegexpNotFound(event_conf['eventtype'])
+
+
+    def process_line(self, line):
+        event = {}
+        no_match = True
+        already_match = False
+        events_conf = self.conf['events_conf']
+        for event_conf in events_conf:
+            regexps = event_conf['regexps']
             for regexp in regexps:
                 match = re.match(regexp, line)
                 if match:
@@ -29,10 +34,16 @@ def create_event(data, conf):
                     event.update({'line' : line})
                     event.update(match.groupdict())
                     if 'one_event_per_line_conf' in event_conf and 'user_defined_fields' in event_conf['one_event_per_line_conf']:
-                        event.update(event_conf['one_event_per_line_conf']['user_defined_fields'])                            
+                        event.update(event_conf['one_event_per_line_conf']['user_defined_fields'])
+                    already_match = True
                     break
-    if no_match:
-        return None
-    elif 'global_fields' in conf:
-        event.update(conf['global_fields'])
-    return event
+            if already_match:
+                break
+
+        if no_match:
+            self.to_send = None
+            return 
+        elif 'global_fields' in self.conf:
+            event.update(self.conf['global_fields'])
+        self.to_send = event
+
