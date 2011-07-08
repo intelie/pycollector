@@ -3,7 +3,7 @@
 
 """
     File: log_lines_manager.py
-    Description: This module know how to deal with log lines and prepares events
+    Description: This module knows how to deal with log lines and prepares events
     to be sent.
 """
 

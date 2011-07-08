@@ -13,7 +13,7 @@ This is going to be a generic log collector, with a lot of features.
 
 Current Step
 ============
-Test creation:
+Implementation phase:
     * One to one events
     * Consolidation events
 
