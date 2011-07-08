@@ -12,12 +12,17 @@ class LogLinesManager:
         self.conf = conf
         self.to_send = None
 
-
-    def validate_conf(self, conf):
+    @staticmethod
+    def validate_conf(conf):
+        if not conf.has_key('log_filename'):
+            raise LogFilenameNotFound()
+        if not conf.has_key('events_conf'):
+            raise EventsConfNotFound()
         for event_conf in conf['events_conf']:
-            if not 'regexps' in event_conf:   
-                raise RegexpNotFound(event_conf['eventtype'])
-
+            if not event_conf.has_key('eventtype'):
+                raise EventtypeNotFound()
+            if not event_conf.has_key('regexps'):   
+                raise RegexpNotFound()
 
     def process_line(self, line):
         event = {}
@@ -33,15 +38,16 @@ class LogLinesManager:
                     event.update({'eventtype' : event_conf['eventtype']})
                     event.update({'line' : line})
                     event.update(match.groupdict())
-                    if 'one_event_per_line_conf' in event_conf and 'user_defined_fields' in event_conf['one_event_per_line_conf']:
+                    if event_conf.has_key('one_event_per_line_conf') and \
+                       event_conf['one_event_per_line_conf'].has_key('user_defined_fields'):
                         event.update(event_conf['one_event_per_line_conf']['user_defined_fields'])
                     already_match = True
                     break
             if already_match:
                 break
 
-        if no_match:
             self.to_send = None
+        if no_match:
             return 
         elif 'global_fields' in self.conf:
             event.update(self.conf['global_fields'])

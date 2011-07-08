@@ -1,6 +1,13 @@
 
 
 class RegexpNotFound(Exception):
-    def __init__(self, eventtype):
-        pass
+    pass
 
+class EventsConfNotFound(Exception):
+    pass
+
+class LogFilenameNotFound(Exception):
+    pass
+
+class EventtypeNotFound(Exception):
+    pass

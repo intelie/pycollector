@@ -1,16 +1,17 @@
-# -*- coding: utf-8 -*-
 
+# -*- coding: utf-8 -*-
 
 import unittest
 import sys; sys.path.append("../src")
 
-from event import LogLinesManager
+from log_lines_manager import LogLinesManager
 from exception import *
 
 
 class TestOneEventPerLine(unittest.TestCase):
     def testMostSimpleEvent(self):
-        conf = {'events_conf' : [{'eventtype' : 'my-type',
+        conf = {'log_filename': 'test.log', 
+                'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : ['.*foo.*']}]}
         log_manager = LogLinesManager(conf)
         line = 'go there and get me some food.'
@@ -19,9 +20,9 @@ class TestOneEventPerLine(unittest.TestCase):
         expected_event = {'eventtype' : 'my-type', 'line' : line}
         self.assertDictEqual(expected_event, event)
 
-
     def testWithGlobalDefinedConf(self):
-        conf = {'global_fields': {'global' : 'global-value'},
+        conf = {'log_filename': 'test.log',
+                'global_fields': {'global' : 'global-value'},
                 'events_conf': [{'eventtype': 'acessos',
                                  'regexps': ['^lex.*$']}]}
         log_manager = LogLinesManager(conf)
@@ -31,9 +32,9 @@ class TestOneEventPerLine(unittest.TestCase):
         expected_subset = {'global' : 'global-value'}
         self.assertDictContainsSubset(expected_subset, event)
 
-
     def testWithUserDefinedConf(self):
-        conf = {'events_conf': [{'eventtype': 'acessos',
+        conf = {'log_filename': 'test.log',
+                'events_conf': [{'eventtype': 'acessos',
                                  'regexps': ['^lex.*$'],
                                  'one_event_per_line_conf': {
                                     'user_defined_fields': {
@@ -47,9 +48,9 @@ class TestOneEventPerLine(unittest.TestCase):
                            'produto' : 'antivirus'}
         self.assertDictContainsSubset(expected_subset, event)
 
-
     def testWithUserDefinedAndGlobalConfs(self):
         conf = {
+           'log_filename': 'test.log',
            'global_fields': {
                'host': 'my-machine',
                'log_type': 'apache',
@@ -72,14 +73,14 @@ class TestOneEventPerLine(unittest.TestCase):
                            'passo' : 'passo 1', 'produto' : 'antivirus'}
         self.assertDictContainsSubset(expected_subset, event)
 
-
     def testWithoutRegexps(self):
-        conf = {'events_conf' : [{'eventtype' : 'my-type'}]}
+        conf = {'log_filename': 'test.log',
+                'events_conf' : [{'eventtype' : 'my-type'}]}
         self.assertRaises(RegexpNotFound, LogLinesManager, conf)
 
-
     def testWithMultipleRegexps(self):
-        conf = {'events_conf' : [{'eventtype' : 'my-type',
+        conf = {'log_filename': 'test.log',
+                'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : ['^this won\'t match$', 
                                                '^.*marine!$']}]}
         log_manager = LogLinesManager(conf)
@@ -89,9 +90,9 @@ class TestOneEventPerLine(unittest.TestCase):
         expected_event = {'eventtype' : 'my-type', 'line' : line}
         self.assertDictEqual(expected_event, event)
 
-
     def testWithEmptyListOfRegexps(self):
-        conf = {'events_conf' : [{'eventtype' : 'my-type',
+        conf = {'log_filename': 'test.log',
+                'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : []}]}
         log_manager = LogLinesManager(conf)
         line = 'go, go, go, marine!'
@@ -100,9 +101,9 @@ class TestOneEventPerLine(unittest.TestCase):
         expected_event = None
         self.assertEqual(expected_event, event)
 
-
     def testEventWithRegexpGroups(self):
-        conf = {'events_conf' : [{'eventtype' : 'my-type',
+        conf = {'log_filename': 'test.log',
+                'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : ['.*(?P<who>you).*(?P<verb>can).*']}]}
         log_manager = LogLinesManager(conf)
         line = 'There\'s nothing you can do that can\'t be done'
@@ -111,9 +112,9 @@ class TestOneEventPerLine(unittest.TestCase):
         expected_subset = {'who' : 'you', 'verb' : 'can'}
         self.assertDictContainsSubset(expected_subset, event)
 
-
     def testWithTwoEventsConfs(self):
-        conf = {'events_conf' : [{'eventtype' : 'suspense',
+        conf = {'log_filename': 'test.log',
+                'events_conf' : [{'eventtype' : 'suspense',
                                   'regexps' : ['^pânico \d$']},
                                  {'eventtype' : 'comédia dramática',
                                   'regexps' : ['^.*(?P<title>a vida é bela).*$']}]}
@@ -129,3 +130,4 @@ class TestOneEventPerLine(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
