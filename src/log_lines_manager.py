@@ -1,4 +1,11 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+"""
+    File: log_lines_manager.py
+    Description: This module know how to deal with log lines and prepares events
+    to be sent.
+"""
 
 
 import re
@@ -12,7 +19,7 @@ class LogLinesManager:
         self.conf = conf
         self.counts = {}
         self.init_counts()
-        self.to_send = None
+        self.event_queue = []
 
     def init_counts(self):
         events_conf = self.conf['events_conf']
@@ -60,10 +67,9 @@ class LogLinesManager:
             if already_match:
                 break
 
-            self.to_send = None
         if no_match:
             return 
         elif 'global_fields' in self.conf:
             event.update(self.conf['global_fields'])
-        self.to_send = event
+        self.event_queue.append(event)
 

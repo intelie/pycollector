@@ -1,7 +1,8 @@
-#
-# File: log_collector_conf.py
-# Description: example of log configuration.
-#
+"""
+    File: log_collector_conf.py
+    Description: example of log configuration.
+"""
+
 
 conf = [{
            'log_filename': '/var/log/access.log',
@@ -21,7 +22,7 @@ conf = [{
                         'passo': 'passo 1',
                         'produto': 'antivirus'}
                 },
-                'one_event_per_line_conf': {
+                'one_event_per_line_conf': {                   
                     'user_defined_fields': {
                         'passo': 'passo 1',
                         'produto': 'antivirus'}

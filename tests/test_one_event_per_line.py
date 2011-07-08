@@ -1,5 +1,6 @@
-
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 
 import unittest
 import sys; sys.path.append("../src")
@@ -10,13 +11,13 @@ from exception import *
 
 class TestOneEventPerLine(unittest.TestCase):
     def testMostSimpleEvent(self):
-        conf = {'log_filename': 'test.log', 
+        conf = {'log_filename': 'test.log',
                 'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : ['.*foo.*']}]}
         log_manager = LogLinesManager(conf)
         line = 'go there and get me some food.'
         log_manager.process_line(line)
-        event = log_manager.to_send
+        event = log_manager.event_queue[0]
         expected_event = {'eventtype' : 'my-type', 'line' : line}
         self.assertDictEqual(expected_event, event)
 
@@ -28,7 +29,7 @@ class TestOneEventPerLine(unittest.TestCase):
         log_manager = LogLinesManager(conf)
         line = 'lex parsimoniae'
         log_manager.process_line(line)
-        event = log_manager.to_send
+        event = log_manager.event_queue[0]
         expected_subset = {'global' : 'global-value'}
         self.assertDictContainsSubset(expected_subset, event)
 
@@ -43,7 +44,7 @@ class TestOneEventPerLine(unittest.TestCase):
         log_manager = LogLinesManager(conf)
         line = 'lex parsimoniae'
         log_manager.process_line(line)
-        event = log_manager.to_send
+        event = log_manager.event_queue[0]
         expected_subset = {'passo' : 'passo 1', 
                            'produto' : 'antivirus'}
         self.assertDictContainsSubset(expected_subset, event)
@@ -68,7 +69,7 @@ class TestOneEventPerLine(unittest.TestCase):
         log_manager = LogLinesManager(conf)
         line = 'lex parsimoniae'
         log_manager.process_line(line)
-        event = log_manager.to_send
+        event = log_manager.event_queue[0]
         expected_subset = {'host' : 'my-machine', 'log_type' : 'apache', 
                            'passo' : 'passo 1', 'produto' : 'antivirus'}
         self.assertDictContainsSubset(expected_subset, event)
@@ -86,7 +87,7 @@ class TestOneEventPerLine(unittest.TestCase):
         log_manager = LogLinesManager(conf)
         line = 'go, go, go, marine!'
         log_manager.process_line(line)
-        event = log_manager.to_send
+        event = log_manager.event_queue[0]
         expected_event = {'eventtype' : 'my-type', 'line' : line}
         self.assertDictEqual(expected_event, event)
 
@@ -97,9 +98,7 @@ class TestOneEventPerLine(unittest.TestCase):
         log_manager = LogLinesManager(conf)
         line = 'go, go, go, marine!'
         log_manager.process_line(line)
-        event = log_manager.to_send
-        expected_event = None
-        self.assertEqual(expected_event, event)
+        self.assertEqual(len(log_manager.event_queue), 0)
 
     def testEventWithRegexpGroups(self):
         conf = {'log_filename': 'test.log',
@@ -108,7 +107,7 @@ class TestOneEventPerLine(unittest.TestCase):
         log_manager = LogLinesManager(conf)
         line = 'There\'s nothing you can do that can\'t be done'
         log_manager.process_line(line)
-        event = log_manager.to_send
+        event = log_manager.event_queue[0]
         expected_subset = {'who' : 'you', 'verb' : 'can'}
         self.assertDictContainsSubset(expected_subset, event)
 
@@ -121,7 +120,7 @@ class TestOneEventPerLine(unittest.TestCase):
         log_manager = LogLinesManager(conf)
         line = 'a vida é bela'
         log_manager.process_line(line)
-        event = log_manager.to_send
+        event = log_manager.event_queue[0]
         expected_event = {'eventtype' : 'comédia dramática', 
                           'title' : 'a vida é bela', 
                           'line' : line}

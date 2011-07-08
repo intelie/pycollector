@@ -1,5 +1,5 @@
-
 # -*- coding: utf-8 -*-
+
 
 import unittest
 import sys; sys.path.append("../src")
@@ -36,9 +36,6 @@ class TestConsolidation(unittest.TestCase):
         expected_counts = {'access' : 1, 'users' : 1}
         counts = log_manager.counts
         self.assertDictEqual(expected_counts, counts)
-
-    
-        
 
 
 if __name__ == "__main__":
