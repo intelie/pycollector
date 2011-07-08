@@ -114,7 +114,7 @@ class TestOneEventPerLine(unittest.TestCase):
 
     def testWithTwoEventsConfs(self):
         conf = {'events_conf' : [{'eventtype' : 'suspense',
-                                  'regexps' : ['', '^pânico \d$']},
+                                  'regexps' : ['^pânico \d$']},
                                  {'eventtype' : 'comédia dramática',
                                   'regexps' : ['^.*(?P<title>a vida é bela).*$']}]}
         log_manager = LogLinesManager(conf)
@@ -125,7 +125,7 @@ class TestOneEventPerLine(unittest.TestCase):
                           'title' : 'a vida é bela', 
                           'line' : line}
         self.assertDictEqual(expected_event, event)
-
+        
 
 if __name__ == "__main__":
     unittest.main()
