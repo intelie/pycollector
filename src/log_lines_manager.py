@@ -10,7 +10,15 @@ class LogLinesManager:
     def __init__(self, conf):
         self.validate_conf(conf)
         self.conf = conf
+        self.counts = {}
+        self.init_counts()
         self.to_send = None
+
+    def init_counts(self):
+        events_conf = self.conf['events_conf']
+        for event_conf in events_conf:
+            if event_conf.has_key('consolidation_conf'):                
+                self.counts.update({event_conf['consolidation_conf']['field'] : 0})
 
     @staticmethod
     def validate_conf(conf):
@@ -41,6 +49,12 @@ class LogLinesManager:
                     if event_conf.has_key('one_event_per_line_conf') and \
                        event_conf['one_event_per_line_conf'].has_key('user_defined_fields'):
                         event.update(event_conf['one_event_per_line_conf']['user_defined_fields'])
+                    elif event_conf.has_key('consolidation_conf'):
+                        if event_conf['consolidation_conf'].has_key('enable') and \
+                            event_conf['consolidation_conf']['enable'] == False:
+                            pass
+                        else:
+                            self.counts[event_conf['consolidation_conf']['field']] += 1                        
                     already_match = True
                     break
             if already_match:
