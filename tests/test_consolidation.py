@@ -18,10 +18,10 @@ class TestConsolidation(unittest.TestCase):
                                   'regexps' : [], 
                                   'consolidation_conf' : {'field' : 'users'}}]}
         log_manager = LogLinesManager(conf)
-        expected_counts = [{'eventtype': 'access', 'accesses' : 0},
-                           {'eventtype': 'user', 'users' : 0}]
-        counts = log_manager.consolidated
-        self.assertDictEqual(expected_counts, counts)
+        expected_consolidated = {0 : {'eventtype': 'access', 'accesses' : 0},
+                                 1 : {'eventtype': 'user', 'users' : 0}}
+        consolidated = log_manager.consolidated
+        self.assertDictEqual(expected_consolidated, consolidated)
 
     def testMatching(self):
         conf = {'log_filename' : 'test.log',
@@ -35,10 +35,19 @@ class TestConsolidation(unittest.TestCase):
         log_manager = LogLinesManager(conf)
         log_manager.process_line('access test')
         log_manager.process_line('users test')
-        expected_counts = [{'eventtype': 'access', 'global-key' : 'global-value', 'accesses' : 1},
-                           {'eventtype': 'user', 'global-key' : 'global-value', 'users' : 1}]
-        counts = log_manager.consolidated
-        self.assertDictEqual(expected_counts, counts)
+        expected_consolidated = {0 : {'eventtype': 'access', 'global-key' : 'global-value', 'accesses' : 1},
+                                 1 : {'eventtype': 'user', 'global-key' : 'global-value', 'users' : 1}}
+        consolidated = log_manager.consolidated
+        self.assertDictEqual(expected_consolidated, consolidated)
+
+
+    def testNoConsolidationConfs(self):
+        conf = {'log_filename' : 'test.log',
+                'events_conf' : [{'eventtype' : 'my-type', 'regexps' : []}]}
+        log_manager = LogLinesManager(conf)
+        expected_consolidated = {}
+        consolidated = log_manager.consolidated
+        self.assertDictEqual(expected_consolidated, consolidated)
 
 
 if __name__ == "__main__":
