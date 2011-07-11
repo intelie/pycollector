@@ -13,7 +13,7 @@ import re
 from exception import *
 
 
-class LogLinesManager:
+class LogLinesProcessor:
     def __init__(self, conf):
         self.validate_conf(conf)
         self.conf = conf
