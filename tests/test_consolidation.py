@@ -40,7 +40,6 @@ class TestConsolidation(unittest.TestCase):
         consolidated = log_manager.consolidated
         self.assertDictEqual(expected_consolidated, consolidated)
 
-
     def testNoConsolidationConfs(self):
         conf = {'log_filename' : 'test.log',
                 'events_conf' : [{'eventtype' : 'my-type', 'regexps' : []}]}
@@ -49,20 +48,32 @@ class TestConsolidation(unittest.TestCase):
         consolidated = log_manager.consolidated
         self.assertDictEqual(expected_consolidated, consolidated)
 
-
     def testConsolidationWithUserDefinedFields(self):
         conf = {'log_filename' : 'test.log',
                 'events_conf' : [{'eventtype' : 'real-numbers',
-                                  'regexps' : ['^[\d+.\d+].*$'],
+                                  'regexps' : ['^(\d{1,}\.\d{1,}).*$'],
                                   'consolidation_conf' : {'field' : 'real', 
                                                           'user_defined_fields' : {'a' : 'b', 
                                                                                    'c' : 'd'}}}]}
         log_manager = LogLinesManager(conf)
-        log_manager.process_line('42')
+        log_manager.process_line('234')
         log_manager.process_line('546.544')
         log_manager.process_line('324.34')
-        expected_consolidated = {0: {'eventtype' : 'real', 'real' : 2, 'a' : 'b', 'c' : 'd'}}
+        expected_consolidated = {0: {'eventtype' : 'real-numbers', 'real' : 2, 'a' : 'b', 'c' : 'd'}}
         consolidated = log_manager.consolidated
+        self.assertDictEqual(expected_consolidated, consolidated)
+
+    def testConsolidationDisabled(self):
+        conf = {'log_filename' : 'test.log', 
+                'events_conf' : [{'eventtype' : 'my-type',
+                                 'regexps' : ['.*'],
+                                 'consolidation_conf' : {'enable' : False}}]}
+        log_manager = LogLinesManager(conf)
+        expected_consolidated = {}
+        consolidated = log_manager.consolidated
+        self.assertDictEqual(expected_consolidated, consolidated)
+        log_manager.process_line('tsc tsc')
+        self.assertDictEqual(expected_consolidated, consolidated)
 
 
 if __name__ == "__main__":
