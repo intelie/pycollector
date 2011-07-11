@@ -16,6 +16,7 @@ conf = [{
                             '^.*(?P<action>GET) /sale/wizardControl.html?prd_code1=(?P<code>[\d]+)&_origem=(?P<origem>vitrine).*$',
                             '^.*POST /sale/wizardStepIdentificationNewUser!nextStep.html?step=register.*$'],
                 'consolidation_conf': {
+                    'period' : 1, #period in minutes
                     'enable': False, #just to disable
                     'field': 'count',
                     'user_defined_fields': {
