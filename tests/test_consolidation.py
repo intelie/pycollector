@@ -13,28 +13,31 @@ class TestConsolidation(unittest.TestCase):
         conf = {'log_filename' : 'test.log',
                 'events_conf' : [{'eventtype' : 'access',
                                   'regexps' : [],
-                                  'consolidation_conf' : {'field' : 'access'}}, 
-                                 {'eventtype' : 'users',
+                                  'consolidation_conf' : {'field' : 'accesses'}}, 
+                                 {'eventtype' : 'user',
                                   'regexps' : [], 
                                   'consolidation_conf' : {'field' : 'users'}}]}
         log_manager = LogLinesManager(conf)
-        expected_counts = {'access' : 0, 'users' : 0}
-        counts = log_manager.counts
+        expected_counts = [{'eventtype': 'access', 'accesses' : 0},
+                           {'eventtype': 'user', 'users' : 0}]
+        counts = log_manager.consolidated
         self.assertDictEqual(expected_counts, counts)
 
     def testMatching(self):
         conf = {'log_filename' : 'test.log',
+                'global_fields' : {'global-key' : 'global-value'},
                 'events_conf' : [{'eventtype' : 'access',
                                   'regexps' : ['.*access.*'],
-                                  'consolidation_conf' : {'field' : 'access'}}, 
-                                 {'eventtype' : 'users',
+                                  'consolidation_conf' : {'field' : 'accesses'}}, 
+                                 {'eventtype' : 'user',
                                   'regexps' : ['.*users.*'], 
                                   'consolidation_conf' : {'field' : 'users'}}]}
         log_manager = LogLinesManager(conf)
         log_manager.process_line('access test')
         log_manager.process_line('users test')
-        expected_counts = {'access' : 1, 'users' : 1}
-        counts = log_manager.counts
+        expected_counts = [{'eventtype': 'access', 'global-key' : 'global-value', 'accesses' : 1},
+                           {'eventtype': 'user', 'global-key' : 'global-value', 'users' : 1}]
+        counts = log_manager.consolidated
         self.assertDictEqual(expected_counts, counts)
 
 
