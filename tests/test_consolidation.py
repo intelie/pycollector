@@ -50,5 +50,20 @@ class TestConsolidation(unittest.TestCase):
         self.assertDictEqual(expected_consolidated, consolidated)
 
 
+    def testConsolidationWithUserDefinedFields(self):
+        conf = {'log_filename' : 'test.log',
+                'events_conf' : [{'eventtype' : 'real-numbers',
+                                  'regexps' : ['^[\d+.\d+].*$'],
+                                  'consolidation_conf' : {'field' : 'real', 
+                                                          'user_defined_fields' : {'a' : 'b', 
+                                                                                   'c' : 'd'}}}]}
+        log_manager = LogLinesManager(conf)
+        log_manager.process_line('42')
+        log_manager.process_line('546.544')
+        log_manager.process_line('324.34')
+        expected_consolidated = {0: {'eventtype' : 'real', 'real' : 2, 'a' : 'b', 'c' : 'd'}}
+        consolidated = log_manager.consolidated
+
+
 if __name__ == "__main__":
     unittest.main()
