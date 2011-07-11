@@ -1,11 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+    File: log_file_manager.py
+    Description: This module knows how to tail log files and send events 
+    (one per log line or consolidated ones).
+"""
 
-from threading import Timer
+
+import time
 
 import helpers.filetail as filetail
 import helpers.kronos as kronos 
+from helpers.stomp_sender import send_message_via_stomp
+
+import helpers.simplejson as json
 
 from exception import * 
 from log_lines_processor import LogLinesProcessor
@@ -23,6 +32,7 @@ class LogFileManager():
 
     @staticmethod
     def validate_conf(conf):
+        "Checks for essential keys."
         if not conf.has_key('log_filename'):
             raise LogFilenameNotFound()
         if not conf.has_key('events_conf'):
@@ -33,22 +43,35 @@ class LogFileManager():
             if not event_conf.has_key('regexps'):
                 raise RegexpNotFound()
 
-    def send_consolidated(self, conf_index):
-        print self.line_processor.consolidated[conf_index] #TODO: instead of print, send
+    def consolidate(self, conf_index):
+        "Sends and turns count to 0"
+        self.send_2_activemq(self.line_processor.consolidated[conf_index]) #TODO: instead of print, send
         field = self.conf['events_conf'][conf_index]['consolidation_conf']['field']
         self.line_processor.consolidated[conf_index][field] = 0
 
+
+    def send_2_activemq(self, message_data):
+        body = message_data
+        headers = { 'destination' : '/queue/events',
+                    'timestamp': int(time.time() * 1000),
+                    'eventtype' : message_data['eventtype']}
+        body = json.dumps(body)
+        print "gonna send"
+        send_message_via_stomp([("localhost", 61613 )], headers, body)
+
+        print "message sent"
+
     def schedule_tasks(self):
+        "Schedule tasks for consolidation confs enabled"
         events_conf = self.conf['events_conf']
         for index, event_conf in enumerate(events_conf):
-
             #TODO: make it a boolean function
             if (event_conf.has_key('consolidation_conf') and not event_conf['consolidation_conf'].has_key('enable')) or \
                 (event_conf.has_key('consolidation_conf') and event_conf['consolidation_conf'].has_key('enable') and \
                  event_conf['consolidation_conf']['enable'] == True):
                 period = event_conf['consolidation_conf'].get('period', self.default_task_period)
                 period *= 60 #conversion to minutes
-                self.scheduler.add_interval_task(self.send_consolidated, "consolidation task",
+                self.scheduler.add_interval_task(self.consolidate, "consolidation task",
                                                  0, period, kronos.method.threaded,
                                                  [index], None)
         print "Tasks scheduled."
@@ -66,3 +89,4 @@ class LogFileManager():
 if __name__ == '__main__':
     test = LogFileManager(conf[0])
     test.tail()
+

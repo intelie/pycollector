@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-    File: log_lines_manager.py
-    Description: This module knows how to deal with log lines and prepares events
-    to be sent.
+    File: log_lines_processor.py
+    Description: This module processes log lines and prepares events to be sent.
 """
 
 
