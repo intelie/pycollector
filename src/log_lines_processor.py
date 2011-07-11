@@ -37,7 +37,7 @@ class LogLinesProcessor:
                 if self.has_global_fields():
                     event.update(self.conf['global_fields'])
                 if event_conf['consolidation_conf'].has_key('user_defined_fields'):
-                    event.update(event_conf['consolidation_conf']['user_defined_fields'])                
+                    event.update(event_conf['consolidation_conf']['user_defined_fields'])
                 self.consolidated.update({index : event})
                 
     def create_event(self, line, groups_matched, conf_index):
@@ -48,15 +48,14 @@ class LogLinesProcessor:
         if conf.has_key('one_event_per_line_conf') and \
            conf['one_event_per_line_conf'].has_key('user_defined_fields'):
             event.update(conf['one_event_per_line_conf']['user_defined_fields'])
-            event.update({'line' : line})
-        elif conf.has_key('consolidation_conf'):
+        if conf.has_key('consolidation_conf'):
             if conf['consolidation_conf'].has_key('enable') and \
                 conf['consolidation_conf']['enable'] == False:
                 pass
             else:
                 self.consolidated[conf_index][conf['consolidation_conf']['field']] += 1
         else:
-            event.update({'line' : line})            
+            event.update({'line' : line})
         if self.has_global_fields():
             event.update(self.conf['global_fields'])
         return event

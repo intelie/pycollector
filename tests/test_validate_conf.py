@@ -22,11 +22,10 @@ class TestOneEventPerLine(unittest.TestCase):
         self.assertRaises(EventtypeNotFound, LogFileManager.validate_conf, conf)
 
     def testWithoutRegexps(self):
-        conf = {'log_filename': 'test.log',
-                'events_conf' : [{'eventtype' : 'my-type'}]}
+        conf = {'log_filename': 'test.log', 'events_conf' : [{'eventtype' : 'my-type'}]}
         self.assertRaises(RegexpNotFound, LogFileManager, conf)
 
-
+    #TODO: check for fieldname in consolidation_conf
 
 if __name__ == "__main__":
     unittest.main()
