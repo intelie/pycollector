@@ -15,7 +15,6 @@ from exception import *
 
 class LogLinesProcessor:
     def __init__(self, conf):
-        self.validate_conf(conf)
         self.conf = conf
         self.consolidated = {}
         self.init_counts()
@@ -41,18 +40,6 @@ class LogLinesProcessor:
                     event.update(event_conf['consolidation_conf']['user_defined_fields'])                
                 self.consolidated.update({index : event})
                 
-    @staticmethod
-    def validate_conf(conf):
-        if not conf.has_key('log_filename'):
-            raise LogFilenameNotFound()
-        if not conf.has_key('events_conf'):
-            raise EventsConfNotFound()
-        for event_conf in conf['events_conf']:
-            if not event_conf.has_key('eventtype'):
-                raise EventtypeNotFound()
-            if not event_conf.has_key('regexps'):   
-                raise RegexpNotFound()
-
     def create_event(self, line, groups_matched, conf_index):
         event = {}
         conf = self.conf['events_conf'][conf_index]
@@ -74,7 +61,7 @@ class LogLinesProcessor:
             event.update(self.conf['global_fields'])
         return event
 
-    def process_line(self, line):
+    def process(self, line):
         events_conf = self.conf['events_conf']
         for index, event_conf in enumerate(events_conf):
             regexps = event_conf['regexps']
