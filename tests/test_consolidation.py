@@ -17,10 +17,10 @@ class TestConsolidation(unittest.TestCase):
                                  {'eventtype' : 'user',
                                   'regexps' : [], 
                                   'consolidation_conf' : {'field' : 'users'}}]}
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         expected_consolidated = {0 : {'eventtype': 'access', 'accesses' : 0},
                                  1 : {'eventtype': 'user', 'users' : 0}}
-        consolidated = log_processor.consolidated
+        consolidated = line_processor.consolidated
         self.assertDictEqual(expected_consolidated, consolidated)
 
     def testMatchingWithGlobalFields(self):
@@ -32,20 +32,20 @@ class TestConsolidation(unittest.TestCase):
                                  {'eventtype' : 'user',
                                   'regexps' : ['.*users.*'], 
                                   'consolidation_conf' : {'field' : 'users'}}]}
-        log_processor = LogLinesProcessor(conf)
-        log_processor.process_line('access test')
-        log_processor.process_line('users test')
+        line_processor = LogLinesProcessor(conf)
+        line_processor.process('access test')
+        line_processor.process('users test')
         expected_consolidated = {0 : {'eventtype': 'access', 'global-key' : 'global-value', 'accesses' : 1},
                                  1 : {'eventtype': 'user', 'global-key' : 'global-value', 'users' : 1}}
-        consolidated = log_processor.consolidated
+        consolidated = line_processor.consolidated
         self.assertDictEqual(expected_consolidated, consolidated)
 
     def testNoConsolidationConfs(self):
         conf = {'log_filename' : 'test.log',
                 'events_conf' : [{'eventtype' : 'my-type', 'regexps' : []}]}
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         expected_consolidated = {}
-        consolidated = log_processor.consolidated
+        consolidated = line_processor.consolidated
         self.assertDictEqual(expected_consolidated, consolidated)
 
     def testConsolidationWithUserDefinedFields(self):
@@ -55,12 +55,12 @@ class TestConsolidation(unittest.TestCase):
                                   'consolidation_conf' : {'field' : 'real', 
                                                           'user_defined_fields' : {'a' : 'b', 
                                                                                    'c' : 'd'}}}]}
-        log_processor = LogLinesProcessor(conf)
-        log_processor.process_line('234')
-        log_processor.process_line('546.544')
-        log_processor.process_line('324.34')
+        line_processor = LogLinesProcessor(conf)
+        line_processor.process('234')
+        line_processor.process('546.544')
+        line_processor.process('324.34')
         expected_consolidated = {0: {'eventtype' : 'real-numbers', 'real' : 2, 'a' : 'b', 'c' : 'd'}}
-        consolidated = log_processor.consolidated
+        consolidated = line_processor.consolidated
         self.assertDictEqual(expected_consolidated, consolidated)
 
     def testConsolidationDisabled(self):
@@ -68,11 +68,11 @@ class TestConsolidation(unittest.TestCase):
                 'events_conf' : [{'eventtype' : 'my-type',
                                  'regexps' : ['.*'],
                                  'consolidation_conf' : {'enable' : False}}]}
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         expected_consolidated = {}
-        consolidated = log_processor.consolidated
+        consolidated = line_processor.consolidated
         self.assertDictEqual(expected_consolidated, consolidated)
-        log_processor.process_line('tsc tsc')
+        line_processor.process('tsc tsc')
         self.assertDictEqual(expected_consolidated, consolidated)
 
 

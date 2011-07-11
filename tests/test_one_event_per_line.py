@@ -14,10 +14,10 @@ class TestOneEventPerLine(unittest.TestCase):
         conf = {'log_filename': 'test.log',
                 'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : ['.*foo.*']}]}
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         line = 'go there and get me some food.'
-        log_processor.process_line(line)
-        event = log_processor.event_queue[0]
+        line_processor.process(line)
+        event = line_processor.event_queue[0]
         expected_event = {'eventtype' : 'my-type', 'line' : line}
         self.assertDictEqual(expected_event, event)
 
@@ -26,10 +26,10 @@ class TestOneEventPerLine(unittest.TestCase):
                 'global_fields': {'global' : 'global-value'},
                 'events_conf': [{'eventtype': 'acessos',
                                  'regexps': ['^lex.*$']}]}
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         line = 'lex parsimoniae'
-        log_processor.process_line(line)
-        event = log_processor.event_queue[0]
+        line_processor.process(line)
+        event = line_processor.event_queue[0]
         expected_subset = {'global' : 'global-value'}
         self.assertDictContainsSubset(expected_subset, event)
 
@@ -41,10 +41,10 @@ class TestOneEventPerLine(unittest.TestCase):
                                     'user_defined_fields': {
                                         'passo': 'passo 1',
                                         'produto': 'antivirus'}}}]}
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         line = 'lex parsimoniae'
-        log_processor.process_line(line)
-        event = log_processor.event_queue[0]
+        line_processor.process(line)
+        event = line_processor.event_queue[0]
         expected_subset = {'passo' : 'passo 1', 
                            'produto' : 'antivirus'}
         self.assertDictContainsSubset(expected_subset, event)
@@ -66,28 +66,24 @@ class TestOneEventPerLine(unittest.TestCase):
                 }
             }],
         }        
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         line = 'lex parsimoniae'
-        log_processor.process_line(line)
-        event = log_processor.event_queue[0]
+        line_processor.process(line)
+        event = line_processor.event_queue[0]
         expected_subset = {'host' : 'my-machine', 'log_type' : 'apache', 
                            'passo' : 'passo 1', 'produto' : 'antivirus'}
         self.assertDictContainsSubset(expected_subset, event)
 
-    def testWithoutRegexps(self):
-        conf = {'log_filename': 'test.log',
-                'events_conf' : [{'eventtype' : 'my-type'}]}
-        self.assertRaises(RegexpNotFound, LogLinesProcessor, conf)
 
     def testWithMultipleRegexps(self):
         conf = {'log_filename': 'test.log',
                 'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : ['^this won\'t match$', 
                                                '^.*marine!$']}]}
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         line = 'go, go, go, marine!'
-        log_processor.process_line(line)
-        event = log_processor.event_queue[0]
+        line_processor.process(line)
+        event = line_processor.event_queue[0]
         expected_event = {'eventtype' : 'my-type', 'line' : line}
         self.assertDictEqual(expected_event, event)
 
@@ -95,19 +91,19 @@ class TestOneEventPerLine(unittest.TestCase):
         conf = {'log_filename': 'test.log',
                 'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : []}]}
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         line = 'go, go, go, marine!'
-        log_processor.process_line(line)
-        self.assertEqual(len(log_processor.event_queue), 0)
+        line_processor.process(line)
+        self.assertEqual(len(line_processor.event_queue), 0)
 
     def testEventWithRegexpGroups(self):
         conf = {'log_filename': 'test.log',
                 'events_conf' : [{'eventtype' : 'my-type',
                                   'regexps' : ['.*(?P<who>you).*(?P<verb>can).*']}]}
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         line = 'There\'s nothing you can do that can\'t be done'
-        log_processor.process_line(line)
-        event = log_processor.event_queue[0]
+        line_processor.process(line)
+        event = line_processor.event_queue[0]
         expected_subset = {'who' : 'you', 'verb' : 'can'}
         self.assertDictContainsSubset(expected_subset, event)
 
@@ -117,10 +113,10 @@ class TestOneEventPerLine(unittest.TestCase):
                                   'regexps' : ['^pânico \d$']},
                                  {'eventtype' : 'comédia dramática',
                                   'regexps' : ['^.*(?P<title>a vida é bela).*$']}]}
-        log_processor = LogLinesProcessor(conf)
+        line_processor = LogLinesProcessor(conf)
         line = 'a vida é bela'
-        log_processor.process_line(line)
-        event = log_processor.event_queue[0]
+        line_processor.process(line)
+        event = line_processor.event_queue[0]
         expected_event = {'eventtype' : 'comédia dramática', 
                           'title' : 'a vida é bela', 
                           'line' : line}
