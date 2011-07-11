@@ -30,7 +30,8 @@ class LogLinesManager:
             if not event_conf.has_key('consolidation_conf'):
                 pass
             if (event_conf.has_key('consolidation_conf') and not event_conf['consolidation_conf'].has_key('enable')) or \
-                (event_conf.has_key('consolidation_conf') and event_conf['consolidation_conf'].has_key('enable') and event_conf['consolidation_conf']['enable'] == True):
+                (event_conf.has_key('consolidation_conf') and event_conf['consolidation_conf'].has_key('enable') and \
+                 event_conf['consolidation_conf']['enable'] == True):
                 event = {}
                 event.update({'eventtype' : event_conf['eventtype']})
                 event.update({event_conf['consolidation_conf']['field'] : 0})
@@ -83,4 +84,3 @@ class LogLinesManager:
                     event = self.create_event(line, match.groupdict(), index)
                     self.event_queue.append(event)
                     return
-
