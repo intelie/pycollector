@@ -50,7 +50,6 @@ class LogFileManager:
                 self.send_2_activemq(event)
 
     def send_consolidated_event(self, conf_index):
-        "Sends and turns count to 0"
         self.send_2_activemq(self.line_processor.consolidated[conf_index])
         field = self.conf['events_conf'][conf_index]['consolidation_conf']['field']
         self.line_processor.consolidated[conf_index][field] = 0
@@ -100,8 +99,4 @@ class LogFileManagerThreaded(threading.Thread):
 
     def run(self):
         self.log_file_manager.tail()
-
-if __name__ == '__main__':
-    test = LogFileManager(conf[0])
-    test.tail()
 

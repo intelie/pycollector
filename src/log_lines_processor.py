@@ -10,6 +10,7 @@
 import re
 
 from exception import *
+from conf_util import *
 
 
 class LogLinesProcessor:
@@ -19,21 +20,14 @@ class LogLinesProcessor:
         self.init_counts()
         self.event_queue = []
 
-    def has_global_fields(self):
-        return self.conf.has_key('global_fields')
-
     def init_counts(self):
         events_conf = self.conf['events_conf']
         for (index, event_conf) in enumerate(events_conf):
-            if not event_conf.has_key('consolidation_conf'):
-                pass
-            if (event_conf.has_key('consolidation_conf') and not event_conf['consolidation_conf'].has_key('enable')) or \
-                (event_conf.has_key('consolidation_conf') and event_conf['consolidation_conf'].has_key('enable') and \
-                 event_conf['consolidation_conf']['enable'] == True):
+            if is_consolidation_enabled(event_conf):
                 event = {}
                 event.update({'eventtype' : event_conf['eventtype']})
                 event.update({event_conf['consolidation_conf']['field'] : 0})
-                if self.has_global_fields():
+                if has_global_fields(self.conf):
                     event.update(self.conf['global_fields'])
                 if event_conf['consolidation_conf'].has_key('user_defined_fields'):
                     event.update(event_conf['consolidation_conf']['user_defined_fields'])
@@ -55,7 +49,7 @@ class LogLinesProcessor:
                 self.consolidated[conf_index][conf['consolidation_conf']['field']] += 1
         else:
             event.update({'line' : line})
-        if self.has_global_fields():
+        if has_global_fields(self.conf):
             event.update(self.conf['global_fields'])
         return event
 
