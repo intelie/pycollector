@@ -41,7 +41,6 @@ class Collector:
         print "Collector started."
 
 
-
 if __name__ == '__main__':
     c = Collector(sample_conf.conf)
     c.start()

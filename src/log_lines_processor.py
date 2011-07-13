@@ -24,16 +24,15 @@ class LogLinesProcessor:
         events_conf = self.conf['events_conf']
         for (index, event_conf) in enumerate(events_conf):
             if is_consolidation_enabled(event_conf):
-                event = {}
-                event.update({'eventtype' : event_conf['eventtype']})
-                event.update({event_conf['consolidation_conf']['field'] : 0})
+                event = {'eventtype' : event_conf['eventtype'], 
+                         event_conf['consolidation_conf']['field'] : 0}
                 if has_global_fields(self.conf):
                     event.update(self.conf['global_fields'])
                 if event_conf['consolidation_conf'].has_key('user_defined_fields'):
                     event.update(event_conf['consolidation_conf']['user_defined_fields'])
                 self.consolidated.update({index : event})
                 
-    def create_event(self, line, groups_matched, conf_index):
+    def prepare_event(self, line, groups_matched, conf_index):
         event = {}
         conf = self.conf['events_conf'][conf_index]
         event.update({'eventtype' : conf['eventtype']})
@@ -60,6 +59,6 @@ class LogLinesProcessor:
             for regexp in regexps:
                 match = re.match(regexp, line)
                 if match:
-                    event = self.create_event(line, match.groupdict(), index)
+                    event = self.prepare_event(line, match.groupdict(), index)
                     self.event_queue.append(event)
                     return

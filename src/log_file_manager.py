@@ -30,19 +30,6 @@ class LogFileManager:
         self.line_processor = LogLinesProcessor(self.conf)
         self.default_task_period = 1 #minute
 
-    @staticmethod
-    def validate_conf(conf):
-        "Checks for essential keys."
-        if not conf.has_key('log_filename'):
-            raise LogFilenameNotFound()
-        if not conf.has_key('events_conf'):
-            raise EventsConfNotFound()
-        for event_conf in conf['events_conf']:
-            if not event_conf.has_key('eventtype'):
-                raise EventtypeNotFound()
-            if not event_conf.has_key('regexps'):
-                raise RegexpNotFound()
-
     def send_simple_event(self):
         while True:
             if (len(self.line_processor.event_queue) > 0):
@@ -67,9 +54,7 @@ class LogFileManager:
         events_conf = self.conf['events_conf']
         for index, event_conf in enumerate(events_conf):
             #TODO: make it a boolean function
-            if (event_conf.has_key('consolidation_conf') and not event_conf['consolidation_conf'].has_key('enable')) or \
-                (event_conf.has_key('consolidation_conf') and event_conf['consolidation_conf'].has_key('enable') and \
-                 event_conf['consolidation_conf']['enable'] == True):
+            if is_consolidation_enabled(event_conf):
                 period = event_conf['consolidation_conf'].get('period', self.default_task_period)
                 period *= 60 #conversion to minutes
                 self.scheduler.add_interval_task(self.send_consolidated_event, "consolidation task",
