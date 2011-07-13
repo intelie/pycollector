@@ -10,24 +10,27 @@ from exception import *
 
 
 def validate_conf(conf):
-    "Checks for essential keys."
     if not conf.has_key('log_filename'):
-        raise LogFilenameNotFound()
+        raise LogFilenameNotFound(conf)
+
     if not conf.has_key('events_conf'):
-        raise EventsConfNotFound()
+        raise EventsConfNotFound(conf)
+
     for event_conf in conf['events_conf']:
         if not event_conf.has_key('eventtype'):
-            raise EventtypeNotFound()
+            raise EventtypeNotFound(event_conf)
+
         if not event_conf.has_key('regexps'):
-            raise RegexpNotFound()
+            raise RegexpNotFound(event_conf)
 
 
 def is_consolidation_enabled(event_conf):
-    return (event_conf.has_key('consolidation_conf') and not event_conf['consolidation_conf'].has_key('enable')) or \
-           (event_conf.has_key('consolidation_conf') and event_conf['consolidation_conf'].has_key('enable') and \
+    return (event_conf.has_key('consolidation_conf') and not \
+            event_conf['consolidation_conf'].has_key('enable')) or \
+           (event_conf.has_key('consolidation_conf') and \
+            event_conf['consolidation_conf'].has_key('enable') and \
             event_conf['consolidation_conf']['enable'] == True)
 
 
 def has_global_fields(conf):
     return conf.has_key('global_fields')
-

@@ -40,11 +40,7 @@ class LogLinesProcessor:
         if conf.has_key('one_event_per_line_conf') and \
            conf['one_event_per_line_conf'].has_key('user_defined_fields'):
             event.update(conf['one_event_per_line_conf']['user_defined_fields'])
-        if conf.has_key('consolidation_conf'):
-            if conf['consolidation_conf'].has_key('enable') and \
-                conf['consolidation_conf']['enable'] == False:
-                pass
-            else:
+        if is_consolidation_enabled(conf):
                 self.consolidated[conf_index][conf['consolidation_conf']['field']] += 1
         else:
             event.update({'line' : line})

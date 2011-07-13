@@ -16,14 +16,14 @@ import helpers.kronos as kronos
 from helpers.stomp_sender import send_message_via_stomp
 import helpers.simplejson as json
 
-from exception import * 
+from conf_util import *
 from log_lines_processor import LogLinesProcessor
 from sample_conf import conf
 
 
 class LogFileManager:
     def __init__(self, conf):
-        self.validate_conf(conf)
+        validate_conf(conf)
         self.conf = conf
         self.filename = conf['log_filename']
         self.scheduler = kronos.ThreadedScheduler()
@@ -34,35 +34,31 @@ class LogFileManager:
         while True:
             if (len(self.line_processor.event_queue) > 0):
                 event = self.line_processor.event_queue.pop(0)
-                self.send_2_activemq(event)
+                try:
+                    self.send_2_activemq(event)
+                except:
+                    #TODO: log instead of print
+                    print "Error in sending message."
 
     def send_consolidated_event(self, conf_index):
-        self.send_2_activemq(self.line_processor.consolidated[conf_index])
+        try:
+            self.send_2_activemq(self.line_processor.consolidated[conf_index])
+        except:
+            #TODO: log instead of print
+            print "Error in sending message."
         field = self.conf['events_conf'][conf_index]['consolidation_conf']['field']
         self.line_processor.consolidated[conf_index][field] = 0
+
 
     def send_2_activemq(self, message_data):
         body = message_data
         headers = { 'destination' : '/queue/events',
                     'timestamp': int(time.time() * 1000),
-                    'eventtype' : message_data['eventtype']}
+                    'eventtype' : body['eventtype']}
+        del body['eventtype']
         body = json.dumps(body)
         send_message_via_stomp([("localhost", 61613 )], headers, body)
         print "message sent"
-
-    def schedule_consolidated_events_tasks(self):
-        events_conf = self.conf['events_conf']
-        for index, event_conf in enumerate(events_conf):
-            #TODO: make it a boolean function
-            if is_consolidation_enabled(event_conf):
-                period = event_conf['consolidation_conf'].get('period', self.default_task_period)
-                period *= 60 #conversion to minutes
-                self.scheduler.add_interval_task(self.send_consolidated_event, "consolidation task",
-                                                 0, period, kronos.method.threaded, [index], None)
-
-    def schedule_simple_events_task(self):
-        self.scheduler.add_single_task(self.send_simple_event, "simple event task",
-                                       0, kronos.method.threaded, [], None)
 
     def schedule_tasks(self):
         self.schedule_consolidated_events_tasks()
@@ -75,6 +71,28 @@ class LogFileManager:
         while True:
             line = t.nextline()
             self.line_processor.process(line)
+
+    def schedule_consolidated_events_tasks(self):
+        events_conf = self.conf['events_conf']
+        for index, event_conf in enumerate(events_conf):
+            if is_consolidation_enabled(event_conf):
+                period = event_conf['consolidation_conf'].get('period', self.default_task_period)
+                period *= 60 #conversion to minutes
+                self.scheduler.add_interval_task(self.send_consolidated_event, 
+                                                 "consolidation task",
+                                                 0, 
+                                                 period, 
+                                                 kronos.method.threaded, 
+                                                 [index], 
+                                                 None)
+
+    def schedule_simple_events_task(self):
+        self.scheduler.add_single_task(self.send_simple_event, 
+                                       "simple event task",
+                                       0, 
+                                       kronos.method.threaded, 
+                                       [], 
+                                       None)
 
 
 class LogFileManagerThreaded(threading.Thread):

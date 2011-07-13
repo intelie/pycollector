@@ -1,13 +1,27 @@
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
+
+"""
+    File: exception.py 
+    Description: This module defines exceptions for log configurations.
+"""
 
 
-class RegexpNotFound(Exception):
+class ConfException(Exception):
+    def __init__(self, conf):
+        self.conf = conf
+
+    def __str__(self):
+        return repr(self.conf)
+
+class RegexpNotFound(ConfException):
     pass
 
-class EventsConfNotFound(Exception):
+class EventsConfNotFound(ConfException):
     pass
 
-class LogFilenameNotFound(Exception):
+class LogFilenameNotFound(ConfException):
     pass
 
-class EventtypeNotFound(Exception):
+class EventtypeNotFound(ConfException):
     pass
