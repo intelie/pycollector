@@ -3,7 +3,6 @@
     Description: example of log configuration.
 """
 
-
 conf = [{
            'log_filename': '/home/kaiser/test1.log',
            'global_fields': {
@@ -47,5 +46,4 @@ conf = [{
                         'user-defined2': 'user-defined-value2'}
                 }
             }]
-       }
-]
+}]

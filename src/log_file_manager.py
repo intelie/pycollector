@@ -10,6 +10,7 @@
 
 import time
 import threading
+import sys; sys.path.append('../conf')
 
 import helpers.filetail as filetail
 import helpers.kronos as kronos 
@@ -17,8 +18,8 @@ from helpers.stomp_sender import send_message_via_stomp
 import helpers.simplejson as json
 
 from conf_util import *
+from activemq_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT
 from log_lines_processor import LogLinesProcessor
-from sample_conf import conf
 
 
 class LogFileManager:
@@ -36,19 +37,20 @@ class LogFileManager:
                 event = self.line_processor.event_queue.pop(0)
                 try:
                     self.send_2_activemq(event)
-                except:
+                except Exception, e:
                     #TODO: log instead of print
                     print "Error in sending message."
+                    print e
 
     def send_consolidated_event(self, conf_index):
         try:
             self.send_2_activemq(self.line_processor.consolidated[conf_index])
-        except:
+        except Exception, e:
             #TODO: log instead of print
             print "Error in sending message."
+            print e
         field = self.conf['events_conf'][conf_index]['consolidation_conf']['field']
         self.line_processor.consolidated[conf_index][field] = 0
-
 
     def send_2_activemq(self, message_data):
         body = message_data
@@ -57,8 +59,15 @@ class LogFileManager:
                     'eventtype' : body['eventtype']}
         del body['eventtype']
         body = json.dumps(body)
-        send_message_via_stomp([("localhost", 61613 )], headers, body)
-        print "message sent"
+
+        #TODO: log instead of print
+        print "Headers: %s" % headers
+        print "Body: %s" % body
+        print "Sending message..."
+        send_message_via_stomp([(ACTIVEMQ_SERVER, ACTIVEMQ_PORT )], headers, body)
+
+        #TODO: log instead of print
+        print "Message sent"
 
     def schedule_tasks(self):
         self.schedule_consolidated_events_tasks()
@@ -67,31 +76,46 @@ class LogFileManager:
 
     def tail(self):
         t = filetail.Tail(self.filename, only_new=True)
+
+        #TODO: log instead of print
+        print "Scheduling tasks for %s." % self.filename
         self.schedule_tasks()
+
+        #TODO: log instead of print
+        print "Tasks scheduled."
+
+        #TODO: log instead of print
+        print "Starting tailing..."
+
         while True:
             line = t.nextline()
-            self.line_processor.process(line)
+            try:
+                self.line_processor.process(line)
+            except Exception, e:
+                #TODO: log instead of print
+                print "Couldn't process line."
+                print e
+
 
     def schedule_consolidated_events_tasks(self):
         events_conf = self.conf['events_conf']
         for index, event_conf in enumerate(events_conf):
             if is_consolidation_enabled(event_conf):
-                period = event_conf['consolidation_conf'].get('period', self.default_task_period)
-                period *= 60 #conversion to minutes
-                self.scheduler.add_interval_task(self.send_consolidated_event, 
+                period = 60*event_conf['consolidation_conf'].get('period', self.default_task_period)
+                self.scheduler.add_interval_task(self.send_consolidated_event,
                                                  "consolidation task",
-                                                 0, 
-                                                 period, 
-                                                 kronos.method.threaded, 
-                                                 [index], 
+                                                 0,
+                                                 period,
+                                                 kronos.method.threaded,
+                                                 [index],
                                                  None)
 
     def schedule_simple_events_task(self):
-        self.scheduler.add_single_task(self.send_simple_event, 
+        self.scheduler.add_single_task(self.send_simple_event,
                                        "simple event task",
-                                       0, 
-                                       kronos.method.threaded, 
-                                       [], 
+                                       0,
+                                       kronos.method.threaded,
+                                       [],
                                        None)
 
 

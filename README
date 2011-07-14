@@ -8,12 +8,10 @@
              |___/                                           
 
 ============
-This is going to be a generic log collector, with a lot of features.
+This is going to be a log collector based on regular expressions.
 
 
 Current Step
 ============
-Implementation phase:
-    * One to one events
-    * Consolidation events
+Implementing application log
 

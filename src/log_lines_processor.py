@@ -33,19 +33,22 @@ class LogLinesProcessor:
                 self.consolidated.update({index : event})
                 
     def prepare_event(self, line, groups_matched, conf_index):
-        event = {}
         conf = self.conf['events_conf'][conf_index]
-        event.update({'eventtype' : conf['eventtype']})
+        event = {'eventtype' : conf['eventtype']}
         event.update(groups_matched)
+
         if conf.has_key('one_event_per_line_conf') and \
            conf['one_event_per_line_conf'].has_key('user_defined_fields'):
             event.update(conf['one_event_per_line_conf']['user_defined_fields'])
+
         if is_consolidation_enabled(conf):
                 self.consolidated[conf_index][conf['consolidation_conf']['field']] += 1
         else:
             event.update({'line' : line})
+
         if has_global_fields(self.conf):
             event.update(self.conf['global_fields'])
+
         return event
 
     def process(self, line):
