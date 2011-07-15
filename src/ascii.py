@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+ascii = """
  _                   _____       _ _           _             
 | |                 /  __ \     | | |         | |            
 | |     ___   __ _  | /  \/ ___ | | | ___  ___| |_ ___  _ __ 
@@ -6,12 +10,4 @@
 \_____/\___/ \__, |  \____/\___/|_|_|\___|\___|\__\___/|_|   
               __/ |                            by Intelie™   
              |___/                                           
-
-============
-This is going to be a log collector based on regular expressions.
-
-
-Current Step
-============
-Implementing daemon
-
+"""

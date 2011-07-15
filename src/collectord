@@ -12,13 +12,63 @@ __author__ = "Ronald Kaiser"
 __email__ = "ronald at intelie dot com dot br"
 
 
+import os
 import optparse
+
+from helpers import daemon as daemon
+
+from collector import Collector
+
+
+def start(option, opt, value, parser):
+    d = daemon.DaemonContext(working_directory=os.getcwd())
+
+    #daemon context starts
+    d.open()
+
+    import sys; sys.path.append('../conf')
+    import sample_conf
+    import logging_conf
+
+    c = Collector(sample_conf.conf, logging_conf, True)
+    c.start()
+
+    #daemon context finishes
+    d.close()
+
+    if quit:
+        sys.exit(0)
+
+
+def stop(option, opt, value, parser):
+    pass
 
 
 if __name__ == '__main__':
-    parser = optparse.OptionParser(version=__version__)
+    import ascii
+    print ascii.ascii
+
+    parser = optparse.OptionParser(prog="LogCollector", version=__version__)
+    description = """
+This piece of software reads logs and based in regexs defined in a configuration file,
+sends events to AMQ.
+"""
+    parser.set_description(description)
+    parser.add_option("--start", 
+                      action="callback",
+                      callback=start, 
+                      nargs=0, 
+                      help="starts LogCollector daemon")
+
+    parser.add_option("--stop", 
+                      action="callback",
+                      callback=start, 
+                      nargs=0, 
+                      help="stops LogCollector daemon")
+
+    parser.add_option("--conf", action="store_true")
+
+
     (options, args) = parser.parse_args()
     if not args:
         parser.print_help()
-
-
