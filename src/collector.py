@@ -24,15 +24,21 @@ class Collector:
             logging.config.fileConfig(logging_conf.LOGGING_CONF_FILENAME, 
                                       disable_existing_loggers=False)
             self.logger = logging.getLogger()
+
         self.log_threads = []
 
         for f_conf in conf:
             try:
                 validate_conf(f_conf) 
             except Exception, e:
-                self.logger.info("Configuration error.")
-                self.logger.debug(e)
-            self.log_threads.update(LogFileManagerThreaded(f_conf, logging_conf, to_log))
+                if to_log:
+                    self.logger.info("Configuration error.")
+                    self.logger.debug(e)
+            try:
+                self.log_threads.append(LogFileManagerThreaded(f_conf, logging_conf, to_log))
+            except Exception, e:
+                if to_log:
+                    self.logger.error(e)
 
         if to_log:
             self.logger.info("Collector instantiated with success.")
