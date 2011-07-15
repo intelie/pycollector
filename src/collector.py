@@ -6,7 +6,6 @@
     Description: This module starts log file managers
 """
 
-__version__ = "0.1"
 __author__ = "Ronald Kaiser"
 __email__ = "ronald at intelie dot com dot br"
 
