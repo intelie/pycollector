@@ -8,13 +8,15 @@
 
 
 import re
+import logging
 
 from exception import *
 from conf_util import *
 
 
 class LogLinesProcessor:
-    def __init__(self, conf):
+    def __init__(self, conf, logger=None, to_log=True):
+        self.logger = logger
         self.conf = conf
         self.consolidated = {}
         self.init_counts()

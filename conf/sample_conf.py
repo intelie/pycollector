@@ -4,7 +4,7 @@
 """
 
 conf = [{
-           'log_filename': '/home/kaiser/test1.log',
+           'log_filename': '/home/kaiser/test1.log', 
            'global_fields': {
                'host': 'my_machine',
                'log_type': 'apache',

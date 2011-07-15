@@ -19,13 +19,11 @@ from log_file_manager import LogFileManagerThreaded
 class Collector:
     def __init__(self, conf, logging_conf=None, to_log=True):
         self.to_log = to_log
-        self.log_threads = []
-
-        for file_conf in conf:
-            self.log_threads.append(LogFileManagerThreaded(file_conf))
+        self.log_threads = [LogFileManagerThreaded(f_conf, logging_conf, to_log) for f_conf in conf]
 
         if to_log:
-            logging.config.fileConfig(logging_conf.LOGGING_CONF_FILENAME)
+            logging.config.fileConfig(logging_conf.LOGGING_CONF_FILENAME, 
+                                      disable_existing_loggers=False)
             self.logger = logging.getLogger()
             self.logger.info("Collector instantiated.")
 

@@ -10,6 +10,7 @@
 
 import time
 import threading
+import logging, logging.config
 import sys; sys.path.append('../conf')
 
 import helpers.filetail as filetail
@@ -23,32 +24,38 @@ from log_lines_processor import LogLinesProcessor
 
 
 class LogFileManager:
-    def __init__(self, conf):
+    def __init__(self, conf, logging_conf=None, to_log=True):
         validate_conf(conf)
         self.conf = conf
+        self.to_log = to_log
+        self.logging_conf = logging_conf
+        if to_log:
+            self.set_logging()
         self.filename = conf['log_filename']
         self.scheduler = kronos.ThreadedScheduler()
-        self.line_processor = LogLinesProcessor(self.conf)
+        self.line_processor = LogLinesProcessor(self.conf, self.logger)
         self.default_task_period = 1 #minute
+
+    def set_logging(self):
+        logger = self.conf['log_filename'].split('/')[-1].split('.log')[0] + '.lc.log'
+        self.logger = logging.getLogger(logger)
+        self.logger.setLevel(self.logging_conf.SEVERITY)
+        filename = self.logging_conf.LOGGING_PATH + logger
+        self.log_handler = logging.handlers.TimedRotatingFileHandler(filename, 
+                                                                     when=self.logging_conf.ROTATING)
+        formatter = logging.Formatter(self.logging_conf.FORMATTER)
+        self.log_handler.setFormatter(formatter)
+        self.logger.addHandler(self.log_handler)
+
 
     def send_simple_event(self):
         while True:
             if (len(self.line_processor.event_queue) > 0):
                 event = self.line_processor.event_queue.pop(0)
-                try:
-                    self.send_2_activemq(event)
-                except Exception, e:
-                    #TODO: log instead of print
-                    print "Error in sending message."
-                    print e
+                self.send_2_activemq(event)
 
     def send_consolidated_event(self, conf_index):
-        try:
-            self.send_2_activemq(self.line_processor.consolidated[conf_index])
-        except Exception, e:
-            #TODO: log instead of print
-            print "Error in sending message."
-            print e
+        self.send_2_activemq(self.line_processor.consolidated[conf_index])
         field = self.conf['events_conf'][conf_index]['consolidation_conf']['field']
         self.line_processor.consolidated[conf_index][field] = 0
 
@@ -56,18 +63,20 @@ class LogFileManager:
         body = message_data
         headers = { 'destination' : '/queue/events',
                     'timestamp': int(time.time() * 1000),
-                    'eventtype' : body['eventtype']}
-        del body['eventtype']
+                    'eventtype' : 'test'}
         body = json.dumps(body)
-
-        #TODO: log instead of print
-        print "Headers: %s" % headers
-        print "Body: %s" % body
-        print "Sending message..."
-        send_message_via_stomp([(ACTIVEMQ_SERVER, ACTIVEMQ_PORT )], headers, body)
-
-        #TODO: log instead of print
-        print "Message sent"
+        try:
+            if self.to_log:
+                self.logger.debug("Headers: %s." % headers)
+                self.logger.debug("Body: %s." % body)
+                self.logger.info("Sending message...")
+            send_message_via_stomp([(ACTIVEMQ_SERVER, ACTIVEMQ_PORT )], headers, body)
+            if self.to_log:
+                self.logger.info("Message sent.")
+        except Exception, e:
+            if self.to_log:
+                self.logger.info("Message couldn't be sent.")
+                self.logger.error(e)
 
     def schedule_tasks(self):
         self.schedule_consolidated_events_tasks()
@@ -76,26 +85,22 @@ class LogFileManager:
 
     def tail(self):
         t = filetail.Tail(self.filename, only_new=True)
-
-        #TODO: log instead of print
-        print "Scheduling tasks for %s." % self.filename
+        if self.to_log:
+            self.logger.info("Scheduling tasks for: %s..." % self.filename)
         self.schedule_tasks()
-
-        #TODO: log instead of print
-        print "Tasks scheduled."
-
-        #TODO: log instead of print
-        print "Starting tailing..."
-
+        if self.to_log:
+            self.logger.debug("Tasks scheduled.")
+            self.logger.debug("Starting tailing...")
         while True:
             line = t.nextline()
             try:
                 self.line_processor.process(line)
+                if self.to_log:
+                    self.logger.debug("Line processed with success: %s" % line)
             except Exception, e:
-                #TODO: log instead of print
-                print "Couldn't process line."
-                print e
-
+                if self.to_log:
+                    self.logger.info("Couldn't process line")
+                    self.logger.debug(e)
 
     def schedule_consolidated_events_tasks(self):
         events_conf = self.conf['events_conf']
@@ -120,10 +125,9 @@ class LogFileManager:
 
 
 class LogFileManagerThreaded(threading.Thread):
-    def __init__(self, conf):
+    def __init__(self, conf, logging_conf, to_log=True):
+        self.log_file_manager = LogFileManager(conf, logging_conf, to_log)
         threading.Thread.__init__(self)
-        self.log_file_manager = LogFileManager(conf)
 
     def run(self):
         self.log_file_manager.tail()
-
