@@ -32,7 +32,7 @@ conf = [{
                'log_type': 'apache',
            },
            'events_conf': [{
-                'eventtype': '/home/kaiser/test2.log',
+                'eventtype': 'test2',
                 'regexps': ['^test2 (?P<numbertest2>\d+)$', '^line2 (?P<numbertest2>\d+)$'],
                 'consolidation_conf': {
                     'period' : 2,

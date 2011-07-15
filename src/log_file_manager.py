@@ -24,16 +24,17 @@ from log_lines_processor import LogLinesProcessor
 
 
 class LogFileManager:
-    def __init__(self, conf, logging_conf=None, to_log=True):
+    def __init__(self, conf, logging_conf=None, to_log=False):
         validate_conf(conf)
         self.conf = conf
         self.to_log = to_log
         self.logging_conf = logging_conf
+        self.logger = None
         if to_log:
             self.set_logging()
         self.filename = conf['log_filename']
         self.scheduler = kronos.ThreadedScheduler()
-        self.line_processor = LogLinesProcessor(self.conf, self.logger)
+        self.line_processor = LogLinesProcessor(self.conf, self.logger, to_log)
         self.default_task_period = 1 #minute
 
     def set_logging(self):
@@ -47,7 +48,6 @@ class LogFileManager:
         self.log_handler.setFormatter(formatter)
         self.logger.addHandler(self.log_handler)
 
-
     def send_simple_event(self):
         while True:
             if (len(self.line_processor.event_queue) > 0):
@@ -60,17 +60,18 @@ class LogFileManager:
         self.line_processor.consolidated[conf_index][field] = 0
 
     def send_2_activemq(self, message_data):
-        body = message_data
-        headers = { 'destination' : '/queue/events',
+        body = message_data.copy()
+        header = { 'destination' : '/queue/events',
                     'timestamp': int(time.time() * 1000),
-                    'eventtype' : 'test'}
+                    'eventtype' : body['eventtype']}
+        del body['eventtype']
         body = json.dumps(body)
         try:
             if self.to_log:
-                self.logger.debug("Headers: %s." % headers)
+                self.logger.info("Sending message:")
+                self.logger.debug("Header: %s." % header)
                 self.logger.debug("Body: %s." % body)
-                self.logger.info("Sending message...")
-            send_message_via_stomp([(ACTIVEMQ_SERVER, ACTIVEMQ_PORT )], headers, body)
+            send_message_via_stomp([(ACTIVEMQ_SERVER, ACTIVEMQ_PORT )], header, body)
             if self.to_log:
                 self.logger.info("Message sent.")
         except Exception, e:
@@ -89,17 +90,17 @@ class LogFileManager:
             self.logger.info("Scheduling tasks for: %s..." % self.filename)
         self.schedule_tasks()
         if self.to_log:
-            self.logger.debug("Tasks scheduled.")
-            self.logger.debug("Starting tailing...")
+            self.logger.debug("Tasks for %s scheduled." % self.filename)
+            self.logger.debug("Starting tailing for %s..." % self.filename)
         while True:
             line = t.nextline()
             try:
                 self.line_processor.process(line)
                 if self.to_log:
-                    self.logger.debug("Line processed with success: %s" % line)
+                    self.logger.debug("Line processed with success.")
             except Exception, e:
                 if self.to_log:
-                    self.logger.info("Couldn't process line")
+                    self.logger.info("Couldn't process line.")
                     self.logger.debug(e)
 
     def schedule_consolidated_events_tasks(self):
@@ -125,7 +126,7 @@ class LogFileManager:
 
 
 class LogFileManagerThreaded(threading.Thread):
-    def __init__(self, conf, logging_conf, to_log=True):
+    def __init__(self, conf, logging_conf=None, to_log=False):
         self.log_file_manager = LogFileManager(conf, logging_conf, to_log)
         threading.Thread.__init__(self)
 

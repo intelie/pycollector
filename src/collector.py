@@ -17,7 +17,7 @@ from log_file_manager import LogFileManagerThreaded
 
 
 class Collector:
-    def __init__(self, conf, logging_conf=None, to_log=True):
+    def __init__(self, conf, logging_conf=None, to_log=False):
         self.to_log = to_log
         self.log_threads = [LogFileManagerThreaded(f_conf, logging_conf, to_log) for f_conf in conf]
 
@@ -57,5 +57,5 @@ if __name__ == '__main__':
     import sample_conf
     import logging_conf
 
-    c = Collector(sample_conf.conf, logging_conf)
+    c = Collector(sample_conf.conf, logging_conf, True)
     c.start()
