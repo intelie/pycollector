@@ -13,5 +13,5 @@ This is going to be a log collector based on regular expressions.
 
 Current Step
 ============
-Implementing application log
+Implementing daemon
 
