@@ -12,19 +12,31 @@ __email__ = "ronald at intelie dot com dot br"
 
 import logging, logging.config
 
+from conf_util import *
 from log_file_manager import LogFileManagerThreaded
 
 
 class Collector:
     def __init__(self, conf, logging_conf=None, to_log=False):
         self.to_log = to_log
-        self.log_threads = [LogFileManagerThreaded(f_conf, logging_conf, to_log) for f_conf in conf]
 
         if to_log:
             logging.config.fileConfig(logging_conf.LOGGING_CONF_FILENAME, 
                                       disable_existing_loggers=False)
             self.logger = logging.getLogger()
-            self.logger.info("Collector instantiated.")
+        self.log_threads = []
+
+        for f_conf in conf:
+            try:
+                validate_conf(f_conf) 
+            except Exception, e:
+                self.logger.info("Configuration error.")
+                self.logger.debug(e)
+            self.log_threads.update(LogFileManagerThreaded(f_conf, logging_conf, to_log))
+
+        if to_log:
+            self.logger.info("Collector instantiated with success.")
+
 
     def start(self):
         if self.to_log:

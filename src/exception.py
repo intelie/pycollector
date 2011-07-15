@@ -12,7 +12,7 @@ class ConfException(Exception):
         self.conf = conf
 
     def __str__(self):
-        return repr(self.conf)
+        return self.__class__.__name__ + ": " + repr(self.conf)
 
 class RegexpNotFound(ConfException):
     pass

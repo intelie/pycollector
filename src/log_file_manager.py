@@ -25,20 +25,19 @@ from log_lines_processor import LogLinesProcessor
 
 class LogFileManager:
     def __init__(self, conf, logging_conf=None, to_log=False):
-        validate_conf(conf)
         self.conf = conf
         self.to_log = to_log
         self.logging_conf = logging_conf
         self.logger = None
+        self.filename = conf['log_filename']
         if to_log:
             self.set_logging()
-        self.filename = conf['log_filename']
         self.scheduler = kronos.ThreadedScheduler()
         self.line_processor = LogLinesProcessor(self.conf, self.logger, to_log)
         self.default_task_period = 1 #minute
 
     def set_logging(self):
-        logger = self.conf['log_filename'].split('/')[-1].split('.log')[0] + '.lc.log'
+        logger = self.filename.split('/')[-1].split('.log')[0] + '.lc.log'
         self.logger = logging.getLogger(logger)
         self.logger.setLevel(self.logging_conf.SEVERITY)
         filename = self.logging_conf.LOGGING_PATH + logger
