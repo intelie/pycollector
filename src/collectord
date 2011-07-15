@@ -14,34 +14,90 @@ __email__ = "ronald at intelie dot com dot br"
 
 import os
 import optparse
+import subprocess
+import sys; sys.path.append('../conf')
 
 from helpers import daemon as daemon
 
+import pid_conf
+import sample_conf
+import logging_conf
 from collector import Collector
 
 
-def start(option, opt, value, parser):
-    d = daemon.DaemonContext(working_directory=os.getcwd())
+def write_pid():
+    pidfile = pid_conf.PID_PATH
+    f = open(pidfile, 'w+')
+    f.write(str(os.getpid()))
+    f.close()
+    os.system("chmod 644 %s" % pidfile)
 
+
+def status(option, opt, value, parser):
+    pidfile = pid_conf.PID_PATH
+    if not pidfile or not os.path.exists(pidfile):
+        print "Status: NOT RUNNING."
+    else:
+        print "Status: RUNNING."
+    sys.exit(0)
+
+
+def start(option, opt, value, parser):
+    pidfile = pid_conf.PID_PATH
+    d = daemon.DaemonContext(working_directory=os.getcwd())
+    
+    print "Starting collector..."
     #daemon context starts
     d.open()
 
-    import sys; sys.path.append('../conf')
-    import sample_conf
-    import logging_conf
-
+    write_pid()
     c = Collector(sample_conf.conf, logging_conf, True)
     c.start()
 
     #daemon context finishes
     d.close()
 
-    if quit:
-        sys.exit(0)
-
 
 def stop(option, opt, value, parser):
-    pass
+    pidfile = pid_conf.PID_PATH
+    if not pidfile or not os.path.exists(pidfile):
+        print "Can't get pidfile: %s. Is it running?" % pidfile
+        sys.exit(-1)
+    else:
+        try:
+            print "Stopping collector..."
+            f = open(pidfile, 'r')
+            pid = int(f.read())
+            f.close()
+        except Exception, e:
+            print "Can't read pidfile. Daemon not stopped."
+            sys.exit(-1)
+        try:
+            kill = subprocess.call(["kill", "-9", "%s" % pid],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+            if kill != 0:
+                print "Can't stop daemon."
+                sys.exit(-1)
+        except Exception, e:
+            print e
+            print "Can't stop daemon."
+            sys.exit(-1)
+        else:
+            try:
+                rm = subprocess.call(["rm", "-rf", "%s" % pidfile],
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
+                if rm != 0:
+                    print """
+Daemon stopped, but can't remove pidfile.\nRemove manually the file %s.""" % pidfile
+                else:
+                    print "LogCollector stopped."
+            except Exception, e:
+                print e
+                print """
+Daemon stopped, but can't remove pidfile.\nRemove manually the file %s.""" % pidfile
+    sys.exit(0)
 
 
 if __name__ == '__main__':
@@ -50,9 +106,7 @@ if __name__ == '__main__':
 
     parser = optparse.OptionParser(prog="LogCollector", version=__version__)
     description = """
-This piece of software reads logs and based in regexs defined in a configuration file,
-sends events to AMQ.
-"""
+This piece of software reads logs and sends events to AMQ -- based in regular expressions defined in a configuration file."""
     parser.set_description(description)
     parser.add_option("--start", 
                       action="callback",
@@ -62,12 +116,17 @@ sends events to AMQ.
 
     parser.add_option("--stop", 
                       action="callback",
-                      callback=start, 
+                      callback=stop, 
                       nargs=0, 
                       help="stops LogCollector daemon")
 
-    parser.add_option("--conf", action="store_true")
+    parser.add_option("--status",
+                      action="callback",
+                      callback=status,
+                      nargs=0,
+                      help="checks if daemon is runnning.")
 
+    #TODO: add support to pass conf files or conf directory
 
     (options, args) = parser.parse_args()
     if not args:
