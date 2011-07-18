@@ -75,6 +75,6 @@ class LogLinesProcessor:
             if self.to_log:
                 self.logger.error(e)
 
-        if self.log:
+        if self.to_log:
             self.logger.debug("Line: [%s] didn't match with any regexp." % line)
 

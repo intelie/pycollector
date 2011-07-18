@@ -79,5 +79,5 @@ if __name__ == '__main__':
     import sample_conf
     import logging_conf
 
-    c = LogCollector(sample_conf.conf, logging_conf, True)
+    c = Collector(sample_conf.conf, logging_conf, True)
     c.start()

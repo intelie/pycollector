@@ -1,0 +1,179 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+    File: collectord
+    Description: Log Collector daemon.
+"""
+
+__version_info__ = ('0', '0', '1')
+__version__ = '.'.join(__version_info__)
+__author__ = "Ronald Kaiser"
+__email__ = "ronald at intelie dot com dot br"
+
+
+import os
+import optparse
+import subprocess
+import sys;
+sys.path.append('../conf')
+sys.path.append('../src')
+
+from helpers import daemon as daemon
+
+import log_collector_conf as conf
+import sample_conf
+from logcollector import LogCollector
+
+
+def is_running():
+    ps = subprocess.Popen("ps aux | grep logcollectord | grep -v grep | awk {'print $2'}", 
+                          shell=True,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE)
+    pids = ps.stdout.read().split('\n')
+    current_pid = os.getpid()
+    pids = filter(lambda x: x.isdigit(), pids)
+    pids = map(lambda x: int(x), pids)
+    if current_pid in pids:
+        pids.remove(current_pid)
+    if len(pids) > 0:
+        return (True, pids)
+    return (False, pids)
+
+
+def check_logging_path():
+    if not os.path.exists(conf.LOGGING_PATH):
+        print "Logging path configured doesn't exist."
+        choice = raw_input('Do you want me to create the directory: %s ? [Y|n]' % \
+                            conf.LOGGING_PATH)
+        if choice == "" or choice.upper() == 'Y':
+            return_code = subprocess.call(['mkdir', conf.LOGGING_PATH], 
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+            if return_code != 0:
+                print "Can't create directory."
+                sys.exit(-1)
+            else:
+                print "Logging directory created with success!"
+
+def write_pid():
+    pidfile = conf.PID_PATH
+    f = open(pidfile, 'w+')
+    f.write(str(os.getpid()))
+    f.close()
+    os.system("chmod 644 %s" % pidfile)
+
+
+def status(option, opt, value, parser):
+    pidfile = conf.PID_PATH
+    if not pidfile or not os.path.exists(pidfile):
+        print "Status: NOT RUNNING."
+    else:
+        print "Status: RUNNING."
+    sys.exit(0)
+
+
+def start(option, opt, value, parser):
+    if is_running()[0]:
+        print "LogCollector already running."
+        sys.exit(-1)
+    else:
+        print "Starting LogCollector..."
+        check_logging_path()
+        pidfile = conf.PID_PATH
+        print "LogCollector started."
+
+        d = daemon.DaemonContext(working_directory=os.getcwd())
+        #daemon context starts
+        d.open()
+
+        write_pid()
+        c = LogCollector(sample_conf.conf, conf, True)
+        c.start()
+
+        #daemon context finishes
+        d.close()
+
+
+def stop(option, opt, value, parser):
+    running, pids = is_running()
+    if not running:
+        print "LogCollector is not running."
+        sys.exit(-1)
+    else:
+        pidfile = conf.PID_PATH
+        if not pidfile or not os.path.exists(pidfile):
+            print "Can't get pidfile: %s. Is it running?" % pidfile
+            sys.exit(-1)
+        else:
+            try:
+                print "Stopping LogCollector..."
+                f = open(pidfile, 'r')
+                pid = int(f.read())
+                f.close()
+            except Exception, e:
+                print "Can't read pidfile. Daemon not stopped."
+                sys.exit(-1)
+            try:
+                cmd = ["kill", "-9"]
+                pids = map(lambda x: str(x), pids)
+                cmd.extend(pids)
+                kill = subprocess.call(cmd,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+                if kill != 0:
+                    print "Can't stop daemon."
+                    sys.exit(-1)
+            except Exception, e:
+                print e
+                print "Can't stop daemon."
+                sys.exit(-1)
+            else:
+                try:
+                    rm = subprocess.call(["rm", "-rf", "%s" % pidfile],
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE)
+                    if rm != 0:
+                        print """
+    Daemon stopped, but can't remove pidfile.\nRemove manually the file %s.""" % pidfile
+                    else:
+                        print "LogCollector stopped."
+                except Exception, e:
+                    print e
+                    print """
+    Daemon stopped, but can't remove pidfile.\nRemove manually the file %s.""" % pidfile
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    import ascii
+    print ascii.ascii
+
+    parser = optparse.OptionParser(prog="LogCollector", version=__version__)
+    description = """
+This piece of software reads logs and sends events to AMQ -- based in regular expressions defined in a configuration file."""
+    parser.set_description(description)
+    parser.add_option("--start", 
+                      action="callback",
+                      callback=start, 
+                      nargs=0, 
+                      help="starts LogCollector daemon")
+
+    parser.add_option("--stop", 
+                      action="callback",
+                      callback=stop, 
+                      nargs=0, 
+                      help="stops LogCollector daemon")
+
+    parser.add_option("--status",
+                      action="callback",
+                      callback=status,
+                      nargs=0,
+                      help="checks if daemon is runnning.")
+
+    #TODO: add support to pass conf files or conf directory
+
+    (options, args) = parser.parse_args()
+    if not args:
+        parser.print_help()
