@@ -15,7 +15,9 @@ __email__ = "ronald at intelie dot com dot br"
 import os
 import optparse
 import subprocess
-import sys; sys.path.append('../conf')
+import sys;
+sys.path.append('../conf')
+sys.path.append('../src')
 
 from helpers import daemon as daemon
 
@@ -24,6 +26,21 @@ import sample_conf
 import logging_conf
 from collector import Collector
 
+
+def check_logging_path():
+    if not os.path.exists(logging_conf.LOGGING_PATH):
+        print "Logging path configured doesn't exist."
+        choice = raw_input('Do you want me to create the directory: %s ? [Y|n]' % \
+                            logging_conf.LOGGING_PATH)
+        if choice == "" or choice.upper() == 'Y':
+            return_code = subprocess.call(['mkdir', logging_conf.LOGGING_PATH], 
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+            if return_code != 0:
+                print "Can't create directory."
+                sys.exit(-1)
+            else:
+                print "Logging directory created with success!"
 
 def write_pid():
     pidfile = pid_conf.PID_PATH
@@ -43,10 +60,14 @@ def status(option, opt, value, parser):
 
 
 def start(option, opt, value, parser):
-    pidfile = pid_conf.PID_PATH
-    d = daemon.DaemonContext(working_directory=os.getcwd())
-    
+    #TODO: check if it is already running...
+
     print "Starting collector..."
+    check_logging_path()
+    pidfile = pid_conf.PID_PATH
+    print "Collector started."
+
+    d = daemon.DaemonContext(working_directory=os.getcwd())
     #daemon context starts
     d.open()
 
