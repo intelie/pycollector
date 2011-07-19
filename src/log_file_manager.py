@@ -61,8 +61,8 @@ class LogFileManager:
     def send_2_activemq(self, message_data):
         body = message_data.copy()
         header = { 'destination' : '/queue/events',
-                    'timestamp': int(time.time() * 1000),
-                    'eventtype' : body['eventtype']}
+                   'timestamp': int(time.time() * 1000),
+                   'eventtype' : body['eventtype']}
         del body['eventtype']
         body = json.dumps(body)
         try:

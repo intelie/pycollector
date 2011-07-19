@@ -78,9 +78,10 @@ def status(option, opt, value, parser):
 
 
 def get_pattern_conf(parser):
-    if parser.values.conf:
+    #todo: check if .py is in conf
+    if parser.values.filename:
         try:
-            exec('from %s import conf as pattern_conf' % parser.values.conf)
+            exec('from %s import conf as pattern_conf' % parser.values.filename)
             return pattern_conf
         except Exception, e:
             print "Can't import configuration file."
@@ -97,7 +98,6 @@ def get_pattern_conf(parser):
 
 
 def start(option, opt, value, parser):
-    print parser.values.conf
     if is_running()[0]:
         print "LogCollector already running."
         sys.exit(-1)
@@ -180,7 +180,7 @@ This piece of software reads logs and sends events to AMQ -- based in regular ex
     parser.set_description(description)
     parser.add_option("--conf",
                       action="store",
-                      dest="conf",
+                      dest="filename",
                       help="pattern configurations filename located at /conf. Use before --start.")
 
     parser.add_option("--start",
