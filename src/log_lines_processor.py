@@ -63,6 +63,7 @@ class LogLinesProcessor:
             for index, event_conf in enumerate(events_conf):
                 regexps = event_conf['regexps']
                 for regexp in regexps:
+                    line = line.rstrip('\r\n')
                     match = re.match(regexp, line)
                     if match:
                         if self.to_log:

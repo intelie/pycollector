@@ -7,7 +7,9 @@
 # $ waf distclean configure build dist distclean
 #
 
+
 APPNAME = "log-collector"
+VERSION = "0.1.0"
 
 top = "."
 out = "./build"
@@ -21,7 +23,7 @@ def build(bld):
     bld(rule='find .. -name "*.pyc" -delete')
     bld(rule='mkdir bin')
     bld(rule='cp -r ../src .')
-    bld(rule='mv src/collectord bin')
+    bld(rule='mv src/logcollectord bin')
     bld(rule='cp -r ../conf .')
     bld(rule='cp -r ../tests .')
 

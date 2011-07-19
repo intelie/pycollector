@@ -92,7 +92,7 @@ class LogFileManager:
             self.logger.debug("Tasks for %s scheduled." % self.filename)
             self.logger.debug("Starting tailing for %s..." % self.filename)
         while True:
-            line = t.nextline()
+            line = t.nextline() 
             try:
                 self.line_processor.process(line)
                 if self.to_log:

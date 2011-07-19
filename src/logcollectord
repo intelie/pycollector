@@ -6,7 +6,7 @@
     Description: Log Collector daemon.
 """
 
-__version_info__ = ('0', '0', '1')
+__version_info__ = ('0', '1', '0')
 __version__ = '.'.join(__version_info__)
 __author__ = "Ronald Kaiser"
 __email__ = "ronald at intelie dot com dot br"
@@ -78,10 +78,12 @@ def status(option, opt, value, parser):
 
 
 def get_pattern_conf(parser):
-    #todo: check if .py is in conf
-    if parser.values.filename:
+    filename = parser.values.filename
+    if filename:
+        if filename.endswith('.py'):
+            filename = filename[:-3]
         try:
-            exec('from %s import conf as pattern_conf' % parser.values.filename)
+            exec('from %s import conf as pattern_conf' % filename)
             return pattern_conf
         except Exception, e:
             print "Can't import configuration file."
@@ -181,7 +183,8 @@ This piece of software reads logs and sends events to AMQ -- based in regular ex
     parser.add_option("--conf",
                       action="store",
                       dest="filename",
-                      help="pattern configurations filename located at /conf. Use before --start.")
+                      help="""pattern configurations filename located at 'conf' 
+directory. Use before --start. Default is 'pattern_conf'""")
 
     parser.add_option("--start",
                       action="callback",
@@ -199,7 +202,7 @@ This piece of software reads logs and sends events to AMQ -- based in regular ex
                       action="callback",
                       callback=status,
                       nargs=0,
-                      help="checks if daemon is runnning.")
+                      help="checks if LogCollector daemon is runnning.")
 
     (options, args) = parser.parse_args()
 
