@@ -4,14 +4,47 @@
 | |    / _ \ / _` | | |    / _ \| | |/ _ \/ __| __/ _ \| '__|
 | |___| (_) | (_| | | \__/\ (_) | | |  __/ (__| || (_) | |   
 \_____/\___/ \__, |  \____/\___/|_|_|\___|\___|\__\___/|_|   
-              __/ |                            by Intelie™   
+              __/ |                            by Intelie   
              |___/                                           
 
-============
-This is going to be a log collector based on regular expressions.
+
+LogCollector is a collector of log lines based on regular expressions.
 
 
-Current Step
-============
-Implementing daemon
+Features:
+---------
+ - asynchronous 'tail'-like log lines matching
+ - consolidating events periodically (lines matching a list of regexps)
+ - support for regexp groups as event properties
+ - support for adding global fields
+ - support for adding user defined fields
+
+
+Configuration:
+------------
+In order to use it, you must configure two files:
+ - conf/daemon_conf.py
+   general settings such as pid, activemq server/port and logging.
+
+ - conf/pattern_conf.py
+   defines wich regexps should be used for one event per line and/or how
+   to consolidate lines periodically in an event.
+
+
+Examples:
+---------
+In conf/examples you can see some predefined pattern examples to help
+you getting started.
+
+
+Usage:
+---------- 
+./logcollectord --conf pattern_conf --start
+./logcollectord --stop
+./logcollectord --status
+
+
+Current step 
+------------
+Testing.
 
