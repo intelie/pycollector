@@ -21,8 +21,7 @@ sys.path.append('../src')
 
 from helpers import daemon as daemon
 
-import log_collector_conf as conf
-import sample_conf
+import daemon_conf
 from logcollector import LogCollector
 
 
@@ -43,10 +42,10 @@ def is_running():
 
 
 def check_logging_path():
-    if not os.path.exists(conf.LOGGING_PATH):
+    if not os.path.exists(daemon_conf.LOGGING_PATH):
         print "Logging path configured doesn't exist."
         choice = raw_input('Do you want me to create the directory: %s ? [Y|n]' % \
-                            conf.LOGGING_PATH)
+                            daemon_conf.LOGGING_PATH)
         if choice == "" or choice.upper() == 'Y':
             return_code = subprocess.call(['mkdir', conf.LOGGING_PATH], 
                             stdout=subprocess.PIPE,
@@ -58,7 +57,7 @@ def check_logging_path():
                 print "Logging directory created with success!"
 
 def write_pid():
-    pidfile = conf.PID_PATH
+    pidfile = daemon_conf.PID_PATH
     f = open(pidfile, 'w+')
     f.write(str(os.getpid()))
     f.close()
@@ -66,22 +65,47 @@ def write_pid():
 
 
 def status(option, opt, value, parser):
-    pidfile = conf.PID_PATH
+    pidfile = daemon_conf.PID_PATH
     if not pidfile or not os.path.exists(pidfile):
         print "Status: NOT RUNNING."
     else:
+        if not is_running()[0]:
+            print "Status: NOT RUNNING."
+            print "WARNING: Pidfile in %s seems to be obsolete. Please, remove it manually." % daemon_conf.PID_PATH
+            sys.exit(-1)
         print "Status: RUNNING."
     sys.exit(0)
 
 
+def get_pattern_conf(parser):
+    if parser.values.conf:
+        try:
+            exec('from %s import conf as pattern_conf' % parser.values.conf)
+            return pattern_conf
+        except Exception, e:
+            print "Can't import configuration file."
+            print e
+            exit(-1)
+    else:
+        try:
+            from pattern_conf import conf
+            return conf
+        except Exception, e:
+            print "Can't import configuration file."
+            print e
+            exit(-1)
+
+
 def start(option, opt, value, parser):
+    print parser.values.conf
     if is_running()[0]:
         print "LogCollector already running."
         sys.exit(-1)
     else:
+        pattern_conf = get_pattern_conf(parser)
         print "Starting LogCollector..."
         check_logging_path()
-        pidfile = conf.PID_PATH
+        pidfile = daemon_conf.PID_PATH
         print "LogCollector started."
 
         d = daemon.DaemonContext(working_directory=os.getcwd())
@@ -89,7 +113,7 @@ def start(option, opt, value, parser):
         d.open()
 
         write_pid()
-        c = LogCollector(sample_conf.conf, conf, True)
+        c = LogCollector(pattern_conf, daemon_conf, True)
         c.start()
 
         #daemon context finishes
@@ -102,7 +126,7 @@ def stop(option, opt, value, parser):
         print "LogCollector is not running."
         sys.exit(-1)
     else:
-        pidfile = conf.PID_PATH
+        pidfile = daemon_conf.PID_PATH
         if not pidfile or not os.path.exists(pidfile):
             print "Can't get pidfile: %s. Is it running?" % pidfile
             sys.exit(-1)
@@ -151,19 +175,24 @@ if __name__ == '__main__':
     print ascii.ascii
 
     parser = optparse.OptionParser(prog="LogCollector", version=__version__)
-    description = """
+    description = """   
 This piece of software reads logs and sends events to AMQ -- based in regular expressions defined in a configuration file."""
     parser.set_description(description)
-    parser.add_option("--start", 
+    parser.add_option("--conf",
+                      action="store",
+                      dest="conf",
+                      help="pattern configurations filename located at /conf. Use before --start.")
+
+    parser.add_option("--start",
                       action="callback",
-                      callback=start, 
-                      nargs=0, 
+                      callback=start,
+                      nargs=0,
                       help="starts LogCollector daemon")
 
-    parser.add_option("--stop", 
+    parser.add_option("--stop",
                       action="callback",
-                      callback=stop, 
-                      nargs=0, 
+                      callback=stop,
+                      nargs=0,
                       help="stops LogCollector daemon")
 
     parser.add_option("--status",
@@ -172,8 +201,7 @@ This piece of software reads logs and sends events to AMQ -- based in regular ex
                       nargs=0,
                       help="checks if daemon is runnning.")
 
-    #TODO: add support to pass conf files or conf directory
-
     (options, args) = parser.parse_args()
+
     if not args:
         parser.print_help()

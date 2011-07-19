@@ -46,12 +46,11 @@ class LogCollector:
                     self.logger.error(e)
 
         if to_log:
-            self.logger.info("Collector instantiated with success.")
-
+            self.logger.info("LogCollector instantiated with success.")
 
     def start(self):
         if self.to_log:
-            self.logger.info("Starting collector...")
+            self.logger.info("Starting LogCollector...")
 
         for thread in self.log_threads:
             try:
@@ -70,14 +69,5 @@ class LogCollector:
 
         if self.to_log:
             self.logger.debug("Threads started: %s" % self.log_threads)
-            self.logger.info("Collector started.")
+            self.logger.info("LogCollector started.")
 
-
-if __name__ == '__main__':
-    import sys; sys.path.append('../conf')
-
-    import sample_conf
-    import logging_conf
-
-    c = Collector(sample_conf.conf, logging_conf, True)
-    c.start()

@@ -19,7 +19,7 @@ from helpers.stomp_sender import send_message_via_stomp
 import helpers.simplejson as json
 
 from conf_util import *
-from log_collector_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT
+from daemon_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT
 from log_lines_processor import LogLinesProcessor
 
 
