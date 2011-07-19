@@ -58,7 +58,6 @@ class LogLinesProcessor:
         return event
 
     def process(self, line):
-        self.logger.debug(">>>>>>>>>>>>>>>>>>>>>>>>>")
         try:
             events_conf = self.conf['events_conf']
             for index, event_conf in enumerate(events_conf):

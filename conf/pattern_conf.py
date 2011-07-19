@@ -11,7 +11,7 @@ conf = [{
            },
            'events_conf': [{
                 'eventtype': 'VendasOnline',
-                'regexps': ['^.*GET /sale/wizardControl.html?prd_sfdfsdf$'],
+                'regexps': ['^.*GET /sale/wizardControl.html?prd_code1=9052.*$'],
                 'consolidation_conf': {
                     'period' : 1,
                     'enable': True,
