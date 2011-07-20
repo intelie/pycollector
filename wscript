@@ -8,7 +8,7 @@
 #
 
 APPNAME = "log-collector"
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 top = "."
 out = "./build"
@@ -25,10 +25,8 @@ def build(bld):
     bld(rule='mv src/logcollectord bin')
     bld(rule='cp ../README .')
     bld(rule='cp -r ../conf .')
-    bld(rule='cp -r ../tests .')
 
 
 def dist(dst):
-    to_include = ['build/src/**', 'build/conf/**', 'build/tests/**', 'build/bin/**',
-                  'build/README']
+    to_include = ['build/src/**', 'build/conf/**', 'build/bin/**', 'build/README']
     dst.files = dst.path.ant_glob(to_include)
