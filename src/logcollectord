@@ -47,7 +47,7 @@ def check_logging_path():
         choice = raw_input('Do you want me to create the directory: %s ? [Y|n]' % \
                             daemon_conf.LOGGING_PATH)
         if choice == "" or choice.upper() == 'Y':
-            return_code = subprocess.call(['mkdir', conf.LOGGING_PATH], 
+            return_code = subprocess.call(['mkdir', daemon_conf.LOGGING_PATH], 
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
             if return_code != 0:
