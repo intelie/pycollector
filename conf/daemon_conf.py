@@ -18,9 +18,6 @@ ACTIVEMQ_PORT=61613
 
 #APPLICATION LOG SETTINGS-----------------------------------------------
 
-#LOGGING_CONF_FILENAME: log confs for the collector starting process.
-LOGGING_CONF_FILENAME="/home/kaiser/workspace/log-collector/conf/logging.conf"
-
 #LOGGING_PATH: sets where the logs will be located.
 LOGGING_PATH="/home/kaiser/workspace/log-collector/logs/"
 
