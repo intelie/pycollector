@@ -6,7 +6,7 @@
     Description: Log Collector daemon.
 """
 
-__version_info__ = ('0', '1', '1')
+__version_info__ = ('0', '1', '2')
 __version__ = '.'.join(__version_info__)
 __author__ = "Ronald Kaiser"
 __email__ = "ronald at intelie dot com dot br"
