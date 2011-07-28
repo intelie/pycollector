@@ -27,7 +27,7 @@ In order to use it, you must configure two files:
    general settings such as pid, activemq server/port and logging.
 
  - conf/pattern_conf.py
-   defines wich regexps should be used for one event per line and/or how
+   defines which regexps should be used for one event per line and/or how
    to consolidate lines periodically in an event.
 
 
