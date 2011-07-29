@@ -26,7 +26,7 @@ from logcollector import LogCollector
 
 
 def is_running():
-    ps = subprocess.Popen("ps aux | grep logcollectord | grep -v grep | awk {'print $2'}", 
+    ps = subprocess.Popen("""ps aux | grep "logcollectord .*--start" | grep -v grep | awk {'print $2'}""", 
                           shell=True,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE)
@@ -44,7 +44,7 @@ def is_running():
 def check_logging_path():
     if not os.path.exists(daemon_conf.LOGGING_PATH):
         print "Logging path configured doesn't exist."
-        choice = raw_input('Do you want me to create the directory: %s ? [Y|n]' % \
+        choice = raw_input('Do you want me to create the directory: %s ? [Y|n] ' % \
                             daemon_conf.LOGGING_PATH)
         if choice == "" or choice.upper() == 'Y':
             return_code = subprocess.call(['mkdir', daemon_conf.LOGGING_PATH], 
@@ -55,6 +55,7 @@ def check_logging_path():
                 sys.exit(-1)
             else:
                 print "Logging directory created with success!"
+
 
 def write_pid():
     pidfile = daemon_conf.PID_PATH
@@ -84,14 +85,16 @@ def get_pattern_conf(parser):
             filename = filename[:-3]
         try:
             exec('from %s import conf as pattern_conf' % filename)
+            print "Configuration file in use: %s" % filename
             return pattern_conf
         except Exception, e:
-            print "Can't import configuration file."
+            print "Can't import configuration file. Aborting."
             print e
             exit(-1)
     else:
         try:
             from pattern_conf import conf
+            print "Configuration file in use: pattern_conf"
             return conf
         except Exception, e:
             print "Can't import configuration file."
