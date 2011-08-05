@@ -8,7 +8,7 @@
 #
 
 APPNAME = "log-collector"
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 top = "."
 out = "./build"
@@ -22,7 +22,7 @@ def build(bld):
     bld(rule='find .. -name "*.pyc" -delete')
     bld(rule='mkdir bin')
     bld(rule='cp -r ../src .')
-    bld(rule='mv src/logcollectord bin')
+    bld(rule='mv ./src/logcollectord bin')
     bld(rule='cp ../README .')
     bld(rule='cp -r ../conf .')
 
