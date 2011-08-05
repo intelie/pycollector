@@ -37,7 +37,7 @@ class LogLinesProcessor:
                     event.update(event_conf['consolidation_conf']['user_defined_fields'])
 
                 self.consolidated.update({index : event})
-                
+
     def prepare_event(self, line, groups_matched, conf_index):
         conf = self.conf['events_conf'][conf_index]
         event = {'eventtype' : conf['eventtype']}
@@ -70,7 +70,10 @@ class LogLinesProcessor:
                             self.logger.debug("Line: [%s] matching with regexp: %s" % (line, regexp))
                             self.logger.debug("Groups matched: %s" % match.groupdict())
                         event = self.prepare_event(line, match.groupdict(), index)
-                        self.event_queue.append(event)
+
+                        self.logger.debug(event_conf)
+                        if is_one_event_per_line_enabled(event_conf):
+                            self.event_queue.append(event)
                         return
         except Exception, e:
             if self.to_log:
