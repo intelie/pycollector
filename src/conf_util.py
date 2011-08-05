@@ -31,6 +31,8 @@ def is_consolidation_enabled(event_conf):
             event_conf['consolidation_conf'].has_key('enable') and \
             event_conf['consolidation_conf']['enable'] == True)
 
+def is_one_event_per_line_enabled(event_conf):
+    return event_conf.has_key('one_event_per_line_conf')
 
 def has_global_fields(conf):
     return conf.has_key('global_fields')

@@ -118,7 +118,7 @@ def start(option, opt, value, parser):
         d.open()
 
         write_pid()
-        c = LogCollector(pattern_conf, daemon_conf, True)
+        c = LogCollector(pattern_conf, daemon_conf, to_log=True)
         c.start()
 
         #daemon context finishes

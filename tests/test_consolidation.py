@@ -72,8 +72,9 @@ class TestConsolidation(unittest.TestCase):
         expected_consolidated = {}
         consolidated = line_processor.consolidated
         self.assertDictEqual(expected_consolidated, consolidated)
-        line_processor.process('tsc tsc')
         self.assertDictEqual(expected_consolidated, consolidated)
+        self.assertEqual(line_processor.event_queue, [])
+        line_processor.process('tsc tsc')
 
 
 if __name__ == "__main__":
