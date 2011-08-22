@@ -16,7 +16,7 @@ from conf_util import *
 from log_file_manager import LogFileManagerThreaded
 
 
-class LogCollector:
+class Collector:
     def __init__(self, conf, logging_conf=None, to_log=False):
         self.to_log = to_log
         if to_log:
@@ -46,11 +46,11 @@ class LogCollector:
                     self.logger.error(e)
 
         if to_log:
-            self.logger.info("LogCollector instantiated with success.")
+            self.logger.info("Collector instantiated with success.")
 
     def start(self):
         if self.to_log:
-            self.logger.info("Starting LogCollector...")
+            self.logger.info("Starting Collector...")
 
         for thread in self.log_threads:
             try:
@@ -69,5 +69,5 @@ class LogCollector:
 
         if self.to_log:
             self.logger.debug("Threads started: %s" % self.log_threads)
-            self.logger.info("LogCollector started.")
+            self.logger.info("Collector started.")
 
