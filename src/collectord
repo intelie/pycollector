@@ -3,10 +3,10 @@
 
 """
     File: collectord
-    Description: Log Collector daemon.
+    Description: Collector daemon.
 """
 
-__version_info__ = ('0', '1', '3')
+__version_info__ = ('0', '1', '0')
 __version__ = '.'.join(__version_info__)
 __author__ = "Ronald Kaiser"
 __email__ = "ronald at intelie dot com dot br"
@@ -15,18 +15,15 @@ __email__ = "ronald at intelie dot com dot br"
 import os
 import optparse
 import subprocess
-import sys;
-sys.path.append('../conf')
-sys.path.append('../src')
+import sys; sys.path.append('../conf'); sys.path.append('../src')
 
 from helpers import daemon as daemon
 
 import daemon_conf
-from logcollector import LogCollector
 
 
 def is_running():
-    ps = subprocess.Popen("""ps aux | grep "logcollectord .*--start" | grep -v grep | awk {'print $2'}""", 
+    ps = subprocess.Popen("""ps aux | grep "collectord .*--start" | grep -v grep | awk {'print $2'}""", 
                           shell=True,
                           stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE)
@@ -104,14 +101,14 @@ def get_pattern_conf(parser):
 
 def start(option, opt, value, parser):
     if is_running()[0]:
-        print "LogCollector already running."
+        print "Daemon already running."
         sys.exit(-1)
     else:
         pattern_conf = get_pattern_conf(parser)
-        print "Starting LogCollector..."
+        print "Starting daemon..."
         check_logging_path()
         pidfile = daemon_conf.PID_PATH
-        print "LogCollector started."
+        print "Daemon started."
 
         d = daemon.DaemonContext(working_directory=os.getcwd())
         #daemon context starts
@@ -128,7 +125,7 @@ def start(option, opt, value, parser):
 def stop(option, opt, value, parser):
     running, pids = is_running()
     if not running:
-        print "LogCollector is not running."
+        print "Daemon is not running."
         sys.exit(-1)
     else:
         pidfile = daemon_conf.PID_PATH
@@ -137,7 +134,7 @@ def stop(option, opt, value, parser):
             sys.exit(-1)
         else:
             try:
-                print "Stopping LogCollector..."
+                print "Stopping daemon..."
                 f = open(pidfile, 'r')
                 pid = int(f.read())
                 f.close()
@@ -167,7 +164,7 @@ def stop(option, opt, value, parser):
                         print """
     Daemon stopped, but can't remove pidfile.\nRemove manually the file %s.""" % pidfile
                     else:
-                        print "LogCollector stopped."
+                        print "Daemon stopped."
                 except Exception, e:
                     print e
                     print """
@@ -179,9 +176,9 @@ if __name__ == '__main__':
     import ascii
     print ascii.ascii
 
-    parser = optparse.OptionParser(prog="LogCollector", version=__version__)
+    parser = optparse.OptionParser(prog="pycollector", version=__version__)
     description = """   
-This piece of software reads logs and sends events to AMQ -- based in regular expressions defined in a configuration file."""
+This piece of software intend to be a generic collector."""
     parser.set_description(description)
     parser.add_option("--conf",
                       action="store",
@@ -193,19 +190,19 @@ directory. Use before --start. Default is 'pattern_conf'""")
                       action="callback",
                       callback=start,
                       nargs=0,
-                      help="starts LogCollector daemon")
+                      help="starts daemon")
 
     parser.add_option("--stop",
                       action="callback",
                       callback=stop,
                       nargs=0,
-                      help="stops LogCollector daemon")
+                      help="stops daemon")
 
     parser.add_option("--status",
                       action="callback",
                       callback=status,
                       nargs=0,
-                      help="checks if LogCollector daemon is runnning.")
+                      help="checks if daemon is runnning.")
 
     (options, args) = parser.parse_args()
 
