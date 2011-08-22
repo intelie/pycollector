@@ -22,46 +22,6 @@ from helpers import daemon as daemon
 import daemon_conf
 
 
-def is_running():
-    ps = subprocess.Popen("""ps aux | grep "collectord .*--start" | grep -v grep | awk {'print $2'}""", 
-                          shell=True,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
-    pids = ps.stdout.read().split('\n')
-    current_pid = os.getpid()
-    pids = filter(lambda x: x.isdigit(), pids)
-    pids = map(lambda x: int(x), pids)
-    if current_pid in pids:
-        pids.remove(current_pid)
-    if len(pids) > 0:
-        return (True, pids)
-    return (False, pids)
-
-
-def check_logging_path():
-    if not os.path.exists(daemon_conf.LOGGING_PATH):
-        print "Logging path configured doesn't exist."
-        choice = raw_input('Do you want me to create the directory: %s ? [Y|n] ' % \
-                            daemon_conf.LOGGING_PATH)
-        if choice == "" or choice.upper() == 'Y':
-            return_code = subprocess.call(['mkdir', daemon_conf.LOGGING_PATH], 
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-            if return_code != 0:
-                print "Can't create directory."
-                sys.exit(-1)
-            else:
-                print "Logging directory created with success!"
-
-
-def write_pid():
-    pidfile = daemon_conf.PID_PATH
-    f = open(pidfile, 'w+')
-    f.write(str(os.getpid()))
-    f.close()
-    os.system("chmod 644 %s" % pidfile)
-
-
 def status(option, opt, value, parser):
     pidfile = daemon_conf.PID_PATH
     if not pidfile or not os.path.exists(pidfile):
@@ -73,30 +33,6 @@ def status(option, opt, value, parser):
             sys.exit(-1)
         print "Status: RUNNING."
     sys.exit(0)
-
-
-def get_pattern_conf(parser):
-    filename = parser.values.filename
-    if filename:
-        if filename.endswith('.py'):
-            filename = filename[:-3]
-        try:
-            exec('from %s import conf as pattern_conf' % filename)
-            print "Configuration file in use: %s" % filename
-            return pattern_conf
-        except Exception, e:
-            print "Can't import configuration file. Aborting."
-            print e
-            exit(-1)
-    else:
-        try:
-            from pattern_conf import conf
-            print "Configuration file in use: pattern_conf"
-            return conf
-        except Exception, e:
-            print "Can't import configuration file."
-            print e
-            exit(-1)
 
 
 def start(option, opt, value, parser):
