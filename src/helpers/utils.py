@@ -2,42 +2,12 @@
 # -*- coding: utf-8 -*-
 
 
+import os
 import subprocess
 
 
-def is_running():
-    ps = subprocess.Popen("""ps aux | grep "collectord .*--start" | grep -v grep | awk {'print $2'}""", 
-                          shell=True,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
-    pids = ps.stdout.read().split('\n')
-    current_pid = os.getpid()
-    pids = filter(lambda x: x.isdigit(), pids)
-    pids = map(lambda x: int(x), pids)
-    if current_pid in pids:
-        pids.remove(current_pid)
-    if len(pids) > 0:
-        return (True, pids)
-    return (False, pids)
-
-
-def check_logging_path(daemon_conf):
-    if not os.path.exists(daemon_conf.LOGGING_PATH):
-        print "Logging path configured doesn't exist."
-        choice = raw_input('Do you want me to create the directory: %s ? [Y|n] ' % \
-                            daemon_conf.LOGGING_PATH)
-        if choice == "" or choice.upper() == 'Y':
-            return_code = subprocess.call(['mkdir', daemon_conf.LOGGING_PATH], 
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-            if return_code != 0:
-                print "Can't create directory."
-                sys.exit(-1)
-            else:
-                print "Logging directory created with success!"
-
-
 def write_pid(pidfile):
+    
     f = open(pidfile, 'w+')
     f.write(str(os.getpid()))
     f.close()
@@ -50,10 +20,57 @@ def remove_pidfile(pidfile):
                          stderr=subprocess.PIPE)
 
 
-def get_pid_from_pidfile(pidfile):
+def get_pid(pidfile):
     f = open(pidfile, 'r')
     pid = int(f.read())
     f.close()
+
+
+def kill_pids(pids):
+    """Input: a list of ints (pids) | Output: the returning code from kill."""
+
+    cmd = ["kill", "-9"]
+    pids = map(lambda x: str(x), pids)
+    cmd.extend(pids)
+    return subprocess.call(cmd,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
+
+
+def is_running(ps="""ps aux | grep "collectord .*--start" | grep -v grep | awk {'print $2'}"""):
+    ps = subprocess.Popen(ps,
+                          shell=True,
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE)
+
+    pids = ps.stdout.read().split('\n')
+    pids = filter(lambda x: x.isdigit(), pids)
+    pids = map(lambda x: int(x), pids)
+
+    cur_pid = os.getpid()
+    if cur_pid in pids: 
+        pids.remove(cur_pid)
+
+    if len(pids) > 0: 
+        return (True, pids)
+    return (False, pids)
+
+
+def dir_exists(path):
+    if not os.path.exists(path):
+        print "Logging path configured doesn't exist."
+        choice = raw_input('Do you want me to create the directory: %s ? [Y|n] ' % \
+                            path)
+        if choice == "" or choice.upper() == 'Y':
+            return_code = subprocess.call(['mkdir', path],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+            if return_code != 0:
+                print "Can't create directory."
+                return False
+            else:
+                print "Directory created with success."
+                return True
 
 
 def get_pattern_conf(filename):
@@ -77,15 +94,3 @@ def get_pattern_conf(filename):
             print "Can't import configuration file."
             print e
             exit(-1)
-
-
-def kill_pids(pids):
-    """Input: a list of ints (pids).
-    Output: the returning code from kill."""
-
-    cmd = ["kill", "-9"]
-    pids = map(lambda x: str(x), pids)
-    cmd.extend(pids)
-    return subprocess.call(cmd,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)

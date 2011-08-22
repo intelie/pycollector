@@ -3,11 +3,14 @@
 
 """
     File: collectord
-    Description: Collector daemon. 
+    Description: Collector daemon.
 """
 
+__software__ = "pycollector"
+__desc__ = "Generic collector written in Python."
 __version_info__ = ('0', '1', '0')
 __version__ = '.'.join(__version_info__)
+
 __author__ = "Ronald Kaiser"
 __email__ = "ronald at intelie dot com dot br"
 
@@ -28,7 +31,7 @@ def status(option, opt, value, parser):
     if not pidfile or not os.path.exists(pidfile):
         print "Status: NOT RUNNING."
     else:
-        if not is_running()[0]:
+        if not utils.is_running()[0]:
             print "Status: NOT RUNNING."
             print "WARNING: Pidfile in %s seems to be obsolete. Please, remove it manually." % daemon_conf.PID_PATH
             sys.exit(-1)
@@ -37,28 +40,26 @@ def status(option, opt, value, parser):
 
 
 def start(option, opt, value, parser):
-    if is_running()[0]:
+    if utils.is_running()[0]:
         print "Daemon already running."
         sys.exit(-1)
     else:
-        pattern_conf = get_pattern_conf(parser)
+        pattern_conf = utils.get_pattern_conf(parser.values.filename)
         print "Starting daemon..."
-        check_logging_path()
-        pidfile = daemon_conf.PID_PATH
+        if not utils.dir_exists(daemon_conf.LOGGING_PATH): exit(-1)
+
         print "Daemon started."
-
         d = daemon.DaemonContext(working_directory=os.getcwd())
-        d.open() #daemon context starts
 
+        #starts daemon context
+        d.open()
         write_pid()
-        c = LogCollector(pattern_conf, daemon_conf, to_log=True)
-        c.start()
-
-        d.close() #daemon context finishes
+        c = LogCollector(pattern_conf, daemon_conf, to_log=True).start()
+        d.close()
 
 
 def stop(option, opt, value, parser):
-    running, pids = is_running()
+    running, pids = utils.is_running()
     if not running:
         print "Daemon is not running."
         sys.exit(-1)
@@ -100,10 +101,8 @@ if __name__ == '__main__':
     import ascii
     print ascii.ascii
 
-    parser = optparse.OptionParser(prog="pycollector", version=__version__)
-    description = """   
-This piece of software intend to be a generic collector."""
-    parser.set_description(description)
+    parser = optparse.OptionParser(prog=__software__, version=__version__)
+    parser.set_description(__desc__)
     parser.add_option("--conf",
                       action="store",
                       dest="filename",
