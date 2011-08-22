@@ -1,12 +1,12 @@
 """
     File: daemon_conf.py
-    Description: LogCollector configuration file.
+    Description: Collector configuration file.
 """
 
 #PID SETTINGS-----------------------------------------------
 
 #PID_PATH: LogCollector pid path/filename
-PID_PATH="/home/kaiser/workspace/log-collector/collector.pid"
+PID_PATH="../collector.pid"
 
 #ACTIVEMQ SETTINGS-----------------------------------------------
 
@@ -19,7 +19,7 @@ ACTIVEMQ_PORT=61613
 #APPLICATION LOG SETTINGS-----------------------------------------------
 
 #LOGGING_PATH: sets where the logs will be located.
-LOGGING_PATH="/home/kaiser/workspace/log-collector/logs/"
+LOGGING_PATH="../logs/"
 
 #SEVERITY: changes the level of severity for all application logs created.
 #Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
