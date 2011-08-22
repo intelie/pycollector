@@ -10,3 +10,6 @@ ascii = """
 |_|     |___/                                   by Intelie   
 
 """
+
+if __name__ == "__main__":
+    print ascii
