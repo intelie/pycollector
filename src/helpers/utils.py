@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
+import subprocess
+
+
 def is_running():
     ps = subprocess.Popen("""ps aux | grep "collectord .*--start" | grep -v grep | awk {'print $2'}""", 
                           shell=True,
@@ -34,12 +37,23 @@ def check_logging_path(daemon_conf):
                 print "Logging directory created with success!"
 
 
-def write_pid(daemon_conf):
-    pidfile = daemon_conf.PID_PATH
+def write_pid(pidfile):
     f = open(pidfile, 'w+')
     f.write(str(os.getpid()))
     f.close()
     os.system("chmod 644 %s" % pidfile)
+
+
+def remove_pidfile(pidfile):
+    return subprocess.call(["rm", "-rf", "%s" % pidfile],
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+
+
+def get_pid_from_pidfile(pidfile):
+    f = open(pidfile, 'r')
+    pid = int(f.read())
+    f.close()
 
 
 def get_pattern_conf(filename):
@@ -64,3 +78,14 @@ def get_pattern_conf(filename):
             print e
             exit(-1)
 
+
+def kill_pids(pids):
+    """Input: a list of ints (pids).
+    Output: the returning code from kill."""
+
+    cmd = ["kill", "-9"]
+    pids = map(lambda x: str(x), pids)
+    cmd.extend(pids)
+    return subprocess.call(cmd,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
