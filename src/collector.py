@@ -3,71 +3,42 @@
 
 """
     File: collector.py
-    Description: This module starts log file managers
+    Description: This module starts the thread
 """
-
-__author__ = "Ronald Kaiser"
-__email__ = "ronald at intelie dot com dot br"
 
 
 import logging, logging.config
 
 from conf_util import *
-from log_file_manager import LogFileManagerThreaded
 
 
 class Collector:
-    def __init__(self, conf, logging_conf=None, to_log=False):
+    def __init__(self, conf, to_log=False):
+        self.conf = conf
         self.to_log = to_log
-        if to_log:
+        if to_log: 
+            self.set_logging()
+            self.logger.info("Collector instantiated with success.")
+
+    def set_logging(self):
+        try:
             self.logger = logging.getLogger()
-            self.logger.setLevel(logging_conf.SEVERITY)
-            filename = logging_conf.LOGGING_PATH + 'collector.log'
+            self.logger.setLevel(self.conf.SEVERITY)
+            filename = conf.LOGGING_PATH + 'collector.log'
             log_handler = logging.handlers.TimedRotatingFileHandler(filename, 
-                                                                    when=logging_conf.ROTATING)
-            formatter = logging.Formatter(logging_conf.FORMATTER)
+                                                                    when=self.conf.ROTATING)
+            formatter = logging.Formatter(self.conf.FORMATTER)
             log_handler.setFormatter(formatter)
             self.logger.addHandler(log_handler)
-
-            self.logger = logging.getLogger()
-        self.log_threads = []
-
-        for f_conf in conf:
-            try:
-                validate_conf(f_conf) 
-            except Exception, e:
-                if to_log:
-                    self.logger.info("Configuration error.")
-                    self.logger.debug(e)
-            try:
-                self.log_threads.append(LogFileManagerThreaded(f_conf, logging_conf, to_log))
-            except Exception, e:
-                if to_log:
-                    self.logger.error(e)
-
-        if to_log:
-            self.logger.info("Collector instantiated with success.")
+        except Exception, e:
+            print e
 
     def start(self):
         if self.to_log:
             self.logger.info("Starting Collector...")
 
-        for thread in self.log_threads:
-            try:
-                if self.to_log:
-                    self.logger.debug("Starting thread for log file: %s." % \
-                                      thread.log_file_manager.filename)
-                thread.start()
-                if self.to_log:
-                    self.logger.debug("Thread for %s started." % \
-                                      thread.log_file_manager.filename)
-            except Exception, e:
-                if self.to_log:
-                    self.logger.error("Couldn't start thread for log file: %s" % \
-                                      thread.log_file_manager.filename)
-                    self.logger.error(e)
+        #todo
 
         if self.to_log:
-            self.logger.debug("Threads started: %s" % self.log_threads)
             self.logger.info("Collector started.")
 
