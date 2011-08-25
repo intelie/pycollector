@@ -9,8 +9,6 @@
 
 import logging, logging.config
 
-from conf_util import *
-
 
 class Collector:
     def __init__(self, conf, to_log=False):
@@ -24,7 +22,7 @@ class Collector:
         try:
             self.logger = logging.getLogger()
             self.logger.setLevel(self.conf.SEVERITY)
-            filename = conf.LOGGING_PATH + 'collector.log'
+            filename = self.conf.LOGGING_PATH + 'collector.log'
             log_handler = logging.handlers.TimedRotatingFileHandler(filename, 
                                                                     when=self.conf.ROTATING)
             formatter = logging.Formatter(self.conf.FORMATTER)
@@ -37,7 +35,7 @@ class Collector:
         if self.to_log:
             self.logger.info("Starting Collector...")
 
-        #todo
+        print("testing")
 
         if self.to_log:
             self.logger.info("Collector started.")

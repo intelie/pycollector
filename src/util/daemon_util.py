@@ -7,7 +7,6 @@ import subprocess
 
 
 def write_pid(pidfile):
-    
     f = open(pidfile, 'w+')
     f.write(str(os.getpid()))
     f.close()
@@ -71,6 +70,7 @@ def dir_exists(path):
             else:
                 print "Directory created with success."
                 return True
+    return True
 
 
 def get_pattern_conf(filename):

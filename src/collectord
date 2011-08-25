@@ -24,6 +24,15 @@ from helpers import daemon
 from util import daemon_util
 
 import daemon_conf
+from collector import Collector
+
+
+DAEMON=True #run as daemon flag
+
+
+def notdaemon(option, opt, value, parser):
+    global DAEMON
+    DAEMON = False
 
 
 def status(option, opt, value, parser):
@@ -46,13 +55,16 @@ def start(option, opt, value, parser):
     else:
         print "Starting daemon..."
         if not daemon_util.dir_exists(daemon_conf.LOGGING_PATH): exit(-1)
+        c = Collector(daemon_conf, to_log=True)
 
         print "Daemon started."
-        d = daemon.DaemonContext(working_directory=os.getcwd())
-        d.open() #starts daemon context
-        write_pid()
-        c = Collector(daemon_conf, to_log=True).start()
-        d.close()
+        if DAEMON:
+            d = daemon.DaemonContext(working_directory=os.getcwd())
+            d.open() #starts daemon context
+        daemon_util.write_pid(daemon_conf.PID_PATH)
+        c.start()
+        if DAEMON:
+            d.close()
 
 
 def stop(option, opt, value, parser):
@@ -101,23 +113,30 @@ if __name__ == '__main__':
     parser = optparse.OptionParser(prog=__software__, version=__version__)
     parser.set_description(__desc__)
 
+    parser.add_option("--notdaemon",
+                      action="callback",
+                      callback=notdaemon,
+                      nargs=0,
+                      help="starts collector without detaching the process")
+
     parser.add_option("--start",
                       action="callback",
                       callback=start,
                       nargs=0,
-                      help="starts daemon")
+                      help="starts collector")
 
     parser.add_option("--stop",
                       action="callback",
                       callback=stop,
                       nargs=0,
-                      help="stops daemon")
+                      help="stops collector")
 
     parser.add_option("--status",
                       action="callback",
                       callback=status,
                       nargs=0,
-                      help="checks if daemon is runnning.")
+                      help="checks if collector is runnning.")
+
 
     (options, args) = parser.parse_args()
 
