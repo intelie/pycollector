@@ -42,8 +42,8 @@ class Collector:
 
         q = Queue.Queue()
 
-        myreader = MyReader(queue=q, blockable=True, periodic=True, interval=1)
-        mywriter = MyWriter(queue=q, periodic=True, interval=1)
+        myreader = MyReader(queue=q)
+        mywriter = MyWriter(queue=q)
 
         myreader.start()
         if self.to_log:

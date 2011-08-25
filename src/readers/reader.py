@@ -2,15 +2,17 @@
 import time
 import threading
 
-import helpers.kronos as kronos 
+import helpers.kronos as kronos
 
 
 class Reader(threading.Thread):
-    def __init__(self, queue, blockable=False, periodic=False, interval=0):
-        self.queue = queue
+    def __init__(self, queue, blockable=False, periodic=True, interval=1):
         self.blockable = blockable
+        self.periodic = periodic
+        self.interval = interval
+        self.queue = queue
         self.scheduler = kronos.ThreadedScheduler()
-        if periodic == True:
+        if self.periodic:
             self.scheduler.add_interval_task(self.process,
                                  "periodic task",
                                  0,
@@ -55,7 +57,5 @@ if __name__ == "__main__":
     reader = MyReader(periodic=True, interval=1)
     reader.start()
 
-    reader = MyReader(periodic=True, interval=4)
-    reader.start()
     while True:
         pass

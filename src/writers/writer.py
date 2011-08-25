@@ -2,14 +2,16 @@
 import time
 import threading
 
-import helpers.kronos as kronos 
+import helpers.kronos as kronos
 
 
 class Writer(threading.Thread):
-    def __init__(self, queue, periodic=False, interval=0):
+    def __init__(self, queue, periodic=True, interval=1):
         self.queue = queue
+        self.periodic = periodic
+        self.interval = interval
         self.scheduler = kronos.ThreadedScheduler()
-        if periodic == True:
+        if self.periodic:
             self.scheduler.add_interval_task(self.process,
                                  "periodic task",
                                  0,
@@ -47,8 +49,6 @@ if __name__ == "__main__":
     writer = MyWriter(periodic=True, interval=1)
     writer.start()
 
-    writer = MyWriter(periodic=True, interval=4)
-    writer.start()
     while True:
         pass
 
