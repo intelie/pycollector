@@ -6,10 +6,11 @@ import helpers.kronos as kronos
 
 
 class Writer(threading.Thread):
-    def __init__(self, periodic=False, interval=0):
+    def __init__(self, queue, periodic=False, interval=0):
+        self.queue = queue
         self.scheduler = kronos.ThreadedScheduler()
         if periodic == True:
-            self.scheduler.add_interval_task(self.write,
+            self.scheduler.add_interval_task(self.process,
                                  "periodic task",
                                  0,
                                  interval,
@@ -17,7 +18,7 @@ class Writer(threading.Thread):
                                  [],
                                  None)
         else:
-            self.scheduler.add_single_task(self.write,
+            self.scheduler.add_single_task(self.process,
                                            "single task",
                                            0,
                                            kronos.method.threaded,
@@ -25,7 +26,12 @@ class Writer(threading.Thread):
                                            None)
         threading.Thread.__init__(self)
 
-    def write(self):
+    def process(self):
+        if self.queue.qsize() > 0:
+            msg = self.queue.get()
+            self.write(msg)
+
+    def write(self, msg):
         """Subclasses should implement."""
         pass
 
@@ -45,3 +51,4 @@ if __name__ == "__main__":
     writer.start()
     while True:
         pass
+

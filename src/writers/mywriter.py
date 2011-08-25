@@ -2,5 +2,5 @@ from writer import Writer
 
 
 class MyWriter(Writer):
-    def write(self):
-        print "from mywriter"
+    def write(self, msg):
+        print "\n[WRITER] message: %s" % msg
