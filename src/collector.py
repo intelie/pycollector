@@ -9,6 +9,9 @@
 
 import logging, logging.config
 
+from readers.myreader import MyReader
+from writers.mywriter import MyWriter
+
 
 class Collector:
     def __init__(self, conf, to_log=False):
@@ -33,10 +36,12 @@ class Collector:
 
     def start(self):
         if self.to_log:
-            self.logger.info("Starting Collector...")
+            self.logger.info("Collector started")
 
-        print("testing")
+        while True:
+            
+            myreader = MyReader(periodic=True, interval=1)
+            mywriter = MyWriter(periodic=True, interval=2)
 
-        if self.to_log:
-            self.logger.info("Collector started.")
-
+            myreader.start()
+            mywriter.start()
