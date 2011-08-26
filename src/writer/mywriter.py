@@ -12,14 +12,9 @@ class MyWriter(Writer): #activemqwriter
                     'timestamp': int(time.time())*1000}
         body = {'message' : msg}
         body = json.dumps(body)
- 
-        print headers
-        print body
+
         try:
             stomp_sender.send_message_via_stomp([('localhost', 61613)], headers, body)
-            print "sent!"
             return True
         except Exception, e:
-            print e
-            print "can't send"
             return False

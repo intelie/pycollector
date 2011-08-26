@@ -32,10 +32,7 @@ DAEMON=True #run as daemon flag
 
 def notdaemon(option, ospt, value, parser):
     global DAEMON
-    if DAEMON == False:
-        DAEMON = True
-    else:
-        DAEMON = False
+    DAEMON = not DAEMON
 
 
 def status(option, opt, value, parser):

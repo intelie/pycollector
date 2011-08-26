@@ -5,12 +5,11 @@ import threading
 import helpers.kronos as kronos
 
 
-class Reader(threading.Thread):
-    def __init__(self, queue, blockable=False, periodic=True, interval=1):
-        self.blockable = blockable
+class Writer(threading.Thread):
+    def __init__(self, queue, periodic=True, interval=1):
+        self.queue = queue
         self.periodic = periodic
         self.interval = interval
-        self.queue = queue
         self.scheduler = kronos.ThreadedScheduler()
         if self.periodic:
             self.scheduler.add_interval_task(self.process,
@@ -29,33 +28,29 @@ class Reader(threading.Thread):
                                            None)
         threading.Thread.__init__(self)
 
-    def store(self, msg):
-        if self.queue.qsize() > 0 and self.blockable:
-            while self.queue.qsize() > 0:
-                pass
-        else:
-            self.queue.put(msg)
+    def process(self):
+        if self.queue.qsize() > 0:
+            msg = self.queue.get()
+            ok = self.write(msg)
+            if not ok:
+                print "Message can't be sent!"
 
-    def read(self):
+    def write(self, msg):
         """Subclasses should implement."""
         pass
-
-    def process(self):
-        msg = self.read()
-        if msg != None:
-            self.store(msg)
 
     def run(self):
         self.scheduler.start()
 
 
 if __name__ == "__main__":
-    class MyReader(Reader):
-        def read(self):
+    class MyWriter(Writer):
+        def write(self):
             print "know thyself"
 
-    reader = MyReader(periodic=True, interval=1)
-    reader.start()
+    writer = MyWriter(periodic=True, interval=1)
+    writer.start()
 
     while True:
         pass
+
