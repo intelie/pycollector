@@ -37,7 +37,7 @@ class Collector:
         from reader.myreader import MyReader
         from writer.mywriter import MyWriter
 
-        q = Queue.Queue()
+        q = Queue.Queue(maxsize=1024)
 
         myreader = MyReader(queue=q)
         mywriter = MyWriter(queue=q)

@@ -33,7 +33,9 @@ class Writer(threading.Thread):
             msg = self.queue.get()
             ok = self.write(msg)
             if not ok:
-                print "Message can't be sent!"
+                print "Message [%s] can't be sent" % msg
+        else:
+            print "No messages in the queue"
 
     def setup(self):
         """Subclasses should implement."""
@@ -46,16 +48,4 @@ class Writer(threading.Thread):
 
     def run(self):
         self.scheduler.start()
-
-
-if __name__ == "__main__":
-    class MyWriter(Writer):
-        def write(self):
-            print "know thyself"
-
-    writer = MyWriter(periodic=True, interval=1)
-    writer.start()
-
-    while True:
-        pass
 

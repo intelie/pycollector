@@ -27,10 +27,10 @@ import daemon_conf
 from collector import Collector
 
 
-DAEMON=True #run as daemon flag
+DAEMON=False #run as daemon flag
 
 
-def notdaemon(option, ospt, value, parser):
+def toggle_daemon(option, ospt, value, parser):
     global DAEMON
     DAEMON = not DAEMON
 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     parser.add_option("--notdaemon",
                       action="callback",
-                      callback=notdaemon,
+                      callback=toggle_daemon,
                       nargs=0,
                       help="starts collector without detaching the process")
 

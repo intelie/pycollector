@@ -31,11 +31,14 @@ class Reader(threading.Thread):
         threading.Thread.__init__(self)
 
     def store(self, msg):
-        if self.queue.qsize() > 0 and self.blockable:
-            while self.queue.qsize() > 0:
-                pass
+        if self.queue.qsize() + 1 <= self.queue.maxsize:
+            if self.queue.qsize() > 0 and self.blockable:
+                while self.queue.qsize() > 0:
+                    pass
+            else:
+                self.queue.put(msg)
         else:
-            self.queue.put(msg)
+            print "discarding message"
 
     def process(self):
         msg = self.read()
@@ -53,15 +56,3 @@ class Reader(threading.Thread):
 
     def run(self):
         self.scheduler.start()
-
-
-if __name__ == "__main__":
-    class MyReader(Reader):
-        def read(self):
-            print "know thyself"
-
-    reader = MyReader(periodic=True, interval=1)
-    reader.start()
-
-    while True:
-        pass
