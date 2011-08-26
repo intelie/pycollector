@@ -1,4 +1,4 @@
-from writer import *
+from __writer import *
 
 
 class MyWriter(Writer):

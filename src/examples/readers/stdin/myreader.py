@@ -1,4 +1,4 @@
-from reader import *
+from __reader import *
 
 
 class MyReader(Reader):

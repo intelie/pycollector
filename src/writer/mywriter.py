@@ -1,7 +1,8 @@
+import sys; sys.path.append('../')
 import time
 import json
 
-from writer import *
+from __writer import *
 from lib import stomp_sender
 
 

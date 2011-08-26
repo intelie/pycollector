@@ -1,4 +1,5 @@
-from reader import *
+import sys; sys.path.append('..')
+from __reader import *
 
 
 class MyReader(Reader):
