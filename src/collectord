@@ -28,6 +28,8 @@ from collector import Collector
 
 
 DAEMON=False #run as daemon flag
+pidpath_default = "../collectord.pid"
+logging_path_default = "../logs/"
 
 
 def toggle_daemon(option, ospt, value, parser):
@@ -36,13 +38,16 @@ def toggle_daemon(option, ospt, value, parser):
 
 
 def status(option, opt, value, parser):
-    pidfile = daemon_conf.PID_PATH
+    try:
+        pidpath = daemon_conf.PID_PATH
+    except AttributeError:
+        pidpath = pidpath_default
     if not pidfile or not os.path.exists(pidfile):
         print "Status: NOT RUNNING."
     else:
         if not daemon_util.is_running()[0]:
             print "Status: NOT RUNNING."
-            print "WARNING: Pidfile in %s seems to be obsolete. Please, remove it manually." % daemon_conf.PID_PATH
+            print "WARNING: Pidfile in %s seems to be obsolete. Please, remove it manually." % pidpath
             sys.exit(-1)
         print "Status: RUNNING."
     sys.exit(0)
@@ -54,14 +59,26 @@ def start(option, opt, value, parser):
         sys.exit(-1)
     else:
         print "Starting daemon..."
-        if not daemon_util.dir_exists(daemon_conf.LOGGING_PATH): exit(-1)
+
+        try:
+            logging_path = daemon_conf.LOGGING_PATH
+        except AttributeError:
+            logging_path = logging_path_default
+
+        if not daemon_util.dir_exists(logging_path): exit(-1)
         c = Collector(daemon_conf, to_log=True)
 
         print "Daemon started."
         if DAEMON:
             d = daemon.DaemonContext(working_directory=os.getcwd())
             d.open() #starts daemon context
-        daemon_util.write_pid(daemon_conf.PID_PATH)
+
+        try:
+            pidpath = daemon_conf.PID_PATH
+        except AttributeError:
+            pidpath = pidpath_default
+
+        daemon_util.write_pid(pidpath)
         c.start()
         if DAEMON:
             d.close()
@@ -73,14 +90,17 @@ def stop(option, opt, value, parser):
         print "Daemon is not running."
         sys.exit(-1)
     else:
-        pidfile = daemon_conf.PID_PATH
-        if not pidfile or not os.path.exists(pidfile):
-            print "Can't get pidfile: %s. Is it running?" % pidfile
+        try:
+            pidpath = daemon_conf.PID_PATH
+        except AttributeError:
+            pidpath = pidfile_default
+        if not pidpath or not os.path.exists(pidpath):
+            print "Can't get pidfile: %s. Is it running?" % pidpath
             sys.exit(-1)
         else:
             try:
                 print "Stopping daemon..."
-                pid = get_pid(pidfile)
+                pid = get_pid(pidpath)
             except Exception, e:
                 print "Can't read pidfile. Daemon not stopped."
                 sys.exit(-1)
@@ -94,15 +114,15 @@ def stop(option, opt, value, parser):
                 sys.exit(-1)
             else:
                 try:
-                    if remove_pidfile(pidfile) == 0:
+                    if remove_pidfile(pidpath) == 0:
                         print "Daemon stopped."
                     else:
                         print """
-    Daemon stopped, but can't remove pidfile.\nRemove manually the file %s.""" % pidfile
+    Daemon stopped, but can't remove pidfile.\nRemove manually the file %s.""" % pidpath
                 except Exception, e:
                     print e
                     print """
-    Daemon stopped, but can't remove pidfile.\nRemove manually the file %s.""" % pidfile
+    Daemon stopped, but can't remove pidfile.\nRemove manually the file %s.""" % pidpath
         sys.exit(0)
 
 

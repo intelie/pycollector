@@ -7,6 +7,12 @@
 import logging, logging.config
 
 
+severity_default = "DEBUG"
+logging_path_default = "../logs/"
+rotating_default = "midnight"
+formatter_default = "%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s)] %(levelname)s - %(message)s"
+
+
 class Collector:
     def __init__(self, conf, to_log=False):
         self.conf = conf
@@ -18,11 +24,33 @@ class Collector:
     def set_logging(self):
         try:
             self.logger = logging.getLogger()
-            self.logger.setLevel(self.conf.SEVERITY)
-            filename = self.conf.LOGGING_PATH + 'collector.log'
+            try:
+                severity = self.conf.SEVERITY
+            except AttributeError:
+                severity = severity_default
+            self.logger.setLevel(severity)
+
+            try:
+                logging_path = self.conf.LOGGING_PATH
+            except AttributeError:
+                logging_path = logging_path_default
+
+            filename = logging_path + 'collector.log'
+
+            try:
+                rotating = self.conf.ROTATING
+            except AttributeError:
+                rotating = rotating_default
+
             log_handler = logging.handlers.TimedRotatingFileHandler(filename, 
-                                                                    when=self.conf.ROTATING)
-            formatter = logging.Formatter(self.conf.FORMATTER)
+                                                                    when=rotating)
+
+            try:
+                formatter = self.conf.FORMATTER
+            except AttributeError:
+                formatter = formatter_default
+
+            formatter = logging.Formatter(formatter)
             log_handler.setFormatter(formatter)
             self.logger.addHandler(log_handler)
         except Exception, e:
