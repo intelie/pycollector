@@ -11,12 +11,13 @@ class Reader(threading.Thread):
         self.periodic = periodic
         self.interval = interval
         self.queue = queue
+        self.setup()
         self.scheduler = kronos.ThreadedScheduler()
         if self.periodic:
             self.scheduler.add_interval_task(self.process,
                                  "periodic task",
                                  0,
-                                 interval,
+                                 self.interval,
                                  kronos.method.threaded,
                                  [],
                                  None)
@@ -36,14 +37,19 @@ class Reader(threading.Thread):
         else:
             self.queue.put(msg)
 
-    def read(self):
-        """Subclasses should implement."""
-        pass
-
     def process(self):
         msg = self.read()
         if msg != None:
             self.store(msg)
+
+    def setup(self):
+        """Subclasses should implement."""
+        #TODO: make a setup via decorators?
+        pass
+
+    def read(self):
+        """Subclasses should implement."""
+        pass
 
     def run(self):
         self.scheduler.start()

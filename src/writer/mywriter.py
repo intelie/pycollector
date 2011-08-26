@@ -1,4 +1,3 @@
-import sys; sys.path.append('../')
 import time
 import json
 
@@ -7,6 +6,10 @@ from lib import stomp_sender
 
 
 class MyWriter(Writer): #activemqwriter
+    def setup(self):
+        self.periodic = True
+        self.interval = 10
+
     def write(self, msg):
         #TODO: do exception handling
         headers = { 'destination': '/queue/events',
@@ -16,6 +19,9 @@ class MyWriter(Writer): #activemqwriter
 
         try:
             stomp_sender.send_message_via_stomp([('localhost', 61613)], headers, body)
+            print "Sent!"
             return True
         except Exception, e:
+            print "Can't sent!"
+            print e
             return False

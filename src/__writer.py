@@ -1,4 +1,3 @@
-
 import time
 import threading
 
@@ -10,12 +9,13 @@ class Writer(threading.Thread):
         self.queue = queue
         self.periodic = periodic
         self.interval = interval
+        self.setup()
         self.scheduler = kronos.ThreadedScheduler()
         if self.periodic:
             self.scheduler.add_interval_task(self.process,
                                  "periodic task",
                                  0,
-                                 interval,
+                                 self.interval,
                                  kronos.method.threaded,
                                  [],
                                  None)
@@ -34,6 +34,11 @@ class Writer(threading.Thread):
             ok = self.write(msg)
             if not ok:
                 print "Message can't be sent!"
+
+    def setup(self):
+        """Subclasses should implement."""
+        #TODO: make a setup via decorators?
+        pass
 
     def write(self, msg):
         """Subclasses should implement."""
