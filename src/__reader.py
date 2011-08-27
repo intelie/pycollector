@@ -44,7 +44,7 @@ class Reader(threading.Thread):
                                        None)
 
     def __writer_callback(self):
-        """Callback to writer for not periodic tasks"""
+        """Callback to writer for non periodic tasks"""
         if not self.writer.periodic:
             self.writer.process()
 
