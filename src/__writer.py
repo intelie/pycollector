@@ -27,30 +27,29 @@ class Writer(threading.Thread):
 
     def schedule_interval_task(self):
         self.scheduler.add_interval_task(self.process,
-                         "periodic task",
-                         0,
-                         self.interval,
-                         kronos.method.threaded,
-                         [],
-                         None)
+                                         "periodic task",
+                                         0,
+                                         self.interval,
+                                         kronos.method.threaded,
+                                         [],
+                                         None)
 
     def schedule_single_task(self):
         self.scheduler.add_single_task(self.process,
-                               "single task",
-                               0,
-                               kronos.method.threaded,
-                               [],
-                               None)
+                                       "single task",
+                                       0,
+                                       kronos.method.threaded,
+                                       [],
+                                       None)
 
     def process(self):
         if self.queue.qsize() > 0:
             msg = self.queue.get()
-            ok = self.write(msg)
-            if not ok:
+            if not self._write(msg):
                 if self.blockable:
                     self.scheduler.stop()
-                    while not self.write(msg):
-                        print "Rewriting"
+                    while not self._write(msg):
+                        print "Rewriting..."
                     self.reschedule_tasks()
                 else:
                     print "Message [%s] can't be sent" % msg
@@ -59,8 +58,15 @@ class Writer(threading.Thread):
 
     def setup(self):
         """Subclasses should implement."""
-        #TODO: make a setup via decorators?
         pass
+
+    def _write(self, msg):
+        try:
+            return self.write(msg)
+        except Exception, e:
+            print "Can't write"
+            print e
+            return False
 
     def write(self, msg):
         """Subclasses should implement."""
