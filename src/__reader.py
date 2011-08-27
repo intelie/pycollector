@@ -6,7 +6,8 @@ import helpers.kronos as kronos
 
 
 class Reader(threading.Thread):
-    def __init__(self, queue, periodic=True, interval=1):
+    def __init__(self, queue, writer, periodic=True, interval=1):
+        self.writer = writer
         self.periodic = periodic
         self.interval = interval
         self.queue = queue
@@ -42,9 +43,15 @@ class Reader(threading.Thread):
                                        [],
                                        None)
 
+    def __writer_callback(self):
+        """Callback to writer for not periodic tasks"""
+        if not self.writer.periodic:
+            self.writer.process()
+
     def _store(self, msg):
         if self.queue.qsize() < self.queue.maxsize:
             self.queue.put(msg)
+            self.__writer_callback()
         else:
             print "discarding message [%s], full queue" % msg
 

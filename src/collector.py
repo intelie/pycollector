@@ -68,16 +68,16 @@ class Collector:
 
         q = Queue.Queue(maxsize=1024)
 
-        myreader = MyReader(queue=q)
         mywriter = MyWriter(queue=q)
-
-        myreader.start()
-        if self.to_log:
-            self.logger.info("Reader started")
+        myreader = MyReader(queue=q, writer=mywriter)
 
         mywriter.start()
         if self.to_log:
             self.logger.info("Writer started")
+
+        myreader.start()
+        if self.to_log:
+            self.logger.info("Reader started")
 
         if self.to_log:
             self.logger.info("Collector started.")
