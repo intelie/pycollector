@@ -43,6 +43,20 @@ class Writer(threading.Thread):
                                        None)
 
     def process(self):
+        #TODO: this should be a callback!! not "long polling"! cpu consuming task
+        if not self.periodic:
+            while True:
+                while self.queue.qsize > 0:
+                    msg = self.queue.get()
+                    if not self._write(msg):
+                        if self.blockable:
+                            self.scheduler.stop()
+                            while not self._write(msg):
+                                print "Rewriting..."
+                            self.reschedule_tasks()
+                        else:
+                            print "Message [%s] can't be sent" % msg
+
         if self.queue.qsize() > 0:
             msg = self.queue.get()
             if not self._write(msg):

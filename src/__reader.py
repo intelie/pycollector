@@ -41,18 +41,17 @@ class Reader(threading.Thread):
                                        kronos.method.threaded,
                                        [],
                                        None)
-    def store(self, msg):
-        self.queue.put(msg)
 
-    def process(self):
+    def _store(self, msg):
         if self.queue.qsize() < self.queue.maxsize:
-            msg = self._read()
-            if msg:
-                self._store(msg)
-            else:
-                print "discarding message due to an error"
+            self.queue.put(msg)
         else:
             print "discarding message [%s], full queue" % msg
+
+    def process(self):
+        msg = self._read()
+        if not msg and self.periodic:
+            print "discarding message due to an error"
 
     def _read(self):
         try:
@@ -62,12 +61,13 @@ class Reader(threading.Thread):
             print e
             return False
 
-    def _store(self, msg):
+    def store(self, msg):
         try:
-            self.store(msg)
+            self._store(msg)
         except Exception, e:
             print "Can't store in queue"
             print e
+            return False
 
     def setup(self):
         """Subclasses should implement."""
