@@ -28,6 +28,7 @@ class Collector:
                 severity = self.conf.SEVERITY
             except AttributeError:
                 severity = severity_default
+
             self.logger.setLevel(severity)
 
             try:
