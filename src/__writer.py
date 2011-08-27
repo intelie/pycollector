@@ -5,35 +5,55 @@ import helpers.kronos as kronos
 
 
 class Writer(threading.Thread):
-    def __init__(self, queue, periodic=True, interval=1):
+    def __init__(self, queue, blockable=False, periodic=True, interval=1):
         self.queue = queue
         self.periodic = periodic
         self.interval = interval
+        self.blockable = blockable
         self.setup()
+        self.schedule_tasks()
+        threading.Thread.__init__(self)
+
+    def reschedule_tasks(self):
+        self.schedule_tasks()
+        self.scheduler.start()
+
+    def schedule_tasks(self):
         self.scheduler = kronos.ThreadedScheduler()
         if self.periodic:
-            self.scheduler.add_interval_task(self.process,
-                                 "periodic task",
-                                 0,
-                                 self.interval,
-                                 kronos.method.threaded,
-                                 [],
-                                 None)
+            self.schedule_interval_task()
         else:
-            self.scheduler.add_single_task(self.process,
-                                           "single task",
-                                           0,
-                                           kronos.method.threaded,
-                                           [],
-                                           None)
-        threading.Thread.__init__(self)
+            self.schedule_single_task()
+
+    def schedule_interval_task(self):
+        self.scheduler.add_interval_task(self.process,
+                         "periodic task",
+                         0,
+                         self.interval,
+                         kronos.method.threaded,
+                         [],
+                         None)
+
+    def schedule_single_task(self):
+        self.scheduler.add_single_task(self.process,
+                               "single task",
+                               0,
+                               kronos.method.threaded,
+                               [],
+                               None)
 
     def process(self):
         if self.queue.qsize() > 0:
             msg = self.queue.get()
             ok = self.write(msg)
             if not ok:
-                print "Message [%s] can't be sent" % msg
+                if self.blockable:
+                    self.scheduler.stop()
+                    while not self.write(msg):
+                        print "Rewriting"
+                    self.reschedule_tasks()
+                else:
+                    print "Message [%s] can't be sent" % msg
         else:
             print "No messages in the queue"
 
