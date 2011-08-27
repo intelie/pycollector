@@ -47,7 +47,7 @@ class Reader(threading.Thread):
     def process(self):
         if self.queue.qsize() < self.queue.maxsize:
             msg = self._read()
-            if msg != False:
+            if msg:
                 self._store(msg)
             else:
                 print "discarding message due to an error"
