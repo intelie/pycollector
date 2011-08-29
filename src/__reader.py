@@ -59,6 +59,8 @@ class Reader(threading.Thread):
         msg = self._read()
         if not msg and self.periodic:
             print "discarding message due to an error"
+        elif self.periodic:
+            self.store(msg)
 
     def _read(self):
         try:
