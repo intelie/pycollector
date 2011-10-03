@@ -6,7 +6,7 @@ import helpers.kronos as kronos
 
 
 class Reader(threading.Thread):
-    def __init__(self, queue, writer, periodic=True, interval=1):
+    def __init__(self, queue, writer=None, periodic=True, interval=1):
         self.writer = writer
         self.periodic = periodic
         self.interval = interval
@@ -45,7 +45,7 @@ class Reader(threading.Thread):
 
     def __writer_callback(self):
         """Callback to writer for non periodic tasks"""
-        if not self.writer.periodic:
+        if self.writer and not self.writer.periodic:
             self.writer.process()
 
     def _store(self, msg):

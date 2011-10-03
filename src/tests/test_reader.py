@@ -1,8 +1,10 @@
 import unittest
+import time
 import Queue
 
 import sys; sys.path.append('..')
 from __reader import *
+from __writer import *
 
 
 def get_queue():
@@ -14,9 +16,6 @@ def get_queue():
 class TestReader(unittest.TestCase):
     def testPeriodicSchedulingAddingToQueue(self):
         class MyReader(Reader):
-            def setup(self):
-                self.periodic = True
-                self.interval = 1
             def read(self):
                 return "life is beautiful"
 
@@ -24,20 +23,24 @@ class TestReader(unittest.TestCase):
         myreader = MyReader(q)
         myreader.start()
         time.sleep(3)
-        self.assertEqual(q.qsize(), 3)
+        size = q.qsize()
+        self.assertTrue(size >= 3 and size <= 4)
 
     def testSingleSchedulingAddingToQueue(self):
         class MyReader(Reader):
             def setup(self):
                 self.periodic = False
             def read(self):
-                return "love is all you need"
+                while True:
+                    self.store("love is all you need")
+                    time.sleep(1)
 
         q = get_queue()
         myreader = MyReader(q)
         myreader.start()
         time.sleep(3)
-        self.assertEqual(q.qsize(), 1)
+        size = q.qsize()
+        self.assertTrue(size >= 3 and size <= 4)
 
 
 if __name__ == "__main__":
