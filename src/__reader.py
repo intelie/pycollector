@@ -6,9 +6,8 @@ import helpers.kronos as kronos
 
 
 class Reader(threading.Thread):
-    def __init__(self, queue, writer=None, periodic=True, interval=1):
+    def __init__(self, queue, writer=None, interval=None):
         self.writer = writer
-        self.periodic = periodic
         self.interval = interval
         self.queue = queue
         self.setup()
@@ -21,7 +20,7 @@ class Reader(threading.Thread):
 
     def schedule_tasks(self):
         self.scheduler = kronos.ThreadedScheduler()
-        if self.periodic:
+        if self.interval:
             self.schedule_interval_task()
         else:
             self.schedule_single_task()
@@ -45,7 +44,7 @@ class Reader(threading.Thread):
 
     def __writer_callback(self):
         """Callback to writer for non periodic tasks"""
-        if self.writer and not self.writer.periodic:
+        if self.writer and not self.writer.interval:
             self.writer.process()
 
     def _store(self, msg):
@@ -57,9 +56,9 @@ class Reader(threading.Thread):
 
     def process(self):
         msg = self._read()
-        if not msg and self.periodic:
+        if not msg and self.interval:
             print "discarding message due to an error"
-        elif self.periodic:
+        elif self.interval:
             self.store(msg)
 
     def _read(self):

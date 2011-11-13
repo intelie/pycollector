@@ -5,9 +5,8 @@ import helpers.kronos as kronos
 
 
 class Writer(threading.Thread):
-    def __init__(self, queue, blockable=False, periodic=True, interval=1):
+    def __init__(self, queue, blockable=False, interval=None):
         self.queue = queue
-        self.periodic = periodic
         self.interval = interval
         self.blockable = blockable
         self.setup()
@@ -20,7 +19,7 @@ class Writer(threading.Thread):
 
     def schedule_tasks(self):
         self.scheduler = kronos.ThreadedScheduler()
-        if self.periodic:
+        if self.interval:
             self.schedule_interval_task()
 
     def schedule_interval_task(self):
