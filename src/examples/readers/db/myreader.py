@@ -6,7 +6,6 @@ from __reader import *
 
 class MyReader(Reader):
     def setup(self):
-        self.periodic = True
         self.interval = 5
 
         user = "root"

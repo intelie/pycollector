@@ -5,7 +5,6 @@ from __writer import *
 
 class MyWriter(Writer):
     def setup(self):
-        self.periodic = True
         self.interval = 5
         
         login = "cathoderaybot"

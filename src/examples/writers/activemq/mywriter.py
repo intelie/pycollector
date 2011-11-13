@@ -5,9 +5,8 @@ from __writer import *
 from lib import stomp_sender
 
 
-class MyWriter(Writer): #activemqwriter
+class MyWriter(Writer):
     def setup(self):
-        self.periodic = True
         self.interval = 10
 
     def write(self, msg):
