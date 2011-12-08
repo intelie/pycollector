@@ -3,8 +3,12 @@
     Description: This module starts the reader/writer threads
 """
 
-
+import time
+import Queue
 import logging, logging.config
+
+from reader.myreader import MyReader
+from writer.mywriter import MyWriter
 
 
 severity_default = "DEBUG"
@@ -61,11 +65,6 @@ class Collector:
         if self.to_log:
             self.logger.info("Starting collector...")
 
-        import Queue
-
-        from reader.myreader import MyReader
-        from writer.mywriter import MyWriter
-
         q = Queue.Queue(maxsize=1024)
 
         mywriter = MyWriter(queue=q)
@@ -83,4 +82,6 @@ class Collector:
             self.logger.info("Collector started.")
 
         while True:
-            pass
+            processed = mywriter.processed
+            time.sleep(1)
+            print "Messages processed: %s" % str(mywriter.processed - processed)
