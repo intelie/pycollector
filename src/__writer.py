@@ -9,6 +9,7 @@ class Writer(threading.Thread):
         self.queue = queue
         self.interval = interval
         self.blockable = blockable
+        self.processed = 0
         self.setup()
         self.schedule_tasks()
         threading.Thread.__init__(self)
@@ -42,6 +43,8 @@ class Writer(threading.Thread):
                     self.reschedule_tasks()
                 else:
                     print "Message [%s] can't be sent" % msg
+            else:
+                self.processed += 1
         else:
             print "No messages in the queue"
 
