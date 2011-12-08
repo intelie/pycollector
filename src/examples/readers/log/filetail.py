@@ -37,7 +37,8 @@ class Tail(object):
                  seek = 0, #jump to line number
                  min_sleep = 1,
                  sleep_interval = 1,
-                 max_sleep = 60):
+                 max_sleep = 60,
+                 cache_size=128):
         """Initialize a tail monitor.
              path: filename to open
              only_new: By default, the tail monitor will start reading from
@@ -61,6 +62,7 @@ class Tail(object):
         """
 
         # remember path to file in case I need to reopen
+        self.cache_size = cache_size
         self.path = abspath(path)
         self.f = open(self.path,"r")
         self.min_sleep = min_sleep * 1.0
@@ -121,7 +123,7 @@ class Tail(object):
         """
         old_len = len(self.queue)
         line = self.f.readline()
-        while line != "":
+        while line != "" and len(self.queue) < self.cache_size:
             self.queue.append(line)
             line = self.f.readline()
         # how many did we just get?
