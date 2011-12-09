@@ -65,16 +65,16 @@ class Collector:
         if self.to_log:
             self.logger.info("Starting collector...")
 
-        q = Queue.Queue(maxsize=1024)
+        q = Queue.Queue(maxsize=100000)
 
-        mywriter = MyWriter(queue=q)
-        myreader = MyReader(queue=q, writer=mywriter)
+        self.mywriter = MyWriter(queue=q)
+        self.myreader = MyReader(queue=q, writer=self.mywriter)
 
-        mywriter.start()
+        self.mywriter.start()
         if self.to_log:
             self.logger.info("Writer started")
 
-        myreader.start()
+        self.myreader.start()
         if self.to_log:
             self.logger.info("Reader started")
 
@@ -82,6 +82,7 @@ class Collector:
             self.logger.info("Collector started.")
 
         while True:
-            processed = mywriter.processed
+            processed = self.mywriter.processed
             time.sleep(1)
-            print "Messages processed: %s" % str(mywriter.processed - processed)
+            print "Messages processed: %s" % str(self.mywriter.processed - processed)
+

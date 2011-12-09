@@ -18,7 +18,7 @@ __email__ = "ronald at intelie dot com dot br"
 import os
 import optparse
 import subprocess
-import sys; sys.path.append('../conf'); sys.path.append('../src')
+import sys; sys.path.extend(['../conf', '../src'])
 
 from helpers import daemon
 from util import daemon_util
@@ -27,9 +27,9 @@ import daemon_conf
 from collector import Collector
 
 
-DAEMON=False #run as daemon flag
-pidpath_default = "../collectord.pid"
-logging_path_default = "../logs/"
+DAEMON=True
+PIDPATH_DEFAULT="../collectord.pid"
+LOGGING_PATH_DEFAULT="../logs/"
 
 
 def toggle_daemon(option, ospt, value, parser):
@@ -41,7 +41,7 @@ def status(option, opt, value, parser):
     try:
         pidpath = daemon_conf.PID_PATH
     except AttributeError:
-        pidpath = pidpath_default
+        pidpath = PIDPATH_DEFAULT 
     if not pidfile or not os.path.exists(pidfile):
         print "Status: NOT RUNNING."
     else:
@@ -63,7 +63,7 @@ def start(option, opt, value, parser):
         try:
             logging_path = daemon_conf.LOGGING_PATH
         except AttributeError:
-            logging_path = logging_path_default
+            logging_path = LOGGING_PATH_DEFAULT
 
         if not daemon_util.dir_exists(logging_path): exit(-1)
         c = Collector(daemon_conf, to_log=True)
@@ -76,7 +76,7 @@ def start(option, opt, value, parser):
         try:
             pidpath = daemon_conf.PID_PATH
         except AttributeError:
-            pidpath = pidpath_default
+            pidpath = PIDPATH_DEFAULT
 
         daemon_util.write_pid(pidpath)
         c.start()
