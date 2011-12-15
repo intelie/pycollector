@@ -7,6 +7,8 @@ import time
 import Queue
 import logging, logging.config
 
+from helpers import inspect_shell
+
 from reader.myreader import MyReader
 from writer.mywriter import MyWriter
 
