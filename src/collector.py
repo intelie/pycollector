@@ -13,10 +13,10 @@ from reader.myreader import MyReader
 from writer.mywriter import MyWriter
 
 
-severity_default = "DEBUG"
-logging_path_default = "../logs/"
-rotating_default = "midnight"
-formatter_default = "%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s)] %(levelname)s - %(message)s"
+SEVERITY_DEFAULT = "DEBUG"
+LOGGING_PATH_DEFAULT = "../logs/"
+ROTATING_DEFAULT = "midnight"
+FORMATTER_DEFAULT = "%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s)] %(levelname)s - %(message)s"
 
 
 class Collector:
@@ -33,21 +33,21 @@ class Collector:
             try:
                 severity = self.conf.SEVERITY
             except AttributeError:
-                severity = severity_default
+                severity = SEVERITY_DEFAULT
 
             self.logger.setLevel(severity)
 
             try:
                 logging_path = self.conf.LOGGING_PATH
             except AttributeError:
-                logging_path = logging_path_default
+                ging_path = LOGGING_PATH_DEFAULT
 
             filename = logging_path + 'collector.log'
 
             try:
                 rotating = self.conf.ROTATING
             except AttributeError:
-                rotating = rotating_default
+                rotating = ROTATING_DEFAULT
 
             log_handler = logging.handlers.TimedRotatingFileHandler(filename, 
                                                                     when=rotating)
@@ -55,7 +55,7 @@ class Collector:
             try:
                 formatter = self.conf.FORMATTER
             except AttributeError:
-                formatter = formatter_default
+                formatter = FORMATTER_DEFAULT
 
             formatter = logging.Formatter(formatter)
             log_handler.setFormatter(formatter)
