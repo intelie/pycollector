@@ -3,12 +3,15 @@
     Description: Collector configuration file.
 """
 
-#PID SETTINGS-----------------------------------------------
+#PID SETTINGS
+#------------
 
 #PID_PATH: LogCollector pid path/filename
 #PID_PATH="../collector.pid"
 
-#APPLICATION LOG SETTINGS-----------------------------------
+
+#APPLICATION LOG SETTINGS
+#------------------------
 
 #LOGGING_PATH: sets where the logs will be located.
 #LOGGING_PATH="../logs/"
