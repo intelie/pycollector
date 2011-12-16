@@ -40,7 +40,7 @@ class Collector:
             try:
                 logging_path = self.conf.LOGGING_PATH
             except AttributeError:
-                ging_path = LOGGING_PATH_DEFAULT
+                logging_path = LOGGING_PATH_DEFAULT
 
             filename = logging_path + 'collector.log'
 
