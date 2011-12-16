@@ -4,7 +4,7 @@ conf = [{
         'user' : 'root',
         'passwd' : '',
         'host' : 'localhost',
-        'database' : 'test',
+        'database' : 'webradar',
         'connection-string' : 'mysql+mysqldb://%s:%s@%s/%s',
 
         'query' : 'select username, password from user',

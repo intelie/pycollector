@@ -20,8 +20,8 @@ FORMATTER_DEFAULT = "%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s
 
 
 class Collector:
-    def __init__(self, conf, to_log=False):
-        self.conf = conf
+    def __init__(self, log_conf, to_log=False):
+        self.log_conf = log_conf
         self.to_log = to_log
         if to_log: 
             self.set_logging()
@@ -31,21 +31,20 @@ class Collector:
         try:
             self.logger = logging.getLogger()
             try:
-                severity = self.conf.SEVERITY
+                severity = self.log_conf.SEVERITY
             except AttributeError:
                 severity = SEVERITY_DEFAULT
 
             self.logger.setLevel(severity)
 
             try:
-                logging_path = self.conf.LOGGING_PATH
+                logging_path = self.log_conf.LOGGING_PATH
             except AttributeError:
                 logging_path = LOGGING_PATH_DEFAULT
-
             filename = logging_path + 'collector.log'
 
             try:
-                rotating = self.conf.ROTATING
+                rotating = self.log_conf.ROTATING
             except AttributeError:
                 rotating = ROTATING_DEFAULT
 
@@ -53,7 +52,7 @@ class Collector:
                                                                     when=rotating)
 
             try:
-                formatter = self.conf.FORMATTER
+                formatter = self.log_conf.FORMATTER
             except AttributeError:
                 formatter = FORMATTER_DEFAULT
 
