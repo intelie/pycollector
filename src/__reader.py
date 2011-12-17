@@ -7,6 +7,10 @@ import helpers.kronos as kronos
 
 class Reader(threading.Thread):
     def __init__(self, queue, conf=None, writer=None, interval=None):
+        """queue: stores read messages
+           conf: aditional configurations
+           writer: if the writer is async, you should pass an instance
+           interval: period of reads"""
         self.queue = queue
         self.interval = interval
         self.writer = writer
