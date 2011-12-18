@@ -66,12 +66,12 @@ class Collector:
     def prepare_readers_writers(self):
         self.pairs = []
         for pair in self.conf:
-            queue = Queue.Queue(maxsize = 1000)
+            queue = Queue.Queue(maxsize = 100000)
             
             writer_conf = pair['writer']
             writer_type = writer_conf['type'] 
             writer_type = rwtypes.get_writer_type(writer_type)
-            exec('import %s' % (writer_type['module']))
+            exec('import %s' % writer_type['module'])
             exec('writer_class = %s.%s' % (writer_type['module'], writer_type['class']))
             writer = writer_class(queue, writer_conf)
 
@@ -79,19 +79,21 @@ class Collector:
             reader_conf = pair['reader']
             reader_type = reader_conf['type']
             reader_type = rwtypes.get_reader_type(reader_type)
-            exec('import %s' % (reader_type['module']))
+            exec('import %s' % reader_type['module'])
             exec('reader_class = %s.%s' % (reader_type['module'], reader_type['class']))
-            reader = reader_class(queue, reader_conf)
 
+            if 'async' in writer_conf:
+                reader = reader_class(queue, reader_conf, writer)
+            else:
+                reader = reader_class(queue, reader_conf)
 
             self.pairs.append((writer, reader))
 
 
     def start(self):
-        for (w, r) in self.pairs:
-            w.start()
-            r.start()
-
+        for (writer, reader) in self.pairs:
+            writer.start()
+            reader.start()
 
         while True:
             pass

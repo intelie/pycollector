@@ -19,8 +19,8 @@ conf:
 - reader:
     spec: webradar
     interval: 5
-    query: select username, password from user
-    columns: [username, password]
+    query: select username from user
+    columns: [username,] #pay attention to the trailing comma
   writer: 
     type: activemq
     async: True

@@ -78,17 +78,13 @@ class Reader(threading.Thread):
            It is called in the end of each interval 
            in the case of a periodic task.
            Shouldn't be called by subclasses"""
-        msg = self._read()
-        if not msg:
-            print "discarding message due to an error"
-        elif msg and self.interval:
-            self.store(msg)
+        self._read()
 
     def _read(self):
         """Internal method that calls read() method. 
            Shouldn't be called by subclasses."""
         try:
-            return self.read()
+            self.read()
         except Exception, e:
             print "Can't read"
             print e
@@ -100,7 +96,7 @@ class Reader(threading.Thread):
         try:
             self._store(msg)
         except Exception, e:
-            print "Can't store in queue"
+            print "Can't store in queue, message %s" % msg
             print e
             return False
 
