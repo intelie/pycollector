@@ -22,5 +22,6 @@ class DBReader(Reader):
             return False
         else:
             for datum in data:
-                self.store(datum)
+                to_send = { column : datum[i] for i, column in enumerate(self.columns)}
+                self.store(to_send)
         return True

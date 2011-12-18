@@ -86,9 +86,7 @@ class Reader(threading.Thread):
         try:
             self.read()
         except Exception, e:
-            print "Can't read"
             print e
-            return False
 
     def store(self, msg):
         """Stores a read message. 
