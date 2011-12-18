@@ -6,18 +6,33 @@ import helpers.kronos as kronos
 
 
 class Reader(threading.Thread):
-    def __init__(self, queue, conf=None, writer=None, interval=None):
+    def __init__(self, queue, conf={}, writer=None, interval=None):
         """queue: stores read messages
-           conf: aditional configurations
+           conf: additional configurations
            writer: if the writer is async, you should pass an instance
            interval: period of reads"""
-        self.queue = queue
+
         self.interval = interval
+        if conf:
+            self.set_conf(conf)
+        self.queue = queue
         self.writer = writer
         self.setup()
 
         self.schedule_tasks()
         threading.Thread.__init__(self)
+
+    def set_conf(self, conf):
+        """Turns configuration properties 
+           into instance properties."""
+        try:
+            for item in conf:
+                if isinstance(conf[item], str):
+                    exec("self.%s = '%s'" % (item, conf[item]))
+                else:
+                    exec("self.%s = %s" % (item, conf[item]))
+        except Exception, e:
+            print "Invalid configuration item: %s " % item
 
     def schedule_tasks(self):
         self.scheduler = kronos.ThreadedScheduler()

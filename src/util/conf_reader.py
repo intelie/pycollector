@@ -2,11 +2,10 @@ import yaml
 
 #todo: refactor! experiment
 
-def read_confs(file_path='../../conf/conf.yaml'):
+def read_conf(file_path='../../conf/conf.yaml'):
     f = open(file_path, 'r+')
-    return yaml.load(f.read())
-
-def include_specs(file_conf):
+    file_conf = yaml.load(f.read())
+    
     conf = file_conf['conf']
     specs = file_conf['specs']
 
@@ -31,4 +30,4 @@ def include_specs(file_conf):
     return new_conf
 
 if __name__ == '__main__':
-    print include_specs(read_confs())
+    print read_conf()

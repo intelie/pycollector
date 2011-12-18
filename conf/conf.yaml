@@ -5,7 +5,7 @@ specs:
     host: localhost
     user: root
     passwd: '' 
-    connection-string: 'mysql+mysqldb://%s:%s@%s/%s' 
+    connection: 'mysql+mysqldb://%s:%s@%s/%s' 
 
 conf:
 - reader:
@@ -15,6 +15,7 @@ conf:
     columns: [username, password]
   writer: 
     type: activemq
+    async: True
 - reader:
     spec: webradar
     interval: 5
@@ -22,3 +23,4 @@ conf:
     columns: [username, password]
   writer: 
     type: activemq
+    async: True

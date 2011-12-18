@@ -6,14 +6,34 @@ import helpers.kronos as kronos
 
 
 class Writer(threading.Thread):
-    def __init__(self, queue, blockable=False, interval=None):
+    def __init__(self, queue, conf={}, blockable=False, interval=None):
+        """queue: source of messages to write somewhere
+           conf: additional configurations
+           blockable: stops if a message were not delivered
+           interval: interval to read from queue"""
+
         self.queue = queue
         self.interval = interval
         self.blockable = blockable
         self.processed = 0
+        if conf:
+            self.set_conf(conf)
         self.setup()
         self.schedule_tasks()
         threading.Thread.__init__(self)
+
+    def set_conf(self, conf):
+        """Turns configuration properties
+            into instance properties."""
+        try:
+            for item in conf:
+                if instance(conf[item], str):
+                    exec("self.%s = '%s'" % item, conf[item])
+                else:
+                    exec("self.%s = %s" % (item, conf[item]))
+        except Exception, e:
+            print "Invalid configuration item: %s" % item
+
 
     def reschedule_tasks(self):
         self.schedule_tasks()
@@ -34,6 +54,13 @@ class Writer(threading.Thread):
                                          None)
 
     def process(self):
+        """Method called to process (write) a message.
+            It is called in the end of each interval 
+            in the case of a periodic task.
+            It it's a async writer it is called by a Reader as
+            a callback.
+            So, it may be called by subclasses."""
+
         if self.queue.qsize() > 0:
             msg = self.queue.get()
             if not self._write(msg):
@@ -54,6 +81,8 @@ class Writer(threading.Thread):
         pass
 
     def _write(self, msg):
+        """Method that calls write method defined by subclasses.
+        Shouldn't be called by subclasses."""
         try:
             return self.write(msg)
         except Exception, e:
@@ -66,5 +95,6 @@ class Writer(threading.Thread):
         pass
 
     def run(self):
+        """Starts the writer"""
         self.scheduler.start()
 
