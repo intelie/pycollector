@@ -15,5 +15,11 @@ class DBReader(Reader):
         self.session = Session()
 
     def read(self):
-        return self.session.query(*self.columns).from_statement(self.query).all()
-
+        data = self.session.query(*self.columns).from_statement(self.query).all()
+        print data
+        if not data:
+            print "No data for query: '%s'" % self.query
+            return False
+        else:
+            for datum in data:
+                self.store(datum)
