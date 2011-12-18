@@ -1,5 +1,5 @@
 specs:
-  webradar:
+  webradardb:
     type: db 
     database: webradar 
     host: localhost
@@ -7,20 +7,26 @@ specs:
     passwd: '' 
     connection: 'mysql+mysqldb://%s:%s@%s/%s' 
 
+  activemq:
+    type: activemq
+    host: localhost
+    port: 61613
+    destination: '/queue/events'
+
 conf:
 - reader:
-    spec: webradar
+    spec: webradardb
     interval: 1
     query: select username, password from user
     columns: [username, password]
   writer: 
-    type: activemq
+    spec: activemq
     async: True
 - reader:
-    spec: webradar
+    spec: webradardb
     interval: 5
     query: select username from user
-    columns: [username,] #pay attention to the trailing comma
+    columns: [username]
   writer: 
-    type: activemq
+    spec: activemq
     async: True
