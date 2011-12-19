@@ -17,6 +17,7 @@ class Writer(threading.Thread):
         self.retry_interval = self.interval or 10 
         self.blockable = blockable
         self.processed = 0
+        self.blocked = False
         if conf:
             self.set_conf(conf)
         self.setup()
@@ -68,9 +69,11 @@ class Writer(threading.Thread):
             if not self._write(msg):
                 if self.blockable:
                     self.scheduler.stop()
+                    self.blocked = True
                     while not self._write(msg):
                         print "Rewriting..."
                         time.sleep(self.retry_interval)
+                    self.blocked = False
                     self.reschedule_tasks()
                 else:
                     print "Message [%s] can't be written" % msg

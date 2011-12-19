@@ -6,9 +6,7 @@ from __writer import *
 
 
 def get_queue():
-    q = Queue.Queue()
-    q.maxsize = 1024
-    return q
+    return Queue.Queue(maxsize=1024)
 
 
 class TestWriter(unittest.TestCase):
@@ -26,8 +24,6 @@ class TestWriter(unittest.TestCase):
         mywriter.start()
         time.sleep(2)
         self.assertEqual(0, q.qsize())
-
-    #TODO: test callback from reader.
 
     def test_writer_processed_messages(self):
         class MyWriter(Writer):

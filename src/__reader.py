@@ -13,6 +13,7 @@ class Reader(threading.Thread):
            interval: period of reads"""
 
         self.interval = interval
+        self.processed = 0
         if conf:
             self.set_conf(conf)
         self.queue = queue
@@ -69,6 +70,7 @@ class Reader(threading.Thread):
            Shouldn't be called by subclasses."""
         if self.queue.qsize() < self.queue.maxsize:
             self.queue.put(msg)
+            self.processed += 1
             self._writer_callback()
         else:
             print "discarding message [%s], full queue" % msg
