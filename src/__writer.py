@@ -73,6 +73,7 @@ class Writer(threading.Thread):
                 else:
                     print "Message [%s] can't be sent" % msg
             else:
+                print "Message %s written" % msg
                 self.processed += 1
         else:
             print "No messages in the queue"
