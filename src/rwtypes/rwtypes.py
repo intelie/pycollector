@@ -5,6 +5,10 @@ reader_types = {
     'db' : {
         'module' : 'readers.db.DBReader',
         'class' : 'DBReader'
+        },
+    'log' : {
+        'module' : 'readers.log.LogReader',
+        'class' : 'LogReader'        
         }
 }
 
