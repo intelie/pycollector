@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from __reader import *
+from __reader import Reader
 
 
 class DBReader(Reader):

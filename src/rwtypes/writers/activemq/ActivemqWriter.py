@@ -3,7 +3,7 @@ import json
 
 
 from lib import stomp_sender
-from __writer import *
+from __writer import Writer
 
 
 class ActivemqWriter(Writer):
