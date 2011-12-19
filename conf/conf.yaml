@@ -38,7 +38,8 @@ specs:
 
   log:
     type: log
-    delimiter: '\t'
+    delimiter: '\t' 
+    columns : [col1, col2]
 
 conf:
 - reader:
