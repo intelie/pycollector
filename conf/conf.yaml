@@ -15,7 +15,7 @@ specs:
 conf:
 - reader:
     spec: webradardb
-    interval: 1
+    interval: 10
     query: select username, password from user
     columns: [username, password]
   writer: 

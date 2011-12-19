@@ -16,4 +16,5 @@ class ActivemqWriter(Writer):
             stomp_sender.send_message_via_stomp([(self.host, self.port)], headers, body)
             return True
         except Exception, e:
+            print e
             return False
