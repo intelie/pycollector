@@ -78,13 +78,14 @@ class Reader(threading.Thread):
            It is called in the end of each interval 
            in the case of a periodic task.
            Shouldn't be called by subclasses"""
-        self._read()
+        if not self._read():
+            print "Message can't be read"
 
     def _read(self):
         """Internal method that calls read() method. 
            Shouldn't be called by subclasses."""
         try:
-            self.read()
+            return self.read()
         except Exception, e:
             print e
 

@@ -15,13 +15,16 @@ class DBReader(Reader):
         self.session = Session()
 
     def read(self):
-        data = self.session.query(*self.columns).from_statement(self.query).all()
+        try:
+            data = self.session.query(*self.columns).from_statement(self.query).all()
 
-        if not data:
-            print "No data for query: '%s'" % self.query
+            if not data:
+                print "No data for query: '%s'" % self.query
+            else:
+                for datum in data:
+                    to_send = { column : datum[i] for i, column in enumerate(self.columns)}
+                    self.store(to_send)
+            return True
+        except Exception, e:
+            print e
             return False
-        else:
-            for datum in data:
-                to_send = { column : datum[i] for i, column in enumerate(self.columns)}
-                self.store(to_send)
-        return True

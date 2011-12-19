@@ -71,7 +71,7 @@ class Writer(threading.Thread):
                         print "Rewriting..."
                     self.reschedule_tasks()
                 else:
-                    print "Message [%s] can't be sent" % msg
+                    print "Message [%s] can't be written" % msg
             else:
                 print "Message %s written" % msg
                 self.processed += 1
