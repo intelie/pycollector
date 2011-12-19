@@ -39,7 +39,6 @@ specs:
   log:
     type: log
     delimiter: '\t'
-    columns: []
 
 conf:
 - reader:
@@ -52,6 +51,8 @@ conf:
 
 - reader:
     spec: log
-    log_path: '/tmp/http.log'
+    log_path: '/tmp/test.log'
   writer:
     spec: activemq
+    blockable: True
+    retry_interval: 5

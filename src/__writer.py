@@ -6,7 +6,7 @@ import helpers.kronos as kronos
 
 
 class Writer(threading.Thread):
-    def __init__(self, queue, conf={}, blockable=False, interval=None):
+    def __init__(self, queue, conf={}, blockable=False, interval=None, retry_interval=0):
         """queue: source of messages to write somewhere
            conf: additional configurations
            blockable: stops if a message were not delivered
@@ -14,6 +14,7 @@ class Writer(threading.Thread):
 
         self.queue = queue
         self.interval = interval
+        self.retry_interval = self.interval or 10 
         self.blockable = blockable
         self.processed = 0
         if conf:
@@ -69,6 +70,7 @@ class Writer(threading.Thread):
                     self.scheduler.stop()
                     while not self._write(msg):
                         print "Rewriting..."
+                        time.sleep(self.retry_interval)
                     self.reschedule_tasks()
                 else:
                     print "Message [%s] can't be written" % msg
