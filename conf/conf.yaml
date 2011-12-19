@@ -6,7 +6,6 @@ specs:
     user: root
     passwd: '' 
     connection: 'mysql+mysqldb://%s:%s@%s/%s' 
-
   activemq:
     type: activemq
     host: localhost

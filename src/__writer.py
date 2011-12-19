@@ -27,12 +27,13 @@ class Writer(threading.Thread):
             into instance properties."""
         try:
             for item in conf:
-                if instance(conf[item], str):
-                    exec("self.%s = '%s'" % item, conf[item])
+                if isinstance(conf[item], str):
+                    exec("self.%s = '%s'" % (item, conf[item]))
                 else:
                     exec("self.%s = %s" % (item, conf[item]))
         except Exception, e:
             print "Invalid configuration item: %s" % item
+            print e
 
 
     def reschedule_tasks(self):
