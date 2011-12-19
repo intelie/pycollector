@@ -1,3 +1,25 @@
+# File: conf.yaml
+# Description: This file is read by pycollector to
+#              configure readers/writers.
+#              This file is supposed to be divided
+#              in two sections: specs, conf
+#
+# specs: map names to specific configurations
+#        Everything defined inside a spec is replaced where
+#        it is being used (see conf section).
+#
+# conf:  List of pairs (reader, writer)
+#        Since it is natural to have same specifications for readers/writers
+#        it is encouraged to use specs.
+#
+#        A reader/writer must have a type.
+#        A reader/writer may present an interval (in seconds) property.
+#        If a writer has a key 'async' it will be called whenever a
+#        message is read.
+#
+#
+
+
 specs:
   lognitdb:
     type: db 
@@ -14,6 +36,11 @@ specs:
     destination: '/queue/events'
     async: True
 
+  log:
+    type: log
+    delimiter: '\t'
+    columns: []
+
 conf:
 - reader:
     spec: lognitdb
@@ -24,7 +51,7 @@ conf:
     spec: activemq
 
 - reader:
-    type: log
+    spec: log
     log_path: '/tmp/http.log'
   writer:
     spec: activemq
