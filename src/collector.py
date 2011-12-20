@@ -106,3 +106,6 @@ class Collector:
         while True:
             pass
 
+if __name__ == '__main__':
+    c = Collector()
+    c.start()
