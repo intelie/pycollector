@@ -2,3 +2,5 @@
 logs/**
 *.pid
 *.swp
+*.pyc
+.svn/**
