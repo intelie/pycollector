@@ -20,7 +20,7 @@ FORMATTER_DEFAULT = "%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s
 
 
 class Collector:
-    def __init__(self, daemon_conf, to_log=False):
+    def __init__(self, daemon_conf=None, to_log=False):
         self.daemon_conf = daemon_conf
         self.to_log = to_log
         self.conf = conf_reader.read_conf('../conf/conf.yaml')
