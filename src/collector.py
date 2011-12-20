@@ -65,10 +65,18 @@ class Collector:
 
     def prepare_readers_writers(self):
         self.pairs = []
+        queue_maxsize = 100000
         for pair in self.conf:
-            queue = Queue.Queue(maxsize = 100000)
+
             
+            reader_conf = pair['reader']
             writer_conf = pair['writer']
+
+            if 'queue_maxsize' in reader_conf:
+                queue_maxsize = reader_conf['queue_maxsize']
+
+            queue = Queue.Queue(maxsize = queue_maxsize)
+
             writer_type = writer_conf['type'] 
             writer_type = rwtypes.get_writer_type(writer_type)
             exec('import %s' % writer_type['module'])

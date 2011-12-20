@@ -43,6 +43,7 @@ specs:
 
 conf:
 - reader:
+    queue_maxsize: 10
     spec: lognitdb
     interval: 5
     query: select display_name, email from web_user
@@ -51,6 +52,7 @@ conf:
     spec: activemq
 
 - reader:
+    queue_maxsize: 10
     spec: log
     log_path: '/tmp/test.log'
   writer:
