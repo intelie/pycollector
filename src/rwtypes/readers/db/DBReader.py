@@ -1,5 +1,5 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from third.sqlalchemy import create_engine
+from third.sqlalchemy.orm import sessionmaker
 
 from __reader import Reader
 

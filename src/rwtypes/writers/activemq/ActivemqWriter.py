@@ -2,7 +2,7 @@ import time
 import json
 
 
-from lib import stomp_sender
+from third.stomp import stomp_sender
 from __writer import Writer
 
 

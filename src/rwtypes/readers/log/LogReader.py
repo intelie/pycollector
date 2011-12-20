@@ -1,4 +1,4 @@
-import filetail
+from third import filetail
 
 from __reader import Reader
 
