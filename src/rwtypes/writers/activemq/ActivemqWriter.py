@@ -11,7 +11,7 @@ class ActivemqWriter(Writer):
     def write(self, msg):
         try:
             headers = {'destination' : self.destination,
-                       'eventtype' : self.eventtype
+                       'eventtype' : self.eventtype,
                        'timestamp' : int(time.time()*1000)}
 
             for item in msg:
