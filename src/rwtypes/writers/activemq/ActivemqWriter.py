@@ -17,6 +17,8 @@ class ActivemqWriter(Writer):
             for item in msg:
                 if isinstance(msg[item], datetime.datetime):
                     msg[item] = msg[item].isoformat()
+                if msg[item] == None:
+                    msg[item] = 'NULL'
 
             body = json.dumps(msg)
 
