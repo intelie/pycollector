@@ -11,14 +11,23 @@ class ActivemqWriter(Writer):
     def write(self, msg):
         try:
             headers = {'destination' : self.destination,
-                       'eventtype' : self.eventtype,
                        'timestamp' : int(time.time()*1000)}
+
+            if isinstance(msg, str):
+                msg = {'msg' : msg}
+
+            if hasattr(self, 'eventtype'):
+                headers.update({'eventtype' : self.eventtype})
 
             for item in msg:
                 if isinstance(msg[item], datetime.datetime):
                     msg[item] = msg[item].isoformat()
-                if msg[item] == None:
+                elif msg[item] == None:
                     msg[item] = 'NULL'
+
+            if hasattr(self, 'additional_properties'):
+                for prop in self.additional_properties:
+                    msg.update({prop : self.additional_properties[prop]})
 
             body = json.dumps(msg)
 
@@ -27,3 +36,4 @@ class ActivemqWriter(Writer):
         except Exception, e:
             print e
             return False
+

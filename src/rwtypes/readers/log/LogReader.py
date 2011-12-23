@@ -25,4 +25,6 @@ class LogReader(Reader):
 
                 #XXX: if we have just a delimiter, save the list
                 self.store(values)
+                continue
 
+            self.store(line)
