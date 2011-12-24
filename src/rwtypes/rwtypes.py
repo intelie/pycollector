@@ -9,6 +9,10 @@ reader_types = {
     'log' : {
         'module' : 'readers.log.LogReader',
         'class' : 'LogReader'        
+        },
+    'stdin' : {
+        'module' : 'readers.stdin.StdinReader',
+        'class' : 'StdinReader'
         }
 }
 
