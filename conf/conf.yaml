@@ -39,7 +39,6 @@ specs:
     passwd: ''
     connection: 'mssql+pyodbc://%s:%s@%s/%s'
 
-
   activemq:
     type: activemq
     host: localhost
@@ -52,21 +51,34 @@ specs:
     delimiter: '\t' 
     columns : [col1, col2]
 
+  gtalkbot:
+    type: gtalk
+    login: montypythonfoo
+    passwd: m0ntypyth0nf00
+    destiny: raios.catodicos@gmail.com
+
 conf:
-- reader:
-    queue_maxsize: 10
-    spec: lognitdb
-    interval: 5
-    query: select display_name, email from web_user
-    columns: [display_name, email]
-  writer: 
-    spec: activemq
+#- reader:
+#    queue_maxsize: 10
+#    spec: lognitdb
+#    interval: 5
+#    query: select display_name, email from web_user
+#    columns: [display_name, email]
+#  writer: 
+#    spec: activemq
+#
+#- reader:
+#    queue_maxsize: 10
+#    spec: log
+#    log_path: '/tmp/test.log'
+#  writer:
+#    spec: activemq
+#    blockable: True
+#    retry_interval: 5
 
 - reader:
-    queue_maxsize: 10
-    spec: log
+    type: log
     log_path: '/tmp/test.log'
   writer:
-    spec: activemq
-    blockable: True
-    retry_interval: 5
+    spec: gtalkbot
+    async: True

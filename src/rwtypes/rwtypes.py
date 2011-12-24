@@ -17,6 +17,10 @@ writer_types = {
     'activemq' : {
         'module' : 'writers.activemq.ActivemqWriter',
         'class' : 'ActivemqWriter'
+        },
+    'gtalk' : {
+        'module' : 'writers.gtalk.GtalkWriter',
+        'class' : 'GtalkWriter'
         }
 }
 

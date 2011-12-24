@@ -1,0 +1,24 @@
+import xmpp
+
+from __writer import *
+
+
+class GtalkWriter(Writer):
+    def setup(self):
+        self.con = xmpp.Client('gmail.com')
+        self.con.connect(server=('talk.google.com', 5222))
+        if self.login and self.passwd:
+            self.con.auth(self.login, self.passwd, "botty")
+            self.con.sendInitPresence()
+        else:
+            print 'Provide a user/pass in conf file'
+
+    def write(self, msg):
+        if self.destiny:
+            m = xmpp.Message(self.destiny, msg)
+        else:
+            print 'Provide a destiny in conf file'
+        m.setAttr('type', 'chat')
+        self.con.send(m) 
+        return True
+
