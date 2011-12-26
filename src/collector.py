@@ -67,8 +67,6 @@ class Collector:
         self.pairs = []
         queue_maxsize = 100000
         for pair in self.conf:
-
-            
             reader_conf = pair['reader']
             writer_conf = pair['writer']
 
