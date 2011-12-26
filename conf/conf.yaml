@@ -67,7 +67,7 @@ conf:
     type: stdin
   writer:
     type: stdout
-
+    async: True
 
 #Reading from a database and writing to activemq
 #- reader:
@@ -93,7 +93,7 @@ conf:
 #- reader:
 #    queue_maxsize: 10
 #    spec: log
-#    log_path: '/tmp/test.log'
+#    logpath: '/tmp/test.log'
 #  writer:
 #    type: activemq
 #    host: demo.intelie.net

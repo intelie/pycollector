@@ -5,7 +5,7 @@ from __reader import Reader
 
 class LogReader(Reader):
     def setup(self):
-        self.tail = filetail.Tail(self.log_path, max_sleep=1)
+        self.tail = filetail.Tail(self.logpath, max_sleep=1)
         
     def read(self):
         while True:
