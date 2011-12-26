@@ -25,7 +25,12 @@ writer_types = {
     'gtalk' : {
         'module' : 'writers.gtalk.GtalkWriter',
         'class' : 'GtalkWriter'
-        }
+        },
+    'stdout' : {
+        'module' : 'writers.stdout.StdoutWriter',
+        'class' : 'StdoutWriter'
+    }
+
 }
 
 
