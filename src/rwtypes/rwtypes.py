@@ -29,8 +29,11 @@ writer_types = {
     'stdout' : {
         'module' : 'writers.stdout.StdoutWriter',
         'class' : 'StdoutWriter'
+    },
+    'file' : {
+        'module' : 'writers.file.FileWriter',
+        'class' : 'FileWriter' 
     }
-
 }
 
 
