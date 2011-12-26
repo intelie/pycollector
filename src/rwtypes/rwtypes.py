@@ -37,6 +37,11 @@ writer_types = {
 def get_reader_type(type):
     return reader_types[type]
 
+def get_reader_keys():
+    return reader_types.keys()
+
+def get_writer_keys():
+    return writer_types.keys()
 
 def get_writer_type(type):
     return writer_types[type]
