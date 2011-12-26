@@ -29,12 +29,15 @@ There are two main components of any collecting process:
 - Writers
   Piece of code that takes a read message and delivers to the destiny.
 
+A pair reader/writer is called collecting unit.
 Readers and writers may make any transformation to the original data.
+
 
 ----------------
 | Architecture |
 ----------------
-
+ 
+Collecting unit architecture:
 
  1. ask source________                         _________   5. write destiny
     <-------|        |                         |        |------------------>
@@ -42,11 +45,26 @@ Readers and writers may make any transformation to the original data.
     ------->|________|                    +--->|________|
    2. answer    |                         |
                 |            __________   | 4. get stored msgs
-                +----------> | internal|--+
-                 3.store     |  queue  |
-                             |_________|
+                +---------->|          |--+
+                 3.store    | internal |
+                            |  queue   |
+                            |__________|
 
- 
+It is possible to configure as many collecting units as needed.
+
+
+--------------
+| How to use | 
+--------------
+
+There are two ways to use it.
+ - configuring
+   you may configure a predefined reader/writer for you needs.
+
+ - development
+   you may adapt an existing reader/writer or code a new one.
+
+
 ----------------
 | Current step |
 ---------------- 
