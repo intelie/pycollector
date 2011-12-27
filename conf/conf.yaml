@@ -58,7 +58,7 @@ specs:
 #    type: gtalk
 #    login: montypythonfoo
 #    passwd: m0ntypyth0nf00
-#    destiny: raios.catodicos@gmail.com
+#    destination: raios.catodicos@gmail.com
 
 
 conf:
@@ -116,4 +116,4 @@ conf:
 #    type: gtalk
 #    login: montypythonfoo
 #    passwd: m0ntypyth0nf00
-#    destiny: raios.catodicos@gmail.com
+#    destination: raios.catodicos@gmail.com

@@ -14,10 +14,10 @@ class GtalkWriter(Writer):
             print 'Provide a user/pass in conf file'
 
     def write(self, msg):
-        if self.destiny:
-            m = xmpp.Message(self.destiny, msg)
+        if self.destination:
+            m = xmpp.Message(self.destination, msg)
         else:
-            print 'Provide a destiny in conf file'
+            print 'Provide a destination in conf file'
         m.setAttr('type', 'chat')
         self.con.send(m) 
         return True

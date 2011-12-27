@@ -27,7 +27,7 @@ There are two main components of any collecting process:
   data and prepare it to be written somewhere else.
 
 - Writers
-  Piece of code that takes a read message and delivers to the destiny.
+  Piece of code that takes a read message and delivers to the destination.
 
 A pair reader/writer is called collecting unit.
 Readers and writers may make any transformation to the original data.
@@ -39,7 +39,7 @@ Readers and writers may make any transformation to the original data.
  
 Collecting unit architecture:
 
- 1. ask source________                         _________   5. write destiny
+ 1. ask source________                         _________   5. write destination
     <-------|        |                         |        |------------------>
             | Reader |                         | Writer |
     ------->|________|                    +--->|________|
