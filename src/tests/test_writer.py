@@ -1,8 +1,9 @@
+import time
 import unittest
 import Queue
 
 import sys; sys.path.append('..')
-from __writer import *
+from __writer import Writer
 
 
 def get_queue():

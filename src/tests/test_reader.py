@@ -3,8 +3,8 @@ import time
 import Queue
 
 import sys; sys.path.append('..')
-from __reader import *
-from __writer import *
+from __reader import Reader
+from __writer import Writer
 
 
 def get_queue():
@@ -32,7 +32,7 @@ class TestReader(unittest.TestCase):
 
     def testSingleSchedulingAddingToQueue(self):
         class MyReader(Reader):
-            def read(self):
+           def read(self):
                 while True:
                     self.store("love is all you need")
                     time.sleep(1)
