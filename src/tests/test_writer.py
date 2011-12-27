@@ -26,7 +26,7 @@ class TestWriter(unittest.TestCase):
         time.sleep(2)
         self.assertEqual(0, q.qsize())
 
-    def test_writer_processed_messages(self):
+    def test_processed_messages_counting(self):
         class MyWriter(Writer):
             def write(self, msg):
                 return True
