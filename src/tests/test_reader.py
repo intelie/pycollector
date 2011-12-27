@@ -20,7 +20,7 @@ class TestReader(unittest.TestCase):
                 self.interval = 1
 
             def read(self):
-                self.store("life is beautiful")
+                self.store(msg="life is beautiful")
                 return True
 
         q = get_queue()
@@ -32,17 +32,19 @@ class TestReader(unittest.TestCase):
 
     def testSingleSchedulingAddingToQueue(self):
         class MyReader(Reader):
-           def read(self):
-                while True:
-                    self.store("love is all you need")
-                    time.sleep(1)
+            def read(self):
+                n = 0
+                while n < 3:
+                    self.store(msg="love is all you need")
+                    n += 1
 
         q = get_queue()
         myreader = MyReader(q)
         myreader.start()
-        time.sleep(3)
-        size = q.qsize()
-        self.assertTrue(size >= 3)
+        time.sleep(1)
+        self.assertEqual(3, q.qsize())
+        self.assertEqual(3, myreader.processed)
+
 
 
 if __name__ == "__main__":
