@@ -39,7 +39,7 @@ Readers and writers may make any transformation to the original data.
  
 Collecting unit architecture:
 
- 1. ask source________                         _________   5. write destination
+ 1. ask source_______                           ________   5. write destination
     <-------|        |                         |        |------------------>
             | Reader |                         | Writer |
     ------->|________|                    +--->|________|

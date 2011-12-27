@@ -20,7 +20,8 @@ class TestReader(unittest.TestCase):
                 self.interval = 1
 
             def read(self):
-                return "life is beautiful"
+                self.store("life is beautiful")
+                return True
 
         q = get_queue()
         myreader = MyReader(q)
