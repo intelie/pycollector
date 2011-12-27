@@ -33,6 +33,10 @@ writer_types = {
     'file' : {
         'module' : 'writers.file.FileWriter',
         'class' : 'FileWriter' 
+    },
+    'socket' : {
+        'module' : 'writers.socket.SocketWriter',
+        'class' : 'SocketWriter'
     }
 }
 

@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 
 import time
 import threading
@@ -71,7 +72,6 @@ class Reader(threading.Thread):
         if self.queue.qsize() < self.queue.maxsize:
             self.queue.put(msg)
             self.processed += 1
-            self._writer_callback()
         else:
             print "discarding message [%s], full queue" % msg
 
@@ -93,13 +93,18 @@ class Reader(threading.Thread):
 
     def store(self, msg):
         """Stores a read message. 
-           This may be called by subclasses."""
+           This should be called by subclasses."""
         try:
             self._store(msg)
         except Exception, e:
             print "Can't store in queue, message %s" % msg
             print e
             return False
+        try:
+            self._writer_callback()
+        except Exception, e:
+            print "Error when calling writer_callback"
+            print e
 
     def setup(self):
         """Subclasses should implement."""

@@ -1,3 +1,4 @@
+#
 # File: conf.yaml
 # Description: This file is read by pycollector to
 #              configure readers/writers.
@@ -66,7 +67,9 @@ conf:
 - reader:
     type: stdin
   writer:
-    type: stdout
+    type: socket
+    host: localhost
+    port: 5140
     async: True
 
 #Reading from a database and writing to activemq

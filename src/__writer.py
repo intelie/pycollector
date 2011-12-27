@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import time
 import threading
@@ -7,12 +8,13 @@ import helpers.kronos as kronos
 
 class Writer(threading.Thread):
     def __init__(self, 
-                 queue,               # source of messages to be written
-                 conf={},             # additional configurations
-                 blockable=False,     # stops if a message were not delivered
-                 interval=None,       # interval to read from queue
-                 retry_interval=0,    # retry interval (in seconds) to writing
-                 checkpoint_path=None # filepath to write checkpoint
+                 queue,                    # source of messages to be written
+                 conf={},                  # additional configurations
+                 blockable=False,          # stops if a message were not delivered
+                 interval=None,            # interval to read from queue
+                 retry_interval=0,         # retry interval (in seconds) to writing
+                 save_checkpoint=False,    # consider checkpoint
+                 checkpoint_path='/tmp/w.checkpoint' # filepath to write checkpoint
                  ):
 
         self.queue = queue
@@ -25,14 +27,16 @@ class Writer(threading.Thread):
             self.set_conf(conf)
         self.setup()
         self.schedule_tasks()
+        self.save_checkpoint = save_checkpoint
         self.checkpoint_path = checkpoint_path
+        self.last_checkpoint = ''
         threading.Thread.__init__(self)
 
     def __read_checkpoint(self):
         return open(self.checkpoint_path, 'r').read()
 
     def _write_checkpoint(self):
-        return open(self.checkpoint_path, 'w').write(self.checkpoint)
+        return open(self.checkpoint_path, 'w').write(self.last_checkpoint)
 
     def set_conf(self, conf):
         """Turns configuration properties
@@ -90,8 +94,9 @@ class Writer(threading.Thread):
             else:
                 print "Message %s written" % msg
                 self.processed += 1
-                self.set_checkpoint(msg)
-                self._write_checkpoint()
+                if self.save_checkpoint:
+                    self.set_checkpoint(msg)
+                    self._write_checkpoint()
         else:
             print "No messages in the queue"
 
@@ -115,7 +120,7 @@ class Writer(threading.Thread):
 
     def set_checkpoint(self, msg):
         """Subclasses may implement"""
-        self.checkpoint = msg
+        self.last_checkpoint = msg
 
     def run(self):
         """Starts the writer"""
