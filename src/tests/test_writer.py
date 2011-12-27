@@ -20,7 +20,8 @@ class TestWriter(unittest.TestCase):
                 return msg
 
         q = get_queue()
-        q.put(1); q.put(2)
+        q.put(1)
+        q.put(2)
         mywriter = MyWriter(q)
         mywriter.start()
         time.sleep(2)
@@ -32,12 +33,32 @@ class TestWriter(unittest.TestCase):
                 return True
 
         q = get_queue()
-        q.put(1); q.put(2)
+        q.put(1)
+        q.put(2)
         mywriter = MyWriter(q)
         mywriter.start()
         mywriter.process()
         mywriter.process()
         self.assertEqual(2, mywriter.processed)
+
+    def test_checkpoint_saving(self):
+        class MyWriter(Writer):
+            def write(self, msg):
+                return True
+
+            def set_checkpoint(self, msg):
+                self.checkpoint = msg
+        
+        q = get_queue()
+        q.put(1)
+        q.put(2)
+        q.put(3)
+        mywriter = MyWriter(q)
+        mywriter.start()
+        mywriter.process() #processes message 1
+        self.assertEqual(1, mywriter.checkpoint)
+        mywriter.process() #processes message 2
+        self.assertEqual(2, mywriter.checkpoint)
 
 
 if __name__ == "__main__":
