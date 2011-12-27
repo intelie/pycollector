@@ -6,11 +6,14 @@ import helpers.kronos as kronos
 
 
 class Writer(threading.Thread):
-    def __init__(self, queue, conf={}, blockable=False, interval=None, retry_interval=0):
-        """queue: source of messages to write somewhere
-           conf: additional configurations
-           blockable: stops if a message were not delivered
-           interval: interval to read from queue"""
+    def __init__(self, 
+                 queue,               # source of messages to be written
+                 conf={},             # additional configurations
+                 blockable=False,     # stops if a message were not delivered
+                 interval=None,       # interval to read from queue
+                 retry_interval=0,    # retry interval (in seconds) to writing
+                 checkpoint_path=None # filepath to write checkpoint
+                 ):
 
         self.queue = queue
         self.interval = interval
@@ -22,7 +25,14 @@ class Writer(threading.Thread):
             self.set_conf(conf)
         self.setup()
         self.schedule_tasks()
+        self.checkpoint_path = checkpoint_path
         threading.Thread.__init__(self)
+
+    def __read_checkpoint(self):
+        return open(self.checkpoint_path, 'r').read()
+
+    def _write_checkpoint(self):
+        return open(self.checkpoint_path, 'w').write(self.checkpoint)
 
     def set_conf(self, conf):
         """Turns configuration properties
@@ -60,7 +70,7 @@ class Writer(threading.Thread):
         """Method called to process (write) a message.
             It is called in the end of each interval 
             in the case of a periodic task.
-            It it's a async writer it is called by a Reader as
+            If it's an async writer it is called by a Reader as
             a callback.
             So, it may be called by subclasses."""
 
@@ -80,12 +90,10 @@ class Writer(threading.Thread):
             else:
                 print "Message %s written" % msg
                 self.processed += 1
+                self.set_checkpoint(msg)
+                self._write_checkpoint()
         else:
             print "No messages in the queue"
-
-    def setup(self):
-        """Subclasses should implement."""
-        pass
 
     def _write(self, msg):
         """Method that calls write method defined by subclasses.
@@ -97,9 +105,17 @@ class Writer(threading.Thread):
             print e
             return False
 
+    def setup(self):
+        """Subclasses should implement."""
+        pass
+
     def write(self, msg):
         """Subclasses should implement."""
         pass
+
+    def set_checkpoint(self, msg):
+        """Subclasses may implement"""
+        self.checkpoint = msg
 
     def run(self):
         """Starts the writer"""

@@ -9,6 +9,7 @@ ascii = """
 | .__/  \__, | \___|\___/ |_||_| \___| \___| \__|\___/ |_|   
 |_|     |___/                                   by Intelie   
 
+                           Collecting data should be simple.
 """
 
 if __name__ == "__main__":
