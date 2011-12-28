@@ -43,22 +43,27 @@ class TestWriter(unittest.TestCase):
 
     def test_checkpoint_saving(self):
         class MyWriter(Writer):
+            def setup(self):
+                self.save_checkpoint = True
+
             def write(self, msg):
                 return True
 
-            def set_checkpoint(self, msg):
-                self.checkpoint = msg
-        
         q = get_queue()
         q.put(1)
         q.put(2)
-        q.put(3)
         mywriter = MyWriter(q)
         mywriter.start()
-        mywriter.process() #processes message 1
-        self.assertEqual(1, mywriter.checkpoint)
-        mywriter.process() #processes message 2
-        self.assertEqual(2, mywriter.checkpoint)
+
+        #should process message 1
+        mywriter.process()
+
+        #default checkpoint should be the msg
+        self.assertEqual(1, mywriter.last_checkpoint)
+
+        #should process message 2
+        mywriter.process()
+        self.assertEqual(2, mywriter.last_checkpoint)
 
 
 if __name__ == "__main__":
