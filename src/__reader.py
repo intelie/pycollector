@@ -14,13 +14,13 @@ class Reader(threading.Thread):
                  interval=None,       # interval of readings
                  checkpoint_path=None # filepath to write checkpoint
                  ):
+        self.interval = interval
+        self.checkpoint_path = checkpoint_path
         if conf:
             self.set_conf(conf)
-        self.interval = interval
         self.processed = 0
         self.queue = queue
         self.writer = writer
-        self.checkpoint_path = checkpoint_path
         self.last_checkpoint = ''
 
         self.setup()
@@ -133,7 +133,7 @@ class Reader(threading.Thread):
         self._store(msg)
         self._writer_callback()
         self._set_checkpoint(msg)
-        self._write_checkpoint
+        self._write_checkpoint()
 
     def setup(self):
         """Subclasses should implement."""
