@@ -28,6 +28,7 @@ class Reader(threading.Thread):
         threading.Thread.__init__(self)
 
     def _read_checkpoint(self):
+        """Read checkpoint file from disk."""
         try:
             return open(self.checkpoint_path, 'r').read()
         except Exception, e:
@@ -35,6 +36,7 @@ class Reader(threading.Thread):
             print e
 
     def _write_checkpoint(self):
+        """Write checkpoint in disk."""
         try:
             f = open(self.checkpoint_path, 'w')
             f.write(self.last_checkpoint.__str__())

@@ -26,11 +26,13 @@ class Writer(threading.Thread):
         self.last_checkpoint = ''
         if conf:
             self.set_conf(conf)
+
         self.setup()
         self.schedule_tasks()
         threading.Thread.__init__(self)
 
-    def __read_checkpoint(self):
+    def _read_checkpoint(self):
+        """Read checkpoint file from disk."""
         try:
             return open(self.checkpoint_path, 'r').read()
         except Exception, e:
@@ -38,6 +40,7 @@ class Writer(threading.Thread):
             print e
 
     def _write_checkpoint(self):
+        """Write checkpoint in disk."""
         try:
             f = open(self.checkpoint_path, 'w')
             f.write(self.last_checkpoint.__str__())
@@ -58,7 +61,6 @@ class Writer(threading.Thread):
         except Exception, e:
             print "Invalid configuration item: %s" % item
             print e
-
 
     def reschedule_tasks(self):
         self.schedule_tasks()
@@ -100,10 +102,10 @@ class Writer(threading.Thread):
                 else:
                     print "Message [%s] can't be written" % msg
             else:
-                print "Message [%s] written" % msg.strip()
+                print "Message [%s] written" % msg
                 self.processed += 1
                 if self.checkpoint_path:
-                    self.set_checkpoint(msg)
+                    self._set_checkpoint(msg)
                     self._write_checkpoint()
         else:
             print "No messages in the queue to write"
@@ -125,6 +127,15 @@ class Writer(threading.Thread):
     def write(self, msg):
         """Subclasses should implement."""
         pass
+
+    def _set_checkpoint(self, msg):
+        """Wrapper method to set_checkpoint (user defined)
+           to get exceptions"""
+        try:
+            self.set_checkpoint(msg)
+        except Exception, e:
+            print 'Error in setting checkpoint'
+            print e
 
     def set_checkpoint(self, msg):
         """Subclasses may implement"""
