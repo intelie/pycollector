@@ -8,10 +8,11 @@ import helpers.kronos as kronos
 
 class Reader(threading.Thread):
     def __init__(self,
-                 queue,        # stores read messages
-                 conf={},      # additional configurations
-                 writer=None,  # if writer is async, it should be provided
-                 interval=None # interval of readings
+                 queue,               # stores read messages
+                 conf={},             # additional configurations
+                 writer=None,         # if writer is async, it should be provided
+                 interval=None,       # interval of readings
+                 checkpoint_path=None # filepath to write checkpoint
                  ):
         if conf:
             self.set_conf(conf)
@@ -19,10 +20,28 @@ class Reader(threading.Thread):
         self.processed = 0
         self.queue = queue
         self.writer = writer
-        self.setup()
+        self.checkpoint_path = checkpoint_path
+        self.last_checkpoint = ''
 
+        self.setup()
         self.schedule_tasks()
         threading.Thread.__init__(self)
+
+    def _read_checkpoint(self):
+        try:
+            return open(self.checkpoint_path, 'r').read()
+        except Exception, e:
+            print 'Error reading checkpoint'
+            print e
+
+    def _write_checkpoint(self):
+        try:
+            f = open(self.checkpoint_path, 'w')
+            f.write(self.last_checkpoint.__str__())
+            f.close()
+        except Exception, e:
+            print 'Error writing checkpoint in %s' % self.checkpoint_path
+            print e
 
     def set_conf(self, conf):
         """Turns configuration properties 
@@ -63,17 +82,25 @@ class Reader(threading.Thread):
     def _writer_callback(self):
         """Callback to writer for non periodic tasks.
            Shouldn't be called by subclasses."""
-        if self.writer and not self.writer.interval:
-            self.writer.process()
+        try:
+            if self.writer and not self.writer.interval:
+                self.writer.process()
+        except Exception, e:
+            print 'Error when executing writer_callback'
+            print e
 
     def _store(self, msg):
         """Internal method to store read messages.
            Shouldn't be called by subclasses."""
-        if self.queue.qsize() < self.queue.maxsize:
-            self.queue.put(msg)
-            self.processed += 1
-        else:
-            print "discarding message [%s], full queue" % msg
+        try: 
+            if self.queue.qsize() < self.queue.maxsize:
+                self.queue.put(msg)
+                self.processed += 1
+            else:
+                print "discarding message [%s], full queue" % msg
+        except Exception, e:
+            print "can't store in queue, message %s" % msg
+            print e
 
     def _process(self):
         """Method called internally to process (read) a message.
@@ -91,20 +118,22 @@ class Reader(threading.Thread):
         except Exception, e:
             print e
 
+    def _set_checkpoint(self, msg):
+        """Wrapper method to set_checkpoint (user defined)
+           to get exceptions"""
+        try:
+            self.set_checkpoint(msg)
+        except Exception, e:
+            print 'Error setting checkpoint'
+            print e
+
     def store(self, msg):
         """Stores a read message. 
            This should be called by subclasses."""
-        try:
-            self._store(msg)
-        except Exception, e:
-            print "Can't store in queue, message %s" % msg
-            print e
-            return False
-        try:
-            self._writer_callback()
-        except Exception, e:
-            print "Error when calling writer_callback"
-            print e
+        self._store(msg)
+        self._writer_callback()
+        self._set_checkpoint(msg)
+        self._write_checkpoint
 
     def setup(self):
         """Subclasses should implement."""
@@ -113,6 +142,9 @@ class Reader(threading.Thread):
     def read(self):
         """Subclasses should implement."""
         pass
+
+    def set_checkpoint(self, msg):
+        self.last_checkpoint = msg
 
     def run(self):
         """Starts the reader"""
