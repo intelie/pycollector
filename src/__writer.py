@@ -23,20 +23,22 @@ class Writer(threading.Thread):
         self.blockable = blockable
         self.processed = 0
         self.blocked = False
+        self.save_checkpoint = save_checkpoint
+        self.checkpoint_path = checkpoint_path
+        self.last_checkpoint = ''
         if conf:
             self.set_conf(conf)
         self.setup()
         self.schedule_tasks()
-        self.save_checkpoint = save_checkpoint
-        self.checkpoint_path = checkpoint_path
-        self.last_checkpoint = ''
         threading.Thread.__init__(self)
 
     def __read_checkpoint(self):
         return open(self.checkpoint_path, 'r').read()
 
     def _write_checkpoint(self):
-        return open(self.checkpoint_path, 'w').write(self.last_checkpoint)
+        f = open(self.checkpoint_path, 'w')
+        f.write(self.last_checkpoint.__str__())
+        f.close()
 
     def set_conf(self, conf):
         """Turns configuration properties
