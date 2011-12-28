@@ -46,7 +46,6 @@ specs:
 #    host: demo.intelie.net
 #    port: 61613
 #    destination: '/queue/events'
-#    async: True
 #
 #Log example
 #  log:
@@ -67,10 +66,7 @@ conf:
 - reader:
     type: stdin
   writer:
-    type: socket
-    host: localhost
-    port: 5140
-    async: True
+    type: stdout
 
 #Reading from a database and writing to activemq
 #- reader:
@@ -89,7 +85,6 @@ conf:
 #    host: localhost
 #    port: 61613
 #    destination: '/queue/events'
-#    async: True
 
 
 #Reading from a log file and writing to activemq
@@ -102,7 +97,6 @@ conf:
 #    host: demo.intelie.net
 #    port: 61613
 #    destination: '/queue/events'
-#    async: True
 
 #Reading from stdin and writing to a file
 #- reader:
@@ -110,7 +104,6 @@ conf:
 #  writer:
 #    type: file
 #    filepath: /tmp/test.log
-#    async: True
 
 #Reading from stdin and writing to a gtalk account
 #- reader:
@@ -120,3 +113,5 @@ conf:
 #    login: montypythonfoo
 #    passwd: m0ntypyth0nf00
 #    destination: raios.catodicos@gmail.com
+
+

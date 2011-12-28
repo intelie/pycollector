@@ -95,7 +95,7 @@ class Collector:
             exec('import %s' % reader_type['module'])
             exec('reader_class = %s.%s' % (reader_type['module'], reader_type['class']))
 
-            if 'async' in writer_conf:
+            if not 'interval' in writer_conf:
                 reader = reader_class(queue, reader_conf, writer)
             else:
                 reader = reader_class(queue, reader_conf)
