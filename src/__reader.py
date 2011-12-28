@@ -134,8 +134,9 @@ class Reader(threading.Thread):
            This should be called by subclasses."""
         self._store(msg)
         self._writer_callback()
-        self._set_checkpoint(msg)
-        self._write_checkpoint()
+        if self.checkpoint_path:
+            self._set_checkpoint(msg)
+            self._write_checkpoint()
 
     def setup(self):
         """Subclasses should implement."""

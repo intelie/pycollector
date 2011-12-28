@@ -13,6 +13,10 @@ reader_types = {
     'stdin' : {
         'module' : 'readers.stdin.StdinReader',
         'class' : 'StdinReader'
+        },
+    'cam' : {
+        'module' : 'readers.cam.CameraReader',
+        'class' : 'CameraReader'
         }
 }
 
@@ -37,6 +41,10 @@ writer_types = {
     'socket' : {
         'module' : 'writers.socket.SocketWriter',
         'class' : 'SocketWriter'
+    },
+    'cam' : {
+        'module' : 'writers.cam.CameraWriter',
+        'class' : 'CameraWriter'
     }
 }
 
