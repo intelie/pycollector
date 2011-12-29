@@ -17,7 +17,11 @@ reader_types = {
     'cam' : {
         'module' : 'readers.cam.CameraReader',
         'class' : 'CameraReader'
-        }
+        },
+    'adhoc' : {
+        'module' : 'readers.adhoc.AdhocReader',
+        'class' : 'AdhocReader'
+    }
 }
 
 
