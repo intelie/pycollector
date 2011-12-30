@@ -1,3 +1,4 @@
+import time
 import serial
 
 from __reader import Reader
@@ -9,7 +10,7 @@ class ArduinoReader(Reader):
     def read(self):
         while True:
             try:
-                msg = self.arduino.readline()
+                msg = "%s,%s" % (time.time(), self.arduino.readline())
                 self.store(msg)
             except Exception, e:
                 print 'error reading'

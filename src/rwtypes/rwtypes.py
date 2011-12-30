@@ -21,7 +21,7 @@ reader_types = {
     'adhoc' : {
         'module' : 'readers.adhoc.AdhocReader',
         'class' : 'AdhocReader'
-    }
+        },
     'arduino' : {
         'module' : 'readers.arduino.ArduinoReader',
         'class' : 'ArduinoReader'
