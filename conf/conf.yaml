@@ -59,6 +59,7 @@ specs:
 #    login: montypythonfoo
 #    passwd: m0ntypyth0nf00
 #    destination: raios.catodicos@gmail.com
+#
 
 
 conf:
@@ -68,12 +69,37 @@ conf:
   writer:
     type: stdout
 
+#Reading from arduino and writing in file
+#- reader:
+#    type: arduino
+#    interface: /dev/ttyUSB0
+#    bps: 9600
+#  writer:
+#    type: file
+#    filepath: /tmp/data
+
 #Reading from your camera and writing to a jpg file
 #- reader:
 #    type: cam
+#    cam_number: 2
 #    interval: 5
 #  writer:
+#    prefix: microsoftcam
 #    type: cam
+#
+#- reader:
+#    type: cam
+#    cam_number: 2
+#    interval: 60
+#  writer:
+#    type: cam
+#    prefix: microsoftcam
+
+- reader:
+    type: arduino
+  writer:
+    type: file
+    filepath: /home/kaiser/light
 
 #Reading from a database and writing to activemq
 #- reader:
