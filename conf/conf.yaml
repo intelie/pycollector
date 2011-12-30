@@ -84,22 +84,18 @@ conf:
 #    cam_number: 2
 #    interval: 5
 #  writer:
+#    path: /tmp/data
 #    prefix: microsoftcam
 #    type: cam
 #
 #- reader:
 #    type: cam
-#    cam_number: 2
+#    cam_number: 1
 #    interval: 60
 #  writer:
+#    path: /tmp/data
 #    type: cam
-#    prefix: microsoftcam
-
-- reader:
-    type: arduino
-  writer:
-    type: file
-    filepath: /home/kaiser/light
+#    prefix: cam
 
 #Reading from a database and writing to activemq
 #- reader:
@@ -118,7 +114,6 @@ conf:
 #    host: localhost
 #    port: 61613
 #    destination: '/queue/events'
-
 
 #Reading from a log file and writing to activemq
 #- reader:
@@ -146,5 +141,4 @@ conf:
 #    login: montypythonfoo
 #    passwd: m0ntypyth0nf00
 #    destination: raios.catodicos@gmail.com
-
 
