@@ -5,7 +5,11 @@ from __reader import Reader
 
 class ArduinoReader(Reader):
     def setup(self):
-        self.arduino = serial.Serial('/dev/ttyUSB0', 9600)
+        if not hasattr(self, 'interface'):
+            self.interface = '/dev/ttyUSB0'
+        if not hasattr(self, 'bps'):
+            self.bps = 9600
+        self.arduino = serial.Serial(self.interface, self.bps)
 
     def read(self):
         while True:
