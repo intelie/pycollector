@@ -8,6 +8,14 @@ from __writer import Writer
 
 
 class ActivemqWriter(Writer):
+    """Conf:
+        - host (required): activemq host
+        - port (required): activemq port
+        - destination (required): queue destination,
+            e.g. /queue/events
+        - eventtype (required): header eventtype
+        - additional_properties: dict with additional fields"""
+
     def write(self, msg):
         try:
             headers = {'destination' : self.destination,

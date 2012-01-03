@@ -3,9 +3,13 @@ import socket
 from __writer import Writer
 
 class SocketWriter(Writer):
+    """Conf: 
+        - host (required): hostname destination
+        - port (required): port destination"""
+        
     def setup(self):
         self.sock = socket.socket()
-        if self.host and self.port:
+        if hasattr(self, 'host') and hasattr(self, 'port'):
             self.sock.connect((self.host, int(self.port)))
         else:
             print "provide host, port in conf file"
