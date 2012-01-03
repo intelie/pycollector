@@ -4,27 +4,41 @@ from __reader import Reader
 
 
 class LogReader(Reader):
+    """Conf:
+        - logpath (required): path of log file,
+            e.g. /tmp/my.log
+        - delimiter (optional): character to split log lines,
+            e.g. '\t'
+        - columns (optional): list of columns for each log line,
+            e.g. ['date', 'hour', 'message']"""
+
     def setup(self):
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
         
     def read(self):
         while True:
-            line = self.tail.nextline()
+            try:
+                line = self.tail.nextline()
 
-            #XXX: remove \n?
-            line = line.strip()
+                #XXX: remove \n?
+                line = line.strip()
 
-            if hasattr(self, 'delimiter'):
-                values = line.split(self.delimiter)
+                if hasattr(self, 'delimiter'):
+                    values = line.split(self.delimiter)
 
-                if hasattr(self, 'columns'):
-                    column_values = dict(zip(self.columns, values))
-                    #XXX: if we have columns, save it as a dict
-                    self.store(column_values)
+                    if hasattr(self, 'columns'):
+                        column_values = dict(zip(self.columns, values))
+
+                        #XXX: if we have columns, save it as a dict
+                        self.store(column_values)
+                        continue
+
+                    #XXX: if we have just a delimiter, save the list
+                    self.store(values)
                     continue
 
-                #XXX: if we have just a delimiter, save the list
-                self.store(values)
-                continue
+                self.store(line)
 
-            self.store(line)
+            except Exception, e:
+                print 'error reading line: %s' % line
+                print e

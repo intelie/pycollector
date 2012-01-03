@@ -5,6 +5,8 @@ import socket
 from __reader import Reader
 
 class AdhocReader(Reader):
+    """Start writing your reader here"""
+
     def read(self):
         try:
             date = time.strftime("%b %d %H:%M:%S")
