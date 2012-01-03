@@ -21,7 +21,6 @@ class Reader(threading.Thread):
         self.processed = 0
         self.queue = queue
         self.writer = writer
-        self.last_checkpoint = ''
 
         self.setup()
         self.schedule_tasks()

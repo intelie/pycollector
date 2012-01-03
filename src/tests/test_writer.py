@@ -1,3 +1,4 @@
+import os
 import time
 import unittest
 import Queue
@@ -72,6 +73,24 @@ class TestWriter(unittest.TestCase):
         self.assertEqual('bar', f.read().strip())
         f.close()
 
+        os.remove(checkpoint_path)
+
+    def test_restore_last_checkpoint(self):
+        checkpoint_path = '/tmp/wcheckpoint'
+        f = open(checkpoint_path, 'w+')
+        f.write('foo')
+        f.close()
+
+        class MyWriter(Writer):
+            def setup(self):
+                self.checkpoint_path = checkpoint_path
+
+            def write(self, msg):
+                return True
+
+        q = get_queue()
+        mywriter = MyWriter(q)
+        self.assertEqual('foo', mywriter.last_checkpoint)
         os.remove(checkpoint_path)
 
 

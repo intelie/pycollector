@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import time
 import threading
 
@@ -23,20 +24,28 @@ class Writer(threading.Thread):
         self.processed = 0
         self.blocked = False
         self.checkpoint_path = checkpoint_path
-        self.last_checkpoint = ''
+
         if conf:
             self.set_conf(conf)
 
         self.setup()
+
+        self.last_checkpoint = None
+        if self.checkpoint_path:
+            self.last_checkpoint = self._read_checkpoint()
+
         self.schedule_tasks()
         threading.Thread.__init__(self)
 
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
         try:
-            return open(self.checkpoint_path, 'r').read()
+            if os.path.exists(self.checkpoint_path):
+                return open(self.checkpoint_path, 'r+').read()
+            else:
+                return None
         except Exception, e:
-            print 'Error reading checkpoint'
+            print 'Error reading writer checkpoint'
             print e
 
     def _write_checkpoint(self):
