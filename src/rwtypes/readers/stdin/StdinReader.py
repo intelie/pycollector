@@ -4,7 +4,7 @@ from __reader import Reader
 
 
 class StdinReader(Reader):
-   """Conf: none"""
+    """Conf: none"""
 
     def read(self):
         while True:
