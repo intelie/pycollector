@@ -45,6 +45,27 @@ class TestReader(unittest.TestCase):
         self.assertEqual(3, q.qsize())
         self.assertEqual(3, myreader.processed)
 
+    def test_checkpoint_saving(self):
+        checkpoint_path = '/tmp/rcheckpoint'
+        class MyReader(Reader):
+            def setup(self):
+                self.checkpoint_path = checkpoint_path
+
+            def read(self):
+                self.store('foo')
+                self.store('bar')
+
+        q = get_queue()
+        myreader = MyReader(q)
+        myreader.start()
+        time.sleep(1)
+
+        self.assertEqual(2, myreader.processed)
+        self.assertEqual('bar', myreader.last_checkpoint)
+
+        f = open(checkpoint_path, 'r+')
+        self.assertEqual('bar', f.read().strip())
+        f.close()
 
 
 if __name__ == "__main__":

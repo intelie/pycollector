@@ -64,11 +64,14 @@ class TestWriter(unittest.TestCase):
 
         #should process message 2
         mywriter.process()
+
+        self.assertEqual(2, mywriter.processed)
         self.assertEqual('bar', mywriter.last_checkpoint)
 
         f = open(checkpoint_path, 'r+')
         self.assertEqual('bar', f.read().strip())
         f.close()
+
 
 
 if __name__ == "__main__":
