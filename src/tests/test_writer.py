@@ -72,6 +72,7 @@ class TestWriter(unittest.TestCase):
         self.assertEqual('bar', f.read().strip())
         f.close()
 
+        os.remove(checkpoint_path)
 
 
 if __name__ == "__main__":
