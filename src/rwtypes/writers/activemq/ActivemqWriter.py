@@ -39,7 +39,8 @@ class ActivemqWriter(Writer):
                                   t.day,
                                   t.hour,
                                   t.minute,
-                                  t.second)
+                                  t.second,
+                                  t.microsecond)
                     to_add['%s_ts' % item] = calendar.timegm(time_tuple)*1000
                 elif msg[item] == None:
                     msg[item] = 'NULL'
