@@ -1,5 +1,6 @@
 import datetime
 import time
+import calendar
 import json
 
 
@@ -27,11 +28,23 @@ class ActivemqWriter(Writer):
             if hasattr(self, 'eventtype'):
                 headers.update({'eventtype' : self.eventtype})
 
+            #TODO: move datetime transformation to database reader
+            to_add = {}
             for item in msg:
                 if isinstance(msg[item], datetime.datetime):
-                    msg[item] = msg[item].isoformat()
+                    t = msg[item] 
+                    msg[item] = t.isoformat()
+                    time_tuple = (t.year,
+                                  t.month,
+                                  t.day,
+                                  t.hour,
+                                  t.minute,
+                                  t.second)
+                    to_add['%s_ts' % item] = calendar.timegm(time_tuple)*1000
                 elif msg[item] == None:
                     msg[item] = 'NULL'
+
+            msg.update(to_add)
 
             if hasattr(self, 'additional_properties'):
                 for prop in self.additional_properties:
@@ -44,4 +57,3 @@ class ActivemqWriter(Writer):
         except Exception, e:
             print e
             return False
-
