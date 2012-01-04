@@ -70,6 +70,23 @@ class TestReader(unittest.TestCase):
 
         os.remove(checkpoint_path)
 
+    def test_restore_checkpoint_from_writer_when_starting(self):
+
+        writer_checkpoint_path = '/tmp/wcheckpoint'
+        f = open(writer_checkpoint_path, 'w+')
+        f.write('42')
+        f.close()
+                
+        class MyWriter(Writer):
+            def setup(self):
+                self.checkpoint_path = writer_checkpoint_path
+
+        q = get_queue()
+        myreader = Reader(q, writer=MyWriter(q))
+        self.assertEqual('42', myreader.last_checkpoint)
+
+        os.remove(writer_checkpoint_path)
+                
 
 if __name__ == "__main__":
     unittest.main()
