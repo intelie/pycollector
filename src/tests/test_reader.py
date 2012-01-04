@@ -1,3 +1,4 @@
+import os
 import unittest
 import time
 import Queue
@@ -52,8 +53,8 @@ class TestReader(unittest.TestCase):
                 self.checkpoint_path = checkpoint_path
 
             def read(self):
-                self.store('foo')
-                self.store('bar')
+                self.store('foo', 'foo')
+                self.store('bar', 'bar')
 
         q = get_queue()
         myreader = MyReader(q)

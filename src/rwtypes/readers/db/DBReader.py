@@ -38,12 +38,16 @@ class DBReader(Reader):
         try:
             data = self.session.query(*self.columns).from_statement(self.query).all()
 
+            if len(data) == 0:
+                print '[dbreader] no data for query: %s' % self.query
+                return True
+
             #getting only new data (based on checkpoint)
             if self.last_checkpoint:
                 data = data[:(len(data) - self.last_checkpoint)]
 
             if len(data) <= 0:
-                print "No data for query: '%s'" % self.query
+                print "[dbreader] no new data based on checkpoint"
                 return True
             else:
                 for datum in data:
@@ -75,6 +79,6 @@ class DBReader(Reader):
                         self.store(to_send, self.last_checkpoint + 1)
             return True
         except Exception, e:
-            print 'error reading from database'
+            print '[dbreader] error reading from database'
             print e
             return False
