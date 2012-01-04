@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import datetime
 import calendar
 
@@ -16,8 +18,12 @@ class DBReader(Reader):
         - database (required): database name
         - connection (required): connection string,
             e.g. 'mysql+mysqldb://%s:%s@%s/%s' (see sqlalchemy doc)
-       Stores: dict
-       checkpoint: may be used"""
+        - query (required): sql statement,
+            e.g. select name, descriptrion from user
+        - columns (required): list of columns in the same order from 'query',
+            e.g. [name, description]
+
+        Note: if checkpoint is used, query must guarantee sorted data"""
 
     def setup(self):
         engine = create_engine(self.connection %(self.user, 
@@ -32,13 +38,18 @@ class DBReader(Reader):
         try:
             data = self.session.query(*self.columns).from_statement(self.query).all()
 
-            if not data:
+            #getting only new data (based on checkpoint)
+            if self.last_checkpoint:
+                new_data = data[:(len(data) - self.last_checkpoint)]
+
+            if len(data) <= 0:
                 print "No data for query: '%s'" % self.query
+                return True
             else:
                 for datum in data:
                     to_send = { column : datum[i] for i, column in enumerate(self.columns)}
 
-                    #deals with datetime and None
+                    #XXX: Specific use, deals with datetime and None
                     to_add = {}
                     for item in to_send:
                         if isinstance(to_send[item], datetime.datetime):
@@ -54,9 +65,14 @@ class DBReader(Reader):
                             to_add['%s_ts' % item] = calendar.timegm(time_tuple)*1000
                         elif to_send[item] == None:
                            to_send[item] = 'NULL'
+
                     to_send.update(to_add)
 
-                    self.store(to_send)
+                    if not self.last_checkpoint:
+                        self.store(to_send, 1)
+                    else:
+                        print self.last_checkpoint
+                        self.store(to_send, self.last_checkpoint + 1)
             return True
         except Exception, e:
             print 'error reading from database'

@@ -16,13 +16,16 @@ class Reader(threading.Thread):
                  ):
         self.interval = interval
         self.checkpoint_path = checkpoint_path
-        if conf:
-            self.set_conf(conf)
+        self.last_checkpoint = None
         self.processed = 0
         self.queue = queue
         self.writer = writer
 
+        if conf:
+            self.set_conf(conf)
+
         self.setup()
+
         self.schedule_tasks()
         threading.Thread.__init__(self)
 
@@ -37,9 +40,11 @@ class Reader(threading.Thread):
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
         try:
+            lc = self.last_checkpoint
             f = open(self.checkpoint_path, 'w')
-            f.write(self.last_checkpoint.__str__())
+            f.write(lc.__str__())
             f.close()
+            print 'checkpoint [%s] written' % lc
         except Exception, e:
             print 'Error writing checkpoint in %s' % self.checkpoint_path
             print e
@@ -90,7 +95,7 @@ class Reader(threading.Thread):
             print 'Error when executing writer_callback'
             print e
 
-    def _store(self, msg):
+    def _store(self, msg, checkpoint=None):
         """Internal method to store read messages.
            Shouldn't be called by subclasses."""
         try: 
@@ -102,6 +107,10 @@ class Reader(threading.Thread):
         except Exception, e:
             print "can't store in queue, message %s" % msg
             print e
+        self._writer_callback()
+        if self.checkpoint_path:
+            self._set_checkpoint(checkpoint)
+            self._write_checkpoint()
 
     def _process(self):
         """Method called internally to process (read) a message.
@@ -119,23 +128,19 @@ class Reader(threading.Thread):
         except Exception, e:
             print e
 
-    def _set_checkpoint(self, msg):
+    def _set_checkpoint(self, checkpoint):
         """Wrapper method to set_checkpoint (user defined)
            to get exceptions"""
         try:
-            self.set_checkpoint(msg)
+            self.last_checkpoint = checkpoint
         except Exception, e:
             print 'Error setting checkpoint'
             print e
 
-    def store(self, msg):
+    def store(self, msg, checkpoint=None):
         """Stores a read message. 
            This should be called by subclasses."""
-        self._store(msg)
-        self._writer_callback()
-        if self.checkpoint_path:
-            self._set_checkpoint(msg)
-            self._write_checkpoint()
+        self._store(msg, checkpoint)
 
     def setup(self):
         """Subclasses should implement."""
@@ -144,9 +149,6 @@ class Reader(threading.Thread):
     def read(self):
         """Subclasses should implement."""
         pass
-
-    def set_checkpoint(self, msg):
-        self.last_checkpoint = msg
 
     def run(self):
         """Starts the reader"""
