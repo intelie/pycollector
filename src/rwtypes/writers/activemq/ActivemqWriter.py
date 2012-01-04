@@ -28,25 +28,6 @@ class ActivemqWriter(Writer):
             if hasattr(self, 'eventtype'):
                 headers.update({'eventtype' : self.eventtype})
 
-            #TODO: move datetime transformation to database reader
-            to_add = {}
-            for item in msg:
-                if isinstance(msg[item], datetime.datetime):
-                    t = msg[item] 
-                    msg[item] = t.isoformat()
-                    time_tuple = (t.year,
-                                  t.month,
-                                  t.day,
-                                  t.hour,
-                                  t.minute,
-                                  t.second,
-                                  t.microsecond)
-                    to_add['%s_ts' % item] = calendar.timegm(time_tuple)*1000
-                elif msg[item] == None:
-                    msg[item] = 'NULL'
-
-            msg.update(to_add)
-
             if hasattr(self, 'additional_properties'):
                 for prop in self.additional_properties:
                     msg.update({prop : self.additional_properties[prop]})

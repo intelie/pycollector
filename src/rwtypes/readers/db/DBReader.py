@@ -34,6 +34,25 @@ class DBReader(Reader):
             else:
                 for datum in data:
                     to_send = { column : datum[i] for i, column in enumerate(self.columns)}
+
+                    #deals with datetime and None
+                    to_add = {}
+                    for item in to_send:
+                        if isinstance(to_send[item], datetime.datetime):
+                            t = to_send[item]
+                            to_send[item] = t.isoformat()
+                            time_tuple = (t.year,
+                                          t.month,
+                                          t.day,
+                                          t.hour,
+                                          t.minute,
+                                          t.second,
+                                          t.microsecond)
+                            to_add['%s_ts' % item] = calendar.timegm(time_tuple)*1000
+                        elif to_send[item] == None:
+                           to_send[item] = 'NULL'
+                    to_send.update(to_add)
+
                     self.store(to_send)
             return True
         except Exception, e:
