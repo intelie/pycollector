@@ -26,6 +26,8 @@ class Reader(threading.Thread):
 
         self.setup()
 
+        if writer and writer.last_checkpoint:
+            self.last_checkpoint = writer.last_checkpoint
         self.schedule_tasks()
         threading.Thread.__init__(self)
 
