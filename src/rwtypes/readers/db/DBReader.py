@@ -40,7 +40,7 @@ class DBReader(Reader):
 
             #getting only new data (based on checkpoint)
             if self.last_checkpoint:
-                new_data = data[:(len(data) - self.last_checkpoint)]
+                data = data[:(len(data) - self.last_checkpoint)]
 
             if len(data) <= 0:
                 print "No data for query: '%s'" % self.query
