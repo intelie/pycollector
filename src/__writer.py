@@ -100,6 +100,9 @@ class Writer(threading.Thread):
 
         if self.queue.qsize() > 0:
             msg = self.queue.get()
+
+            self.current_checkpoint = msg.checkpoint 
+
             if not self._write(msg.content):
                 if self.blockable:
                     self.scheduler.stop()
