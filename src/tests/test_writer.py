@@ -54,8 +54,8 @@ class TestWriter(unittest.TestCase):
                 return True
 
         q = get_queue()
-        q.put(Message(content='foo'))
-        q.put(Message(content='bar'))
+        q.put(Message(content='foo', checkpoint='foo'))
+        q.put(Message(content='bar', checkpoint='bar'))
         mywriter = MyWriter(q)
         mywriter.start()
 
