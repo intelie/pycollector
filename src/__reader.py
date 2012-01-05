@@ -97,7 +97,7 @@ class Reader(threading.Thread):
             print 'Error when executing writer_callback'
             print e
 
-    def _store(self, msg, checkpoint=None):
+    def _store(self, msg):
         """Internal method to store read messages.
            Shouldn't be called by subclasses."""
         try: 
@@ -111,7 +111,7 @@ class Reader(threading.Thread):
             print e
         self._writer_callback()
         if self.checkpoint_path:
-            self._set_checkpoint(checkpoint)
+            self._set_checkpoint(msg.checkpoint)
             self._write_checkpoint()
 
     def _process(self):
@@ -139,10 +139,10 @@ class Reader(threading.Thread):
             print 'Error setting checkpoint'
             print e
 
-    def store(self, msg, checkpoint=None):
+    def store(self, msg):
         """Stores a read message. 
            This should be called by subclasses."""
-        self._store(msg, checkpoint)
+        self._store(msg)
 
     def setup(self):
         """Subclasses should implement."""

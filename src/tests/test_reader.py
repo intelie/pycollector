@@ -54,8 +54,8 @@ class TestReader(unittest.TestCase):
                 self.checkpoint_path = checkpoint_path
 
             def read(self):
-                self.store(Message(content='foo'), 'foo')
-                self.store(Message(content='bar'), 'bar')
+                self.store(Message(content='foo', checkpoint='foo'))
+                self.store(Message(content='bar', checkpoint='bar'))
 
         q = get_queue()
         myreader = MyReader(q)
