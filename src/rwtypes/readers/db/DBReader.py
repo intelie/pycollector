@@ -74,7 +74,7 @@ class DBReader(Reader):
                     to_send.update(to_add)
 
                     if not self.last_checkpoint:
-                        self.store(Message(content=to_send, checkpoint= 1))
+                        self.store(Message(content=to_send, checkpoint=1))
                     else:
                         self.store(Message(content=to_send, checkpoint=str(int(self.last_checkpoint) + 1)))
             return True
