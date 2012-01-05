@@ -7,6 +7,7 @@ from third.sqlalchemy import create_engine
 from third.sqlalchemy.orm import sessionmaker
 
 from __reader import Reader
+from __message import Message
 
 
 class DBReader(Reader):
@@ -73,9 +74,9 @@ class DBReader(Reader):
                     to_send.update(to_add)
 
                     if not self.last_checkpoint:
-                        self.store(to_send, 1)
+                        self.store(Message(content=to_send, checkpoint= 1))
                     else:
-                        self.store(to_send, str(int(self.last_checkpoint) + 1))
+                        self.store(Message(content=to_send, checkpoint=str(int(self.last_checkpoint) + 1)))
             return True
         except Exception, e:
             print '[dbreader] error reading from database'

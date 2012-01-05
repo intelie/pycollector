@@ -1,6 +1,7 @@
 from third import filetail
 
 from __reader import Reader
+from __message import Message
 
 
 class LogReader(Reader):
@@ -30,14 +31,14 @@ class LogReader(Reader):
                         column_values = dict(zip(self.columns, values))
 
                         #XXX: if we have columns, save it as a dict
-                        self.store(column_values)
+                        self.store(Message(content=column_values))
                         continue
 
                     #XXX: if we have just a delimiter, save the list
-                    self.store(values)
+                    self.store(Message(content=values))
                     continue
 
-                self.store(line)
+                self.store(Message(content=line))
 
             except Exception, e:
                 print 'error reading line: %s' % line

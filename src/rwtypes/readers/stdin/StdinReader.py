@@ -1,7 +1,7 @@
 import sys
 
 from __reader import Reader
-
+from __message import Message
 
 class StdinReader(Reader):
     """Conf: none"""
@@ -10,7 +10,7 @@ class StdinReader(Reader):
         while True:
             try:
                 print '\n[READER] message: '
-                self.store(sys.stdin.readline())
+                self.store(Message(content=sys.stdin.readline()))
             except Exception, e:
                 print 'error reading'
                 print e

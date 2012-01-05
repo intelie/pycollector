@@ -2,6 +2,8 @@ import time
 import serial
 
 from __reader import Reader
+from __message import Message
+
 
 class ArduinoReader(Reader):
     """Conf:
@@ -21,7 +23,7 @@ class ArduinoReader(Reader):
         while True:
             try:
                 msg = "%s,%s" % (time.time(), self.arduino.readline())
-                self.store(msg)
+                self.store(Message(content=msg))
             except Exception, e:
                 print 'error reading'
                 print e

@@ -1,6 +1,7 @@
 import SimpleCV
 
 from __reader import Reader
+from __message import Message
 
 
 class CameraReader(Reader):
@@ -17,7 +18,7 @@ class CameraReader(Reader):
     def read(self):
         try:
             image = self.cam.getImage()
-            self.store(image)
+            self.store(Message(content=image))
             return True
         except Exception, e:
             print 'Error in storing image'

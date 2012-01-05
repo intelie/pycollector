@@ -3,6 +3,7 @@ import os
 import socket
 
 from __reader import Reader
+from __message import Message
 
 class AdhocReader(Reader):
     """Start writing your reader here"""
@@ -11,7 +12,7 @@ class AdhocReader(Reader):
         try:
             date = time.strftime("%b %d %H:%M:%S")
             msg = "<14>%s %s pycollector: %s" % (date, socket.gethostname(), os.popen('acpi').read())
-            self.store(msg)
+            self.store(Message(content=msg))
             return True
         except Exception, e:
             print 'error reading'
