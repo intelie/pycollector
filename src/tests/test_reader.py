@@ -6,6 +6,7 @@ import Queue
 import sys; sys.path.append('..')
 from __reader import Reader
 from __writer import Writer
+from __message import Message
 
 
 def get_queue():
@@ -21,7 +22,7 @@ class TestReader(unittest.TestCase):
                 self.interval = 1
 
             def read(self):
-                self.store(msg="life is beautiful")
+                self.store(Message(content="life is beautiful"))
                 return True
 
         q = get_queue()
@@ -36,7 +37,7 @@ class TestReader(unittest.TestCase):
             def read(self):
                 n = 0
                 while n < 3:
-                    self.store(msg="love is all you need")
+                    self.store(Message(content="love is all you need"))
                     n += 1
 
         q = get_queue()
@@ -53,8 +54,8 @@ class TestReader(unittest.TestCase):
                 self.checkpoint_path = checkpoint_path
 
             def read(self):
-                self.store('foo', 'foo')
-                self.store('bar', 'bar')
+                self.store(Message(content='foo'), 'foo')
+                self.store(Message(content='bar'), 'bar')
 
         q = get_queue()
         myreader = MyReader(q)
@@ -86,7 +87,6 @@ class TestReader(unittest.TestCase):
         self.assertEqual('42', myreader.last_checkpoint)
 
         os.remove(writer_checkpoint_path)
-                
 
 if __name__ == "__main__":
     unittest.main()

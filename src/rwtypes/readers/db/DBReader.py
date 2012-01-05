@@ -44,7 +44,7 @@ class DBReader(Reader):
 
             #getting only new data (based on checkpoint)
             if self.last_checkpoint:
-                data = data[:(len(data) - self.last_checkpoint)]
+                data = data[:(len(data) - int(self.last_checkpoint))]
 
             if len(data) <= 0:
                 print "[dbreader] no new data based on checkpoint"
@@ -75,8 +75,7 @@ class DBReader(Reader):
                     if not self.last_checkpoint:
                         self.store(to_send, 1)
                     else:
-                        print self.last_checkpoint
-                        self.store(to_send, self.last_checkpoint + 1)
+                        self.store(to_send, str(int(self.last_checkpoint) + 1))
             return True
         except Exception, e:
             print '[dbreader] error reading from database'

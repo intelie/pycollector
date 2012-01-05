@@ -5,6 +5,7 @@ import Queue
 
 import sys; sys.path.append('..')
 from __writer import Writer
+from __message import Message
 
 
 def get_queue():
@@ -21,8 +22,8 @@ class TestWriter(unittest.TestCase):
                 return msg
 
         q = get_queue()
-        q.put(1)
-        q.put(2)
+        q.put(Message(content=1))
+        q.put(Message(content=2))
         mywriter = MyWriter(q)
         mywriter.start()
         time.sleep(2)
@@ -34,8 +35,8 @@ class TestWriter(unittest.TestCase):
                 return True
 
         q = get_queue()
-        q.put(1)
-        q.put(2)
+        q.put(Message(content=1))
+        q.put(Message(content=2))
         mywriter = MyWriter(q)
         mywriter.start()
         mywriter.process()
@@ -49,11 +50,12 @@ class TestWriter(unittest.TestCase):
                 self.checkpoint_path = checkpoint_path 
 
             def write(self, msg):
+                self.set_checkpoint(msg)
                 return True
 
         q = get_queue()
-        q.put('foo')
-        q.put('bar')
+        q.put(Message(content='foo'))
+        q.put(Message(content='bar'))
         mywriter = MyWriter(q)
         mywriter.start()
 

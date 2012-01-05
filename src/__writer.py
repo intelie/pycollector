@@ -31,6 +31,7 @@ class Writer(threading.Thread):
         self.setup()
 
         self.last_checkpoint = None
+        self.current_checkpoint = None
         if self.checkpoint_path:
             self.last_checkpoint = self._read_checkpoint()
 
@@ -99,7 +100,7 @@ class Writer(threading.Thread):
 
         if self.queue.qsize() > 0:
             msg = self.queue.get()
-            if not self._write(msg):
+            if not self._write(msg.content):
                 if self.blockable:
                     self.scheduler.stop()
                     self.blocked = True
@@ -114,7 +115,7 @@ class Writer(threading.Thread):
                 print "Message [%s] written" % msg
                 self.processed += 1
                 if self.checkpoint_path:
-                    self._set_checkpoint(msg)
+                    self._update_last_checkpoint()
                     self._write_checkpoint()
         else:
             print "No messages in the queue to write"
@@ -137,6 +138,13 @@ class Writer(threading.Thread):
         """Subclasses should implement."""
         pass
 
+    def _update_last_checkpoint(self):
+        try:
+            self.last_checkpoint = self.current_checkpoint
+        except Exception, e:
+            print 'error updating last_checkpoint'
+            print e
+
     def _set_checkpoint(self, msg):
         """Wrapper method to set_checkpoint (user defined)
            to get exceptions"""
@@ -146,11 +154,13 @@ class Writer(threading.Thread):
             print 'Error in setting checkpoint'
             print e
 
-    def set_checkpoint(self, msg):
-        """Subclasses may implement"""
-        self.last_checkpoint = msg
+    def set_checkpoint(self, checkpoint):
+        """Subclasses should call it from write() method"""
+        self.current_checkpoint = checkpoint
 
     def run(self):
         """Starts the writer"""
         self.scheduler.start()
 
+    def __str__(self):
+        return str(self.__dict__)

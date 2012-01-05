@@ -156,3 +156,5 @@ class Reader(threading.Thread):
         """Starts the reader"""
         self.scheduler.start()
 
+    def __str__(self):
+        return str(self.__dict__) 
