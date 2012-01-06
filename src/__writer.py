@@ -14,16 +14,18 @@ class Writer(threading.Thread):
                  blockable=False,       # stops if a message were not delivered
                  interval=None,         # interval to read from queue
                  retry_interval=0,      # retry interval (in seconds) to writing
-                 checkpoint_path=None   # filepath to write checkpoint
+                 checkpoint_path=None,  # filepath to write checkpoint
+                 checkpoint_interval=60 # interval of checkpoint writing
                  ):
 
         self.queue = queue
         self.interval = interval
-        self.retry_interval = self.interval or 10 
+        self.retry_interval = self.interval or 10
         self.blockable = blockable
         self.processed = 0
         self.blocked = False
         self.checkpoint_path = checkpoint_path
+        self.checkpoint_interval = checkpoint_interval
 
         if conf:
             self.set_conf(conf)
@@ -36,7 +38,17 @@ class Writer(threading.Thread):
             self.last_checkpoint = self._read_checkpoint()
 
         self.schedule_tasks()
+        self.schedule_checkpoint_writing()
         threading.Thread.__init__(self)
+
+    def schedule_checkpoint_writing(self):
+        self.scheduler.add_interval_task(self._write_checkpoint,
+                                         "checkpoint writing",
+                                         0,
+                                         self.checkpoint_interval,
+                                         kronos.method.threaded,
+                                         [],
+                                         None)
 
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
@@ -119,7 +131,6 @@ class Writer(threading.Thread):
                 self.processed += 1
                 if self.checkpoint_path:
                     self._update_last_checkpoint()
-                    self._write_checkpoint()
         else:
             print "No messages in the queue to write"
 

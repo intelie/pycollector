@@ -8,15 +8,17 @@ import helpers.kronos as kronos
 
 class Reader(threading.Thread):
     def __init__(self,
-                 queue,               # stores read messages
-                 conf={},             # additional configurations
-                 writer=None,         # if writer is async, it should be provided
-                 interval=None,       # interval of readings
-                 checkpoint_path=None # filepath to write checkpoint
+                 queue,                 # stores read messages
+                 conf={},               # additional configurations
+                 writer=None,           # if writer is async, it should be provided
+                 interval=None,         # interval of readings
+                 checkpoint_path=None,  # filepath to write checkpoint
+                 checkpoint_interval=60 # interval of checkpoint writing
                  ):
         self.interval = interval
         self.checkpoint_path = checkpoint_path
-        self.last_checkpoint = None
+        self.checkpoint_interval = checkpoint_interval
+        self.last_checkpoint = ''
         self.processed = 0
         self.queue = queue
         self.writer = writer
@@ -26,15 +28,28 @@ class Reader(threading.Thread):
 
         self.setup()
 
+        #recover from crash
         if writer and writer.last_checkpoint:
             self.last_checkpoint = writer.last_checkpoint
+
         self.schedule_tasks()
+        self.schedule_checkpoint_writing()
+
         threading.Thread.__init__(self)
+
+    def schedule_checkpoint_writing(self):
+       self.scheduler.add_interval_task(self._write_checkpoint,
+                                        "checkpoint writing",
+                                        0,
+                                        self.checkpoint_interval,
+                                        kronos.method.threaded,
+                                        [],
+                                        None)
 
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
         try:
-            return open(self.checkpoint_path, 'r').read()
+            return self.checkpoint_file.read()
         except Exception, e:
             print 'Error reading checkpoint'
             print e
@@ -104,6 +119,7 @@ class Reader(threading.Thread):
             if self.queue.qsize() < self.queue.maxsize:
                 self.queue.put(msg)
                 self.processed += 1
+
             else:
                 print "discarding message [%s], full queue" % msg
         except Exception, e:
@@ -112,7 +128,6 @@ class Reader(threading.Thread):
         self._writer_callback()
         if self.checkpoint_path:
             self._set_checkpoint(msg.checkpoint)
-            self._write_checkpoint()
 
     def _process(self):
         """Method called internally to process (read) a message.
