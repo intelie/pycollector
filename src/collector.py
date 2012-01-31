@@ -107,7 +107,8 @@ class Collector:
         for (writer, reader) in self.pairs:
             writer.start()
             reader.start()
-        time.sleep(31536000000) #1000 years =P
+        
+        while True: time.sleep(3600) 
 
 
 #supports inspecting
