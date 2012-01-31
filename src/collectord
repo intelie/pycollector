@@ -94,7 +94,7 @@ def stop(option, opt, value, parser):
         try:
             pidpath = daemon_conf.PID_PATH
         except AttributeError:
-            pidpath = pidfile_default
+            pidpath = PIDPATH_DEFAULT
         if not pidpath or not os.path.exists(pidpath):
             print "Can't get pidfile: %s. Is it running?" % pidpath
             sys.exit(-1)
