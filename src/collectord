@@ -43,7 +43,7 @@ def status(option, opt, value, parser):
         pidpath = daemon_conf.PID_PATH
     except AttributeError:
         pidpath = PIDPATH_DEFAULT 
-    if not pidfile or not os.path.exists(pidfile):
+    if not pidpath or not os.path.exists(pidpath):
         print "Status: NOT RUNNING."
     else:
         if not daemon_util.is_running()[0]:
