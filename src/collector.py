@@ -8,7 +8,7 @@
 import time
 import Queue
 import logging, logging.config
-import sys; sys.path.extend(['../conf', 'rwtypes', 'third'])
+import sys; sys.path.extend(['rwtypes', 'third'])
 
 from helpers import inspect_shell
 from util import conf_reader 

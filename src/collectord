@@ -15,10 +15,17 @@ __author__ = "Ronald Kaiser"
 __email__ = "ronald at intelie dot com dot br"
 
 
-import os
+try:
+    import sys, os
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.append('../conf')
+except Exception, e:
+    print e
+    exit(-1)
+
+
 import optparse
 import subprocess
-import sys; sys.path.extend(['../conf', '../src'])
 
 from helpers import daemon
 from util import daemon_util
