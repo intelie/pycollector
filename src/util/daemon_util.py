@@ -3,7 +3,7 @@
 
 
 import os
-import subprocess
+import commands
 
 
 def write_pid(pidfile):
@@ -14,9 +14,7 @@ def write_pid(pidfile):
 
 
 def remove_pidfile(pidfile):
-    return subprocess.call(["rm", "-rf", "%s" % pidfile],
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
+    return commands.getstatusandoutput(["rm -rf %s" % pidfile])[0]
 
 
 def get_pid(pidfile):
@@ -28,21 +26,14 @@ def get_pid(pidfile):
 def kill_pids(pids):
     """Input: a list of ints (pids) | Output: the returning code from kill."""
 
-    cmd = ["kill", "-9"]
     pids = map(lambda x: str(x), pids)
-    cmd.extend(pids)
-    return subprocess.call(cmd,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
+    cmd = "kill -9 "
+    cmd += ' '.join(pids)    
+    return commands.getstatusoutput(cmd)[0]
 
 
 def is_running(ps="""ps aux | grep "collectord .*--start" | grep -v grep | awk {'print $2'}"""):
-    ps = subprocess.Popen(ps,
-                          shell=True,
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
-
-    pids = ps.stdout.read().split('\n')
+    pids = commands.getoutput(ps).split('\n')
     pids = filter(lambda x: x.isdigit(), pids)
     pids = map(lambda x: int(x), pids)
 
@@ -61,9 +52,7 @@ def dir_exists(path):
         choice = raw_input('Do you want me to create the directory: %s ? [Y|n] ' % \
                             path)
         if choice == "" or choice.upper() == 'Y':
-            return_code = subprocess.call(['mkdir', path],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+            return_code = commands.getstatusoutput('mkdir %s')[0]
             if return_code != 0:
                 print "Can't create directory."
                 return False
