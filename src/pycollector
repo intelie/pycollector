@@ -30,6 +30,7 @@ import subprocess
 from helpers import daemon
 from util import daemon_util
 
+import ascii
 from rwtypes import rwtypes
 import daemon_conf
 from collector import Collector
@@ -135,7 +136,6 @@ def stop(option, opt, value, parser):
 
 def show_reader_types(option, opt, value, parser):
     keys = rwtypes.get_reader_keys()
-    print "Reader types:"
     for key in keys:
         print "* %s" % key
     sys.exit(0)
@@ -143,16 +143,12 @@ def show_reader_types(option, opt, value, parser):
 
 def show_writer_types(option, opt, value, parser):
     keys = rwtypes.get_writer_keys()
-    print "Writer types:"
     for key in keys:
         print "* %s" % key
     sys.exit(0)
 
 
 if __name__ == '__main__':
-    import ascii
-    print ascii.ascii
-
     parser = optparse.OptionParser(prog=__software__, version=__version__)
     parser.set_description(__desc__)
 
@@ -192,8 +188,10 @@ if __name__ == '__main__':
                       nargs=0,
                       help="checks if collector is runnning.")
 
-
-    (options, args) = parser.parse_args()
-
-    if not args:
+    if len(sys.argv) < 2:
+        print ascii.ascii
         parser.print_help()
+        sys.exit(0)
+    elif '--help' in sys.argv:
+        print ascii.ascii
+    (options, args) = parser.parse_args()
