@@ -1,12 +1,12 @@
 CHANGELOG
 ========= 
 
-0.1.0
+0.1.3
 - added experimental readers: log, arduino, stdin, db, adhoc, cam
 - added experimental writers: file, socket, stdout, gtalk, cam, activemq
 
 
-0.1.1
+0.1.4
 - fixed daemon operations (status, stop, start)
 - changed daemon name from collectord to pycollector
 - removing excessive printing of pycollector ascii
