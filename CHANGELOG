@@ -1,0 +1,10 @@
+CHANGELOG
+========= 
+
+0.1.0
+- added experimental readers: log, arduino, stdin, db, adhoc, cam
+- added experimental writers: file, socket, stdout, gtalk, cam, activemq
+
+
+0.1.1
+- fixed daemon operations (status, stop, start)
