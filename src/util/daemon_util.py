@@ -31,7 +31,7 @@ def kill_pids(pids):
     return commands.getstatusoutput(cmd)[0]
 
 
-def is_running(ps="""ps aux | grep -E 'collectord .*start' | grep -v 'grep' | awk {'print $2'}"""):
+def is_running(ps="""ps aux | grep -E 'pycollector .*start' | grep -v 'grep' | awk {'print $2'}"""):
     pids = commands.getoutput(ps).split('\n')
     pids = filter(lambda x: x.isdigit(), pids)
     pids = map(lambda x: int(x), pids)

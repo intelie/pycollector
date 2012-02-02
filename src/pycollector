@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    File: collectord
+    File: pycollector
     Description: Collector daemon.
 """
 
@@ -36,7 +36,7 @@ from collector import Collector
 
 
 DAEMON=True
-PIDPATH_DEFAULT=os.path.join(os.path.dirname(__file__), "collectord.pid")
+PIDPATH_DEFAULT=os.path.join(os.path.dirname(__file__), "pycollector.pid")
 LOGGING_PATH_DEFAULT="../logs/"
 
 

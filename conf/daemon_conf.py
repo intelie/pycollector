@@ -1,13 +1,13 @@
 """
     File: daemon_conf.py
-    Description: Collector configuration file.
+    Description: Pycollector configuration file.
 """
 
 #PID SETTINGS
 #------------
 
 #PID_PATH: LogCollector pid path/filename
-#PID_PATH="../collector.pid"
+#PID_PATH="../pycollector.pid"
 
 
 #APPLICATION LOG SETTINGS
