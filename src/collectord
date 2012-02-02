@@ -55,6 +55,7 @@ def status(option, opt, value, parser):
         if os.path.exists(pidpath):
             print "WARNING: Pidfile in %s seems to be obsolete. Please, remove it manually." % pidpath
             sys.exit(-1)
+        sys.exit(0)
     print "Status: RUNNING."
     sys.exit(0)
 
