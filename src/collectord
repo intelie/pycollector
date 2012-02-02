@@ -172,7 +172,7 @@ if __name__ == '__main__':
                       action="callback",
                       callback=toggle_daemon,
                       nargs=0,
-                      help="starts collector without detaching the process")
+                      help="enable collector to start without detaching the process")
 
     parser.add_option("--start",
                       action="callback",
