@@ -102,26 +102,26 @@ def stop(option, opt, value, parser):
         except AttributeError:
             pidpath = PIDPATH_DEFAULT
         if not pidpath or not os.path.exists(pidpath):
-            print "Can't get pidfile: %s. Is it running?" % pidpath
-            sys.exit(-1)
-        else:
+            print "Warning: Can't get pidfile: %s. Kill it manually." % pidpath
+        else: 
             try:
                 print "Stopping daemon..."
-                pid = get_pid(pidpath)
+                pid = daemon_util.get_pid(pidpath)
             except Exception, e:
                 print "Can't read pidfile. Daemon not stopped."
+                print e
                 sys.exit(-1)
             try:
-                if kill_pids(pids) != 0:
+                if daemon_util.kill_pids([pid]) != 0:
                     print "Can't stop daemon. PIDs tried: %s" % pids
                     sys.exit(-1)
             except Exception, e:
-                print e
                 print "Can't stop daemon. PIDs tried: %s" % pids
+                print e
                 sys.exit(-1)
             else:
                 try:
-                    if remove_pidfile(pidpath) == 0:
+                    if daemon_util.remove_pidfile(pidpath) == 0:
                         print "Daemon stopped."
                     else:
                         print """
@@ -137,7 +137,7 @@ def show_reader_types(option, opt, value, parser):
     keys = rwtypes.get_reader_keys()
     print "Reader types:"
     for key in keys:
-        print key
+        print "* %s" % key
     sys.exit(0)
 
 
@@ -145,7 +145,7 @@ def show_writer_types(option, opt, value, parser):
     keys = rwtypes.get_writer_keys()
     print "Writer types:"
     for key in keys:
-        print key
+        print "* %s" % key
     sys.exit(0)
 
 

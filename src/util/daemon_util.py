@@ -14,25 +14,24 @@ def write_pid(pidfile):
 
 
 def remove_pidfile(pidfile):
-    return commands.getstatusandoutput(["rm -rf %s" % pidfile])[0]
+    return commands.getstatusoutput("rm -rf %s" % pidfile)[0]
 
 
 def get_pid(pidfile):
     f = open(pidfile, 'r')
     pid = int(f.read())
     f.close()
-
+    return pid
 
 def kill_pids(pids):
     """Input: a list of ints (pids) | Output: the returning code from kill."""
 
     pids = map(lambda x: str(x), pids)
-    cmd = "kill -9 "
-    cmd += ' '.join(pids)    
+    cmd = "kill -9 " + ' '.join(pids) 
     return commands.getstatusoutput(cmd)[0]
 
 
-def is_running(ps="""ps aux | grep "collectord .*--start" | grep -v grep | awk {'print $2'}"""):
+def is_running(ps="""ps aux | grep 'collectord' | grep -v 'grep' | awk {'print $2'}"""):
     pids = commands.getoutput(ps).split('\n')
     pids = filter(lambda x: x.isdigit(), pids)
     pids = map(lambda x: int(x), pids)
