@@ -36,7 +36,7 @@ from collector import Collector
 
 
 DAEMON=True
-PIDPATH_DEFAULT="../collectord.pid"
+PIDPATH_DEFAULT=os.path.join(os.path.dirname(__file__), "collectord.pid")
 LOGGING_PATH_DEFAULT="../logs/"
 
 
@@ -50,14 +50,12 @@ def status(option, opt, value, parser):
         pidpath = daemon_conf.PID_PATH
     except AttributeError:
         pidpath = PIDPATH_DEFAULT 
-    if not pidpath or not os.path.exists(pidpath):
+    if not daemon_util.is_running()[0]:
         print "Status: NOT RUNNING."
-    else:
-        if not daemon_util.is_running()[0]:
-            print "Status: NOT RUNNING."
+        if os.path.exists(pidpath):
             print "WARNING: Pidfile in %s seems to be obsolete. Please, remove it manually." % pidpath
             sys.exit(-1)
-        print "Status: RUNNING."
+    print "Status: RUNNING."
     sys.exit(0)
 
 
