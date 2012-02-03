@@ -3,7 +3,8 @@
 
 
 import os
-import commands
+import shlex
+from subprocess import call, Popen, PIPE
 
 
 def write_pid(pidfile):
@@ -14,7 +15,7 @@ def write_pid(pidfile):
 
 
 def remove_pidfile(pidfile):
-    return commands.getstatusoutput("rm -rf %s" % pidfile)[0]
+    return call(shlex.split("rm -rf %s" % pidfile))
 
 
 def get_pid(pidfile):
@@ -25,14 +26,15 @@ def get_pid(pidfile):
 
 def kill_pids(pids):
     """Input: a list of ints (pids) | Output: the returning code from kill."""
-
     pids = map(lambda x: str(x), pids)
-    cmd = "kill -9 " + ' '.join(pids) 
-    return commands.getstatusoutput(cmd)[0]
+    return call(shlex.split("kill -9 %s" % ' '.join(pids)))
 
 
-def is_running(ps="""ps aux | grep -E 'pycollector .*start' | grep -v 'grep' | awk {'print $2'}"""):
-    pids = commands.getoutput(ps).split('\n')
+def is_running(ps="""ps aux --cols=1000 |
+                     grep -E 'pycollector .*start' |
+                     grep -v 'grep' | awk {'print $2'}"""):
+    cmd = Popen(ps, stdout=PIPE, shell=True)
+    pids = cmd.stdout.read().split('\n')
     pids = filter(lambda x: x.isdigit(), pids)
     pids = map(lambda x: int(x), pids)
 
@@ -51,7 +53,7 @@ def dir_exists(path):
         choice = raw_input('Do you want me to create the directory: %s ? [Y|n] ' % \
                             path)
         if choice == "" or choice.upper() == 'Y':
-            return_code = commands.getstatusoutput('mkdir %s')[0]
+            return_code = call(shlex.split('mkdir %s' % path))
             if return_code != 0:
                 print "Can't create directory."
                 return False
