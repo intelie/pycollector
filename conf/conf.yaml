@@ -16,8 +16,6 @@
 #        A reader/writer must have a type.
 #        A reader/writer may have a checkpoint path.
 #        A reader/writer may present an interval (in seconds) property.
-#        If a writer has a key 'async' it will be called whenever a
-#        message is read.
 #
 #
 
