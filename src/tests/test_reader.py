@@ -56,6 +56,7 @@ class TestReader(unittest.TestCase):
             def read(self):
                 self.store(Message(content='foo', checkpoint='foo'))
                 self.store(Message(content='bar', checkpoint='bar'))
+                return True
 
         q = get_queue()
         myreader = MyReader(q)

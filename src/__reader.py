@@ -38,13 +38,14 @@ class Reader(threading.Thread):
         threading.Thread.__init__(self)
 
     def schedule_checkpoint_writing(self):
-       self.scheduler.add_interval_task(self._write_checkpoint,
-                                        "checkpoint writing",
-                                        0,
-                                        self.checkpoint_interval,
-                                        kronos.method.threaded,
-                                        [],
-                                        None)
+        if self.checkpoint_interval and self.checkpoint_path:
+            self.scheduler.add_interval_task(self._write_checkpoint,
+                                             "checkpoint writing",
+                                             0,
+                                             self.checkpoint_interval,
+                                             kronos.method.threaded,
+                                             [],
+                                             None)
 
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""

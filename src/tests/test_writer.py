@@ -48,9 +48,9 @@ class TestWriter(unittest.TestCase):
         class MyWriter(Writer):
             def setup(self):
                 self.checkpoint_path = checkpoint_path 
+                self.checkpoint_interval = 1
 
             def write(self, msg):
-                self.set_checkpoint(msg)
                 return True
 
         q = get_queue()
@@ -62,11 +62,16 @@ class TestWriter(unittest.TestCase):
         #should process message 1
         mywriter.process()
 
-        #default checkpoint should be the msg
+        #waits for checkpoint_interval
+        time.sleep(1)
+
         self.assertEqual('foo', mywriter.last_checkpoint)
 
         #should process message 2
         mywriter.process()
+
+        #waits for checkpoint_interval
+        time.sleep(1)
 
         self.assertEqual(2, mywriter.processed)
         self.assertEqual('bar', mywriter.last_checkpoint)

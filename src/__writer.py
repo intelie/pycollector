@@ -34,21 +34,24 @@ class Writer(threading.Thread):
 
         self.last_checkpoint = None
         self.current_checkpoint = None
+
         if self.checkpoint_path:
             self.last_checkpoint = self._read_checkpoint()
 
         self.schedule_tasks()
         self.schedule_checkpoint_writing()
+
         threading.Thread.__init__(self)
 
     def schedule_checkpoint_writing(self):
-        self.scheduler.add_interval_task(self._write_checkpoint,
-                                         "checkpoint writing",
-                                         0,
-                                         self.checkpoint_interval,
-                                         kronos.method.threaded,
-                                         [],
-                                         None)
+        if self.checkpoint_interval and self.checkpoint_path:
+            self.scheduler.add_interval_task(self._write_checkpoint,
+                                             "checkpoint writing",
+                                             0,
+                                             self.checkpoint_interval,
+                                             kronos.method.threaded,
+                                             [],
+                                             None)
 
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
@@ -64,7 +67,7 @@ class Writer(threading.Thread):
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
         try:
-            f = open(self.checkpoint_path, 'w')
+            f = open(self.checkpoint_path, 'w+')
             f.write(self.last_checkpoint.__str__())
             f.close()
         except Exception, e:
