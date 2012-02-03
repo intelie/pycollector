@@ -10,9 +10,7 @@ from __message import Message
 
 
 def get_queue(maxsize=1024):
-    q = Queue.Queue()
-    q.maxsize = maxsize
-    return q
+    return Queue.Queue(maxsize=maxsize)
 
 
 class TestReader(unittest.TestCase):
