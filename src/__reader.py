@@ -118,7 +118,7 @@ class Reader(threading.Thread):
         """Internal method to store read messages.
            Shouldn't be called by subclasses."""
         try: 
-            if self.queue.full():
+            if not self.queue.full():
                 self.queue.put(msg)
                 self.processed += 1
             else:
