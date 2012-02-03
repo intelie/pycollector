@@ -15,3 +15,7 @@ CHANGELOG
 0.1.5
 - using subprocess module (fixed buggy --status option)
 - fixed tests
+
+
+0.1.6
+- adding discarded message counter to Reader/Writer
