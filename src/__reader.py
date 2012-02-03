@@ -20,6 +20,7 @@ class Reader(threading.Thread):
         self.checkpoint_interval = checkpoint_interval
         self.last_checkpoint = ''
         self.processed = 0
+        self.discarded = 0
         self.queue = queue
         self.writer = writer
 
@@ -120,8 +121,8 @@ class Reader(threading.Thread):
             if self.queue.qsize() < self.queue.maxsize:
                 self.queue.put(msg)
                 self.processed += 1
-
             else:
+                self.discarded += 1
                 print "discarding message [%s], full queue" % msg
         except Exception, e:
             print "can't store in queue, message %s" % msg

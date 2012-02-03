@@ -9,9 +9,9 @@ from __writer import Writer
 from __message import Message
 
 
-def get_queue():
+def get_queue(maxsize=1024):
     q = Queue.Queue()
-    q.maxsize = 1024
+    q.maxsize = maxsize
     return q
 
 
@@ -39,6 +39,7 @@ class TestReader(unittest.TestCase):
                 while n < 3:
                     self.store(Message(content="love is all you need"))
                     n += 1
+                return True
 
         q = get_queue()
         myreader = MyReader(q)
@@ -88,6 +89,23 @@ class TestReader(unittest.TestCase):
         self.assertEqual('42', myreader.last_checkpoint)
 
         os.remove(writer_checkpoint_path)
+
+    def test_store_discarded_messages_due_to_full_queue(self):
+        class MyReader(Reader):
+            def read(self):
+                while(True):
+                    self.store(Message(content='know thyself'))
+                return True
+
+        q = get_queue(5)
+        myreader = MyReader(q)
+        myreader.start()
+
+        #waits to get a full queue
+        time.sleep(0.001)
+
+        self.assertTrue(myreader.discarded > 0)
+
 
 if __name__ == "__main__":
     unittest.main()
