@@ -8,8 +8,8 @@ from __writer import Writer
 from __message import Message
 
 
-def get_queue():
-    return Queue.Queue(maxsize=1024)
+def get_queue(maxsize=1024):
+    return Queue.Queue(maxsize=maxsize)
 
 
 class TestWriter(unittest.TestCase):
@@ -24,9 +24,13 @@ class TestWriter(unittest.TestCase):
         q = get_queue()
         q.put(Message(content=1))
         q.put(Message(content=2))
+
         mywriter = MyWriter(q)
         mywriter.start()
+
+        #waits interval to write messages
         time.sleep(2)
+
         self.assertEqual(0, q.qsize())
 
     def test_processed_messages_counting(self):
@@ -37,10 +41,14 @@ class TestWriter(unittest.TestCase):
         q = get_queue()
         q.put(Message(content=1))
         q.put(Message(content=2))
+
         mywriter = MyWriter(q)
         mywriter.start()
+
+        #force processing messages
         mywriter.process()
         mywriter.process()
+
         self.assertEqual(2, mywriter.processed)
 
     def test_checkpoint_saving(self):
@@ -56,6 +64,7 @@ class TestWriter(unittest.TestCase):
         q = get_queue()
         q.put(Message(content='foo', checkpoint='foo'))
         q.put(Message(content='bar', checkpoint='bar'))
+
         mywriter = MyWriter(q)
         mywriter.start()
 
@@ -98,7 +107,30 @@ class TestWriter(unittest.TestCase):
         q = get_queue()
         mywriter = MyWriter(q)
         self.assertEqual('foo', mywriter.last_checkpoint)
+
         os.remove(checkpoint_path)
+
+    def test_store_discarded_messages_due_to_some_fail(self):
+        class MyWriter(Writer):
+            def write(self, msg):
+                if msg == 'foo2' or msg == 'foo3':
+                    return False
+                return True
+
+        q = get_queue(3)
+        q.put(Message(content='foo1'))
+        q.put(Message(content='foo2'))
+        q.put(Message(content='foo3'))
+
+        mywriter = MyWriter(q)
+        mywriter.start()
+
+        #force processing messages
+        mywriter.process()
+        mywriter.process()
+        mywriter.process()
+
+        self.assertEqual(2, mywriter.discarded)
 
 
 if __name__ == "__main__":

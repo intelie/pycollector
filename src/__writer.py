@@ -14,6 +14,7 @@ class Writer(threading.Thread):
                  blockable=False,       # stops if a message were not delivered
                  interval=None,         # interval to read from queue
                  retry_interval=0,      # retry interval (in seconds) to writing
+                 retry_timeout=None,    # if timeout is reached, discard message
                  checkpoint_path=None,  # filepath to write checkpoint
                  checkpoint_interval=60 # interval of checkpoint writing
                  ):
@@ -23,6 +24,7 @@ class Writer(threading.Thread):
         self.retry_interval = self.interval or 10
         self.blockable = blockable
         self.processed = 0
+        self.discarded = 0
         self.blocked = False
         self.checkpoint_path = checkpoint_path
         self.checkpoint_interval = checkpoint_interval
@@ -122,12 +124,18 @@ class Writer(threading.Thread):
                 if self.blockable:
                     self.scheduler.stop()
                     self.blocked = True
+                    time_passed = 0
                     while not self._write(msg):
-                        print "Rewriting..."
+                        if (self.retry_timeout and self.time_passed > self.retry_timeout):
+                            self.discarded += 1
+                            break
                         time.sleep(self.retry_interval)
+                        time_passed += self.retry_interval 
+                        print "Rewriting..."
                     self.blocked = False
                     self.reschedule_tasks()
                 else:
+                    self.discarded += 1
                     print "Message [%s] can't be written" % msg
             else:
                 print "Message [%s] written" % msg

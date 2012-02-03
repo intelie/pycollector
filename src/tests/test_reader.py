@@ -16,7 +16,7 @@ def get_queue(maxsize=1024):
 
 
 class TestReader(unittest.TestCase):
-    def testPeriodicSchedulingAddingToQueue(self):
+    def test_periodic_scheduling_adding_to_queue(self):
         class MyReader(Reader):
             def setup(self):
                 self.interval = 1
@@ -32,7 +32,7 @@ class TestReader(unittest.TestCase):
         size = q.qsize()
         self.assertTrue(size >= 3)
 
-    def testSingleSchedulingAddingToQueue(self):
+    def test_single_scheduling_adding_to_queue(self):
         class MyReader(Reader):
             def read(self):
                 n = 0
