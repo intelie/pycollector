@@ -10,3 +10,8 @@ CHANGELOG
 - fixed daemon operations (status, stop, start)
 - changed daemon name from collectord to pycollector
 - removing excessive printing of pycollector ascii
+
+
+0.1.5
+- using subprocess module (fixed buggy --status option)
+- fixed tests
