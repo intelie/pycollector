@@ -5,6 +5,7 @@
     Description: This module starts the reader/writer threads
 """
 
+import os
 import time
 import Queue
 import logging, logging.config
@@ -16,7 +17,7 @@ from rwtypes import rwtypes
 
 
 SEVERITY_DEFAULT = "DEBUG"
-LOGGING_PATH_DEFAULT = "../logs/"
+LOGGING_PATH_DEFAULT = os.path.join(os.path.dirname(__file__), "logs", "")
 ROTATING_DEFAULT = "midnight"
 FORMATTER_DEFAULT = "%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s)] %(levelname)s - %(message)s"
 

@@ -38,7 +38,7 @@ from collector import Collector
 
 DAEMON=True
 PIDPATH_DEFAULT=os.path.join(os.path.dirname(__file__), "pycollector.pid")
-LOGGING_PATH_DEFAULT="../logs/"
+LOGGING_PATH_DEFAULT=os.path.join(os.path.dirname(__file__), "logs", "")
 
 
 def toggle_daemon(option, ospt, value, parser):
@@ -85,9 +85,10 @@ def start(option, opt, value, parser):
             pidpath = daemon_conf.PID_PATH
         except AttributeError:
             pidpath = PIDPATH_DEFAULT
-
         daemon_util.write_pid(pidpath)
+
         c.start()
+
         if DAEMON:
             d.close()
 
@@ -102,6 +103,7 @@ def stop(option, opt, value, parser):
             pidpath = daemon_conf.PID_PATH
         except AttributeError:
             pidpath = PIDPATH_DEFAULT
+
         if not pidpath or not os.path.exists(pidpath):
             print "Warning: Can't get pidfile: %s. Kill it manually." % pidpath
         else: 
@@ -114,10 +116,10 @@ def stop(option, opt, value, parser):
                 sys.exit(-1)
             try:
                 if daemon_util.kill_pids([pid]) != 0:
-                    print "Can't stop daemon. PIDs tried: %s" % pids
+                    print "Can't stop daemon. PID tried: %s" % pid
                     sys.exit(-1)
             except Exception, e:
-                print "Can't stop daemon. PIDs tried: %s" % pids
+                print "Can't stop daemon. PID tried: %s" % pid
                 print e
                 sys.exit(-1)
             else:
