@@ -8,9 +8,11 @@
 import os
 import time
 import Queue
+import threading
 import logging, logging.config
 import sys; sys.path.extend(['rwtypes', 'third'])
 
+import web
 from helpers import inspect_shell
 from util import conf_reader 
 from rwtypes import rwtypes
@@ -33,6 +35,7 @@ class Collector:
         self.to_log = to_log
         self.conf = conf_reader.read_conf('../conf/conf.yaml')
         self.prepare_readers_writers()
+        self.web_server = web.Server(self)
         if to_log: 
             self.set_logging()
 
@@ -105,9 +108,20 @@ class Collector:
 
 
     def start(self):
-        for (writer, reader) in self.pairs:
-            writer.start()
-            reader.start()
+        try:
+            for (writer, reader) in self.pairs:
+                writer.start()
+                reader.start()
+        except Exception, e:
+            print "Cannot start pair"
+            print e
+
+        try:
+            self.web_server.start()
+        except Exception, e:
+            print "Cannot start server"
+            print e
+
         
         while True: time.sleep(3600) 
 
