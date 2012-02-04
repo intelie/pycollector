@@ -18,6 +18,7 @@ CHANGELOG
 
 
 0.1.6
-- adding discarded message counter to Reader/Writer
-- adding 'host' property in ActivemqWriter by default 
+- added discarded message counter to Reader/Writer
+- added 'host' property in ActivemqWriter by default 
   (if is not desired, should be added a 'disablehost: True' in conf.yaml)
+- added retry_timeout to writer logic 
