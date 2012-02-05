@@ -102,7 +102,7 @@ def start(option, opt, value, parser):
 def stop(option, opt, value, parser):
     running, pids = daemon_util.is_running()
     if not running:
-        print "Daemon is not running."
+        print "Daemon was not running."
         sys.exit(-1)
     else:
         try:
