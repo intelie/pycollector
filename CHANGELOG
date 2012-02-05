@@ -20,7 +20,7 @@ CHANGELOG
 0.1.6
 - added discarded message counter to Reader/Writer
 - added 'host' property in ActivemqWriter by default 
-  (if is not desired, should be added a 'disablehost: True' in conf.yaml)
+  (if is not desired, should be added a 'remove_host: True' in conf.yaml)
 - added retry_timeout to writer logic 
 - added url (localhost:8442) to retrieve collector metadata
 - removed inspect_shell
