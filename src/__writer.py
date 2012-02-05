@@ -18,7 +18,7 @@ class Writer(threading.Thread):
                  checkpoint_path=None,  # filepath to write checkpoint
                  checkpoint_interval=60 # interval of checkpoint writing
                  ):
-
+        self.conf = conf
         self.queue = queue
         self.interval = interval
         self.retry_interval = self.interval or 10

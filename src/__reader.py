@@ -15,6 +15,7 @@ class Reader(threading.Thread):
                  checkpoint_path=None,  # filepath to write checkpoint
                  checkpoint_interval=60 # interval of checkpoint writing
                  ):
+        self.conf = conf
         self.interval = interval
         self.checkpoint_path = checkpoint_path
         self.checkpoint_interval = checkpoint_interval
