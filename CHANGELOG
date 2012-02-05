@@ -24,3 +24,7 @@ CHANGELOG
 - added retry_timeout to writer logic 
 - added url (localhost:8442) to retrieve collector metadata
 - removed inspect_shell
+
+
+0.1.7
+- added parameter to daemon to disable web server
