@@ -8,39 +8,42 @@ import helpers.kronos as kronos
 
 class Reader(threading.Thread):
     def __init__(self,
-                 queue,                 # stores read messages
-                 conf={},               # additional configurations
-                 writer=None,           # if writer is async, it should be provided
-                 interval=None,         # interval of readings
-                 checkpoint_path=None,  # filepath to write checkpoint
-                 checkpoint_interval=60 # interval of checkpoint writing
+                 queue,                   # stores read messages
+                 conf={},                 # additional configurations
+                 writer=None,             # if writer is async, it must be provided
+                 interval=None,           # interval of readings
+                 checkpoint_enabled=False,# default is to not deal with checkpoint 
+                 checkpoint_interval=60   # interval between checkpoints
                  ):
+
         self.conf = conf
         self.interval = interval
-        self.checkpoint_path = checkpoint_path
-        self.checkpoint_interval = checkpoint_interval
-        self.last_checkpoint = ''
         self.processed = 0
         self.discarded = 0
         self.queue = queue
         self.writer = writer
+        self.checkpoint_enabled = checkpoint_enabled
+        self.checkpoint_interval = checkpoint_interval
 
-        if conf:
-            self.set_conf(conf)
-
+        self.set_conf(conf)
         self.setup()
 
-        #recover from crash
-        if writer and writer.last_checkpoint:
-            self.last_checkpoint = writer.last_checkpoint
+        if self.checkpoint_enabled:
+            self.last_checkpoint = ''
+            if writer and \
+                writer.last_checkpoint:
+                self.last_checkpoint = writer.last_checkpoint
 
         self.schedule_tasks()
-        self.schedule_checkpoint_writing()
+
+        if self.checkpoint_enabled:
+            self.schedule_checkpoint_writing()
 
         threading.Thread.__init__(self)
 
     def schedule_checkpoint_writing(self):
-        if self.checkpoint_interval and self.checkpoint_path:
+        if self.checkpoint_enabled and \
+            self.checkpoint_interval:
             self.scheduler.add_interval_task(self._write_checkpoint,
                                              "checkpoint writing",
                                              0,
@@ -52,7 +55,7 @@ class Reader(threading.Thread):
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
         try:
-            return self.checkpoint_file.read()
+            return open(self.checkpoint_path, 'r').read()
         except Exception, e:
             print 'Error reading checkpoint'
             print e
@@ -60,11 +63,17 @@ class Reader(threading.Thread):
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
         try:
-            lc = self.last_checkpoint
-            f = open(self.checkpoint_path, 'w')
-            f.write(lc.__str__())
-            f.close()
-            print 'checkpoint [%s] written' % lc
+            if self.checkpoint_enabled:
+                if not self.checkpoint_path:
+                    print 'Cannot write checkpoint. No checkpoint_path defined.'
+                    return 
+                lc = self.last_checkpoint
+                f = open(self.checkpoint_path, 'w+')
+                f.write(lc.__str__() or '')
+                f.close()
+                print 'checkpoint [%s] written' % lc
+            else:
+                print "Since checkpoint is disabled, it was not written."
         except Exception, e:
             print 'Error writing checkpoint in %s' % self.checkpoint_path
             print e
@@ -72,6 +81,7 @@ class Reader(threading.Thread):
     def set_conf(self, conf):
         """Turns configuration properties 
            into instance properties."""
+        print 'inside set_conf'
         try:
             for item in conf:
                 if isinstance(conf[item], str):
@@ -109,8 +119,7 @@ class Reader(threading.Thread):
         """Callback to writer for non periodic tasks.
            Shouldn't be called by subclasses."""
         try:
-            if self.writer and not self.writer.interval:
-                self.writer.process()
+            self.writer.process()
         except Exception, e:
             print 'Error when executing writer_callback'
             print e
@@ -128,9 +137,13 @@ class Reader(threading.Thread):
         except Exception, e:
             print "can't store in queue, message %s" % msg
             print e
-        self._writer_callback()
-        if self.checkpoint_path:
+
+        if self.checkpoint_enabled:
             self._set_checkpoint(msg.checkpoint)
+
+        if self.writer and not self.writer.interval:
+            self._writer_callback()
+
 
     def _process(self):
         """Method called internally to process (read) a message.

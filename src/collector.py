@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """
     File: collector.py
     Description: This module starts the reader/writer threads
