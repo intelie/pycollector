@@ -24,11 +24,19 @@ FORMATTER_DEFAULT = "%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s
 
 
 class Collector:
-    def __init__(self, daemon_conf=None, to_log=False, server=True):
+    def __init__(self,
+                 daemon_conf=None,
+                 to_log=False,
+                 server=True,
+                 default_queue_maxsize=100000):
         self.daemon_conf = daemon_conf
         self.to_log = to_log
         self.server = server
+
+        #TODO: fix this relative path, use os.path
         self.conf = conf_reader.read_conf('../conf/conf.yaml')
+
+        self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
         self.web_server = web.Server(self)
         if to_log: 
@@ -71,7 +79,7 @@ class Collector:
 
     def prepare_readers_writers(self):
         self.pairs = []
-        queue_maxsize = 100000
+        queue_maxsize = self.default_queue_maxsize
         for pair in self.conf:
             reader_conf = pair['reader']
             writer_conf = pair['writer']
