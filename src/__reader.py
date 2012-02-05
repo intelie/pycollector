@@ -81,7 +81,6 @@ class Reader(threading.Thread):
     def set_conf(self, conf):
         """Turns configuration properties 
            into instance properties."""
-        print 'inside set_conf'
         try:
             for item in conf:
                 if isinstance(conf[item], str):

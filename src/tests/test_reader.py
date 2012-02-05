@@ -14,7 +14,7 @@ def get_queue(maxsize=1024):
 
 
 class TestReader(unittest.TestCase):
-    def xtest_periodic_scheduling_adding_to_queue(self):
+    def test_periodic_scheduling_adding_to_queue(self):
         class MyReader(Reader):
             def setup(self):
                 self.interval = 1
@@ -30,7 +30,7 @@ class TestReader(unittest.TestCase):
         size = q.qsize()
         self.assertTrue(size >= 3)
 
-    def xtest_single_scheduling_adding_to_queue(self):
+    def test_single_scheduling_adding_to_queue(self):
         class MyReader(Reader):
             def read(self):
                 n = 0
@@ -60,7 +60,6 @@ class TestReader(unittest.TestCase):
 
         q = get_queue()
         myreader = MyReader(q)
-        print '-'*30, myreader.checkpoint_interval
         myreader.start()
         time.sleep(1)
 
@@ -73,7 +72,7 @@ class TestReader(unittest.TestCase):
 
         os.remove(checkpoint_path)
 
-    def xtest_restore_checkpoint_from_writer_when_starting(self):
+    def test_restore_checkpoint_from_writer_when_starting(self):
         writer_checkpoint_path = '/tmp/wcheckpoint'
         f = open(writer_checkpoint_path, 'w+')
         f.write('42')
@@ -92,7 +91,7 @@ class TestReader(unittest.TestCase):
 
         os.remove(writer_checkpoint_path)
 
-    def xtest_store_discarded_messages_due_to_full_queue(self):
+    def test_store_discarded_messages_due_to_full_queue(self):
         class MyReader(Reader):
             def read(self):
                 while(True):
