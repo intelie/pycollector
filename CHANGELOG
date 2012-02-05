@@ -23,3 +23,4 @@ CHANGELOG
   (if is not desired, should be added a 'disablehost: True' in conf.yaml)
 - added retry_timeout to writer logic 
 - added url (localhost:8442) to retrieve collector metadata
+- removed inspect_shell
