@@ -95,7 +95,8 @@ class TestReader(unittest.TestCase):
 
         q = get_queue()
         myreader = Reader(q, 
-                          conf={'checkpoint_enabled' : True}, 
+                          conf={'checkpoint_enabled' : True,
+                                'checkpoint_path' : '/tmp/test'}, 
                           writer=MyWriter(q))
 
         self.assertEqual('42', myreader.last_checkpoint)

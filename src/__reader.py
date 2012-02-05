@@ -36,13 +36,15 @@ class Reader(threading.Thread):
                 self.last_checkpoint = writer.last_checkpoint
             if not hasattr(self, 'checkpoint_interval'):
                 self.checkpoint_interval = checkpoint_interval
+            if not hasattr(self, 'checkpoint_path'):
+                print 'Error. Please, configure a checkpoint_path'
+                exit(-1)
             self.schedule_checkpoint_writing()
 
         threading.Thread.__init__(self)
 
     def schedule_checkpoint_writing(self):
-        if self.checkpoint_enabled and \
-            self.checkpoint_interval:
+        if self.checkpoint_enabled:
             self.scheduler.add_interval_task(self._write_checkpoint,
                                              "checkpoint writing",
                                              0,
@@ -54,7 +56,7 @@ class Reader(threading.Thread):
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
         try:
-            return open(self.checkpoint_path, 'r').read()
+            return open(self.checkpoint_path, 'r+').read()
         except Exception, e:
             print 'Error reading checkpoint'
             print e
@@ -63,16 +65,11 @@ class Reader(threading.Thread):
         """Write checkpoint in disk."""
         try:
             if self.checkpoint_enabled:
-                if not self.checkpoint_path:
-                    print 'Cannot write checkpoint. No checkpoint_path defined.'
-                    return 
                 lc = self.last_checkpoint
                 f = open(self.checkpoint_path, 'w+')
                 f.write(lc.__str__() or '')
                 f.close()
                 print 'checkpoint [%s] written' % lc
-            else:
-                print "Since checkpoint is disabled, it was not written."
         except Exception, e:
             print 'Error writing checkpoint in %s' % self.checkpoint_path
             print e
