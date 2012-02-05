@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 import os
 import time
 import threading
@@ -9,59 +10,59 @@ import helpers.kronos as kronos
 
 class Writer(threading.Thread):
     def __init__(self, 
-                 queue,                 # source of messages to be written
-                 conf={},               # additional configurations
-                 blockable=False,       # stops if a message were not delivered
-                 interval=None,         # interval to read from queue
-                 retry_interval=0,      # retry interval (in seconds) to writing
-                 retry_timeout=None,    # if timeout is reached, discard message
-                 checkpoint_path=None,  # filepath to write checkpoint
-                 checkpoint_interval=60 # interval of checkpoint writing
+                 queue,                   # source of messages to be written
+                 conf={},                 # additional configurations
+                 blockable=False,         # stops if a message were not delivered
+                 interval=None,           # interval to read from queue
+                 retry_interval=0,        # retry interval (in seconds) to writing
+                 retry_timeout=None,      # if timeout is reached, discard message
+                 checkpoint_enabled=False,# deafult is to not deal with checkpoints
+                 checkpoint_interval=60   # interval of checkpoint writing
                  ):
+
         self.conf = conf
-        self.queue = queue
-        self.interval = interval
-        self.retry_interval = self.interval or 10
-        self.blockable = blockable
         self.processed = 0
         self.discarded = 0
-        self.blocked = False
-        self.checkpoint_path = checkpoint_path
-        self.checkpoint_interval = checkpoint_interval
+        self.queue = queue
+        self.interval = interval
+        self.retry_interval = retry_interval 
+        self.blockable = blockable
+        self.blocked = False 
+        self.checkpoint_enabled = checkpoint_enabled
 
-        if conf:
-            self.set_conf(conf)
-
+        self.set_conf(conf)
         self.setup()
-
-        self.last_checkpoint = None
-        self.current_checkpoint = None
-
-        if self.checkpoint_path:
-            self.last_checkpoint = self._read_checkpoint()
-
+   
         self.schedule_tasks()
-        self.schedule_checkpoint_writing()
+
+        if self.checkpoint_enabled: 
+            self.last_checkpoint = self._read_checkpoint()
+            if not hasattr(self, 'checkpoint_interval'):
+                self.checkpoint_interval = checkpoint_interval
+            if not hasattr(self, 'checkpoint_path'):
+                print 'Error. Please, configure a checkpoint_path'
+                exit(-1)
+            self.schedule_checkpoint_writing()
 
         threading.Thread.__init__(self)
 
     def schedule_checkpoint_writing(self):
-        if self.checkpoint_interval and self.checkpoint_path:
-            self.scheduler.add_interval_task(self._write_checkpoint,
-                                             "checkpoint writing",
-                                             0,
-                                             self.checkpoint_interval,
-                                             kronos.method.threaded,
-                                             [],
-                                             None)
+        self.scheduler.add_interval_task(self._write_checkpoint,
+                                         "checkpoint writing",
+                                         0,
+                                         self.checkpoint_interval,
+                                         kronos.method.threaded,
+                                         [],
+                                         None)
 
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
         try:
-            if os.path.exists(self.checkpoint_path):
-                return open(self.checkpoint_path, 'r+').read()
+            read = open(self.checkpoint_path, 'r+').read()
+            if read:
+                return read 
             else:
-                return None
+                return ''
         except Exception, e:
             print 'Error reading writer checkpoint'
             print e
@@ -69,9 +70,11 @@ class Writer(threading.Thread):
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
         try:
+            lc = self.last_checkpoint
             f = open(self.checkpoint_path, 'w+')
-            f.write(self.last_checkpoint.__str__())
+            f.write(lc.__str__() or '')
             f.close()
+            print 'checkpoint [%s] written' % lc
         except Exception, e:
             print 'Error writing checkpoint in %s' % self.checkpoint_path
             print e 
@@ -118,15 +121,20 @@ class Writer(threading.Thread):
         if self.queue.qsize() > 0:
             msg = self.queue.get()
 
-            self.current_checkpoint = msg.checkpoint 
+            wrote = False
 
             if not self._write(msg.content):
                 if self.blockable:
                     self.scheduler.stop()
                     self.blocked = True
                     time_passed = 0
-                    while not self._write(msg):
-                        if (self.retry_timeout and self.time_passed > self.retry_timeout):
+
+                    while True:
+                        if self._write(msg):
+                            wrote = True
+                            break
+                        elif self.retry_timeout and \
+                             self.time_passed > self.retry_timeout:
                             self.discarded += 1
                             break
                         time.sleep(self.retry_interval)
@@ -138,10 +146,13 @@ class Writer(threading.Thread):
                     self.discarded += 1
                     print "Message [%s] can't be written" % msg
             else:
+                wrote = True
+
+            if wrote:
                 print "Message [%s] written" % msg
                 self.processed += 1
-                if self.checkpoint_path:
-                    self._update_last_checkpoint()
+                if self.checkpoint_enabled:
+                    self._set_checkpoint(msg.checkpoint)
         else:
             print "No messages in the queue to write"
 
@@ -163,25 +174,12 @@ class Writer(threading.Thread):
         """Subclasses should implement."""
         pass
 
-    def _update_last_checkpoint(self):
+    def _set_checkpoint(self, checkpoint):
         try:
-            self.last_checkpoint = self.current_checkpoint
+            self.last_checkpoint = checkpoint 
         except Exception, e:
             print 'error updating last_checkpoint'
             print e
-
-    def _set_checkpoint(self, msg):
-        """Wrapper method to set_checkpoint (user defined)
-           to get exceptions"""
-        try:
-            self.set_checkpoint(msg)
-        except Exception, e:
-            print 'Error in setting checkpoint'
-            print e
-
-    def set_checkpoint(self, checkpoint):
-        """Subclasses should call it from write() method"""
-        self.current_checkpoint = checkpoint
 
     def run(self):
         """Starts the writer"""

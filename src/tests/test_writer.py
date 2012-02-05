@@ -55,6 +55,7 @@ class TestWriter(unittest.TestCase):
         checkpoint_path = '/tmp/wcheckpoint'
         class MyWriter(Writer):
             def setup(self):
+                self.checkpoint_enabled = True
                 self.checkpoint_path = checkpoint_path 
                 self.checkpoint_interval = 1
 
@@ -72,7 +73,7 @@ class TestWriter(unittest.TestCase):
         mywriter.process()
 
         #waits for checkpoint_interval
-        time.sleep(1)
+        time.sleep(2)
 
         self.assertEqual('foo', mywriter.last_checkpoint)
 
@@ -80,7 +81,7 @@ class TestWriter(unittest.TestCase):
         mywriter.process()
 
         #waits for checkpoint_interval
-        time.sleep(1)
+        time.sleep(2)
 
         self.assertEqual(2, mywriter.processed)
         self.assertEqual('bar', mywriter.last_checkpoint)
@@ -99,6 +100,7 @@ class TestWriter(unittest.TestCase):
 
         class MyWriter(Writer):
             def setup(self):
+                self.checkpoint_enabled = True
                 self.checkpoint_path = checkpoint_path
 
             def write(self, msg):

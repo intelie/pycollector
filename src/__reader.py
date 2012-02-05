@@ -55,7 +55,11 @@ class Reader(threading.Thread):
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
         try:
-            return open(self.checkpoint_path, 'r+').read()
+            read = open(self.checkpoint_path, 'r+').read()
+            if read:
+                return read
+            else:
+                return ''
         except Exception, e:
             print 'Error reading checkpoint'
             print e
