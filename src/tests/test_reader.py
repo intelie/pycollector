@@ -24,11 +24,14 @@ class TestReader(unittest.TestCase):
                 return True
 
         q = get_queue()
+
         myreader = MyReader(q)
         myreader.start()
+ 
+        #waits to process messages
         time.sleep(3)
-        size = q.qsize()
-        self.assertTrue(size >= 3)
+
+        self.assertTrue(q.qsize() >= 3)
 
     def test_single_scheduling_adding_to_queue(self):
         class MyReader(Reader):
@@ -40,9 +43,13 @@ class TestReader(unittest.TestCase):
                 return True
 
         q = get_queue()
+        
         myreader = MyReader(q)
         myreader.start()
+
+        #waits to process messages
         time.sleep(1)
+
         self.assertEqual(3, q.qsize())
         self.assertEqual(3, myreader.processed)
 
@@ -59,8 +66,11 @@ class TestReader(unittest.TestCase):
                 return True
 
         q = get_queue()
+
         myreader = MyReader(q)
         myreader.start()
+
+        #waits to process messages
         time.sleep(1)
 
         self.assertEqual(2, myreader.processed)
@@ -80,6 +90,7 @@ class TestReader(unittest.TestCase):
                 
         class MyWriter(Writer):
             def setup(self):
+                self.checkpoint_enabled = True
                 self.checkpoint_path = writer_checkpoint_path
 
         q = get_queue()
@@ -99,6 +110,7 @@ class TestReader(unittest.TestCase):
                 return True
 
         q = get_queue(5)
+        
         myreader = MyReader(q)
         myreader.start()
 

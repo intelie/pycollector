@@ -17,26 +17,25 @@ class Reader(threading.Thread):
                  ):
 
         self.conf = conf
-        self.interval = interval
         self.processed = 0
         self.discarded = 0
         self.queue = queue
         self.writer = writer
+        self.interval = interval
         self.checkpoint_enabled = checkpoint_enabled
-        self.checkpoint_interval = checkpoint_interval
 
         self.set_conf(conf)
         self.setup()
+
+        self.schedule_tasks()
 
         if self.checkpoint_enabled:
             self.last_checkpoint = ''
             if writer and \
                 writer.last_checkpoint:
                 self.last_checkpoint = writer.last_checkpoint
-
-        self.schedule_tasks()
-
-        if self.checkpoint_enabled:
+            if not hasattr(self, 'checkpoint_interval'):
+                self.checkpoint_interval = checkpoint_interval
             self.schedule_checkpoint_writing()
 
         threading.Thread.__init__(self)
