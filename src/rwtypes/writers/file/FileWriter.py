@@ -13,7 +13,6 @@ class FileWriter(Writer):
 
     def write(self, msg):
         try:
-           print msg
            self.f.write(msg)
 
            #force flush
