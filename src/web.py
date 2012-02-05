@@ -2,7 +2,7 @@
 
 """
     File: web.py
-    Description: going to be a simple web server with pycollector realtime data. 
+    Description: going to be a simple web server with realtime data. 
 """
 
 import sys; sys.path.append('helpers')

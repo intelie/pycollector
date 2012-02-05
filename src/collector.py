@@ -24,9 +24,10 @@ FORMATTER_DEFAULT = "%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s
 
 
 class Collector:
-    def __init__(self, daemon_conf=None, to_log=False):
+    def __init__(self, daemon_conf=None, to_log=False, server=True):
         self.daemon_conf = daemon_conf
         self.to_log = to_log
+        self.server = server
         self.conf = conf_reader.read_conf('../conf/conf.yaml')
         self.prepare_readers_writers()
         self.web_server = web.Server(self)
@@ -111,7 +112,8 @@ class Collector:
             print e
 
         try:
-            self.web_server.start()
+            if self.server:
+                self.web_server.start()
         except Exception, e:
             print "Cannot start server"
             print e

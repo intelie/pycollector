@@ -37,13 +37,19 @@ from collector import Collector
 
 
 DAEMON=True
+SERVER=True
 PIDPATH_DEFAULT=os.path.join(os.path.dirname(__file__), "pycollector.pid")
 LOGGING_PATH_DEFAULT=os.path.join(os.path.dirname(__file__), "logs", "")
 
 
-def toggle_daemon(option, ospt, value, parser):
+def disable_daemon(option, ospt, value, parser):
     global DAEMON
-    DAEMON = not DAEMON
+    DAEMON = False
+
+
+def disable_server(option, opt, value, parser):
+    global SERVER
+    SERVER = False
 
 
 def status(option, opt, value, parser):
@@ -74,7 +80,7 @@ def start(option, opt, value, parser):
             logging_path = LOGGING_PATH_DEFAULT
 
         if not daemon_util.dir_exists(logging_path): exit(-1)
-        c = Collector(daemon_conf, to_log=True)
+        c = Collector(daemon_conf, server=SERVER, to_log=True)
 
         print "Daemon started."
         if DAEMON:
@@ -136,6 +142,8 @@ def stop(option, opt, value, parser):
         sys.exit(0)
 
 
+
+
 def show_reader_types(option, opt, value, parser):
     keys = rwtypes.get_reader_keys()
     for key in keys:
@@ -166,11 +174,17 @@ if __name__ == '__main__':
                       nargs=0,
                       help="show writer types")
 
-    parser.add_option("--notdaemon",
+    parser.add_option("--nodaemon",
                       action="callback",
-                      callback=toggle_daemon,
+                      callback=disable_daemon,
                       nargs=0,
                       help="enable collector to start without detaching the process")
+    
+    parser.add_option("--noserver",
+                      action="callback",
+                      callback=disable_server,
+                      nargs=0,
+                      help="disable default web server with realtime data")
 
     parser.add_option("--start",
                       action="callback",
