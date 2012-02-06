@@ -28,7 +28,7 @@ reader_types = {
         },
     'azion_analytics' : {
         'module' : 'readers.azion_analytics.AzionAnalytics',
-        'class' : 'Azion_Analytics'
+        'class' : 'AzionAnalytics'
     }
 }
 
