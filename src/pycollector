@@ -190,19 +190,19 @@ if __name__ == '__main__':
                       action="callback",
                       callback=start,
                       nargs=0,
-                      help="starts collector")
+                      help="start collector")
 
     parser.add_option("--stop",
                       action="callback",
                       callback=stop,
                       nargs=0,
-                      help="stops collector")
+                      help="stop collector")
 
     parser.add_option("--status",
                       action="callback",
                       callback=status,
                       nargs=0,
-                      help="checks if collector is runnning.")
+                      help="check if collector is runnning.")
 
     if len(sys.argv) < 2:
         print ascii.ascii
