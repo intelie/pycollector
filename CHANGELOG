@@ -27,4 +27,4 @@ CHANGELOG
 
 
 0.1.7
-- added parameter to daemon to disable web server
+- added parameter to daemon to disable web server (--noserver)
