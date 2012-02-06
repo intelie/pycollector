@@ -25,7 +25,11 @@ reader_types = {
     'arduino' : {
         'module' : 'readers.arduino.ArduinoReader',
         'class' : 'ArduinoReader'
-        }
+        },
+    'azion_analytics' : {
+        'module' : 'readers.azion_analytics.AzionAnalytics',
+        'class' : 'Azion_Analytics'
+    }
 }
 
 
