@@ -130,7 +130,7 @@ class Writer(threading.Thread):
                     time_passed = 0
 
                     while True:
-                        if self._write(msg):
+                        if self._write(msg.content):
                             wrote = True
                             break
                         elif self.retry_timeout and \
