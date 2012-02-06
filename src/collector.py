@@ -114,7 +114,9 @@ class Collector:
     def start(self):
         try:
             for (writer, reader) in self.pairs:
+                writer.setDaemon(True)
                 writer.start()
+                reader.setDaemon(True)
                 reader.start()
         except Exception, e:
             print "Cannot start pair"
@@ -123,12 +125,11 @@ class Collector:
         try:
             if self.server:
                 self.web_server.start()
+
         except Exception, e:
             print "Cannot start server"
             print e
         
-        while True: time.sleep(3600) 
-
 
 if __name__ == '__main__':
     c = Collector()
