@@ -1,4 +1,3 @@
-import socket
 import datetime
 import time
 import calendar
@@ -33,9 +32,9 @@ class ActivemqWriter(Writer):
                 for prop in self.additional_properties:
                     msg.update({prop : self.additional_properties[prop]})
 
-            if not hasattr(self, 'disablehost') or \
-                (hasattr(self, 'disablehost') and not self.disablehost):
-                msg.update({'host': socket.gethostname()})
+            if not hasattr(self, 'remove_host') or \
+                hasattr(self, 'remove_host') and not self.remove_host:
+                msg['host'] = socket.gethostname()
 
             body = json.dumps(msg)
 
