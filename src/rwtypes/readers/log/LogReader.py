@@ -21,11 +21,8 @@ class LogReader(Reader):
             try:
                 line = self.tail.nextline()
 
-                #XXX: remove \n?
-                line = line.strip()
-
                 if hasattr(self, 'delimiter'):
-                    values = line.split(self.delimiter)
+                    values = line.strip().split(self.delimiter)
 
                     if hasattr(self, 'columns'):
                         column_values = dict(zip(self.columns, values))

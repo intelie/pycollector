@@ -126,7 +126,6 @@ class Collector:
         except Exception, e:
             print "Cannot start server"
             print e
-
         
         while True: time.sleep(3600) 
 
