@@ -16,6 +16,18 @@ class AzionAnalytics(Reader):
             e.g. ['date', 'hour', 'message']"""
 
     def setup(self):
+        if not hasattr(self, 'delimiter'):
+            print 'configure a delimiter in conf.yaml.'
+            exit(-1)
+
+        if not hasattr(self, 'columns'):
+            print 'columns not defined in conf.yaml'
+            exit(-1)
+
+        if not hasattr(self, 'logpath'):
+            print 'logpath not defined in conf.yaml'
+            exit(-1)
+
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
         self.client = self.logpath.split('.')[1]
         self.time_format = "%d/%b/%Y:%H:%M:%S"
@@ -33,17 +45,8 @@ class AzionAnalytics(Reader):
             try:
                 line = self.tail.nextline()
 
-                if hasattr(self, 'delimiter'):
-                    values = line.strip().split(self.delimiter)
-                else:
-                    print 'configure a delimiter in conf.yaml.'
-                    exit(-1)
-
-                if hasattr(self, 'columns'):
-                    column_values = dict(zip(self.columns, values))
-                else:
-                    'columns not defined in conf.yaml'
-                    exit(-1)
+                values = line.strip().split(self.delimiter)
+                column_values = dict(zip(self.columns, values))
 
                 try:
                     cur_time = datetime.datetime.strptime(column_values['time_local'][1:21], 
@@ -77,6 +80,7 @@ class AzionAnalytics(Reader):
                             self.store(msg)
 
                             #TODO: fill empty periods with zeros
+
 
                             metadata['value'] = 1
                             metadata['start_time'] = cur_minute
