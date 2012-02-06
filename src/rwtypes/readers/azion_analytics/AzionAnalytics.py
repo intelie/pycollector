@@ -15,7 +15,7 @@ class AzionAnalytics(Reader):
 
     def setup(self):
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
-        self.client = logpath.split('.')[1] 
+        self.client = self.logpath.split('.')[1] 
         
     def read(self):
         while True:
