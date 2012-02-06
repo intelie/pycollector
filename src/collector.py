@@ -29,7 +29,7 @@ class Collector:
                  daemon_conf=None,
                  to_log=False,
                  server=True,
-                 default_queue_maxsize=100000):
+                 default_queue_maxsize=1000):
         self.daemon_conf = daemon_conf
         self.to_log = to_log
         self.server = server
