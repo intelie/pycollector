@@ -26,21 +26,22 @@ class Home:
                 html += """
                   <table> 
                   <tr><td>%s</td><td>%s</td></tr>
-                  <tr>
-                  <td>processed</td><td>%s</td></tr>
-                  <tr>
-                  <td>discarded</td><td>%s</td></tr>
-                  <tr>
-                  <td>queue size (same for reader/writer)</td><td>%s</td></tr>
-                  <tr>
-                  <td>conf</td><td>%s</td></tr>
+                  <tr><td>processed</td><td>%s</td></tr>
+                  <tr><td>discarded</td><td>%s</td></tr>
+                  <tr><td>conf</td><td>%s</td></tr>
                   </table>
                 """ % (item_type,
                        item.__class__.__name__, 
                        item.processed, 
                        item.discarded,
-                       item.queue.maxsize,
                        item.conf)
+            html += """
+                  <table> 
+                  <tr><td>queue maxsize</td><td>%s</td></tr>
+                  <tr><td>messages in queue</td><td>%s</td></tr>
+                  </table>
+            """ % (item.queue.maxsize,
+                   item.queue.qsize())
             html += "</br>"
         return html
 
