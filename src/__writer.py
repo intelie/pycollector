@@ -134,7 +134,7 @@ class Writer(threading.Thread):
                             wrote = True
                             break
                         elif self.retry_timeout and \
-                             self.time_passed > self.retry_timeout:
+                             time_passed > self.retry_timeout:
                             self.discarded += 1
                             break
                         time.sleep(self.retry_interval)
