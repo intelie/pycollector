@@ -54,7 +54,7 @@ class AzionAnalytics(Reader):
             beginning = beginning + period
         return empty_periods
 
-    def send_empty_periods(self, empty_periods):
+    def store_empty_periods(self, empty_periods):
         for empty_period in empty_periods:
             content = {'count' : 0,
                        'client' : self.client,
@@ -102,9 +102,12 @@ class AzionAnalytics(Reader):
                             self.store(msg)
                             
                             #empty periods
-                            next_interval = metadata['start_time'] + datetime.timedelta(0, metadata['interval'])
-                            empty_periods = self.get_empty_periods(next_interval, cur_minute, datetime.timedelta(0, metadata['interval']))
-                            self.send_empty_periods(empty_periods)
+                            next_interval = metadata['start_time'] + \
+                                            datetime.timedelta(0, metadata['interval'])
+                            empty_periods = self.get_empty_periods(next_interval,
+                                                                   cur_minute, 
+                                                                   datetime.timedelta(0, metadata['interval']))
+                            self.store_empty_periods(empty_periods)
 
                             metadata['value'] = 1
                             metadata['start_time'] = cur_minute
