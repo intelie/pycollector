@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-
 import os
 import time
+import pickle
 import threading
 
 import helpers.kronos as kronos
@@ -58,7 +58,8 @@ class Writer(threading.Thread):
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
         try:
-            read = open(self.checkpoint_path, 'r+').read()
+            f = open(self.checkpoint_path, 'rb')
+            read = pickle.load(f)
             if read:
                 return read 
             else:
@@ -71,8 +72,8 @@ class Writer(threading.Thread):
         """Write checkpoint in disk."""
         try:
             lc = self.last_checkpoint
-            f = open(self.checkpoint_path, 'w+')
-            f.write(lc.__str__() or '')
+            f = open(self.checkpoint_path, 'w')
+            pickle.dump(lc, f)
             f.close()
             print 'checkpoint [%s] written' % lc
         except Exception, e:
