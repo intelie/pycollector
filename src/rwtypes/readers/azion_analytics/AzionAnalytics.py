@@ -72,8 +72,8 @@ class AzionAnalytics(Reader):
         metadata['value'] = 1 
         metadata['start_time'] = time
 
-    def generate_checkpoint(self, line):
-        checkpoint = {'pos' : line}
+    def generate_checkpoint(self, pos):
+        checkpoint = {'pos' : pos}
         checkpoint.update({'count' : self.agg_count})
         return checkpoint
 
@@ -82,7 +82,7 @@ class AzionAnalytics(Reader):
         while True:
             try:
                 line = self.tail.nextline()
-                current_line = self.tail.pos
+                cur_pos = self.tail.pos
                 line_data = self.dictify_line(line)
                 try:
                     cur_time = self.get_datetime(line_data['time_local'][1:21])
@@ -110,7 +110,7 @@ class AzionAnalytics(Reader):
                         #closing interval
                         else:
                             time = metadata['start_time'].strftime(self.time_format)
-                            checkpoint = self.generate_checkpoint(current_line)
+                            checkpoint = self.generate_checkpoint(cur_pos)
                             content={'count_' + column : metadata['value'],
                                      'client' : self.client,
                                      'match' : metadata['content'],
@@ -125,7 +125,7 @@ class AzionAnalytics(Reader):
                             empty_periods = self.get_empty_periods(next_interval,
                                                                    cur_minute, 
                                                                    datetime.timedelta(0, metadata['interval']))
-                            self.store_empty_periods(current_line, metadata, empty_periods)
+                            self.store_empty_periods(cur_pos, metadata, empty_periods)
                             self.set_first(metadata, cur_minute)
 
             except Exception, e:
