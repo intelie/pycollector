@@ -42,7 +42,7 @@ specs:
 #Activemq example
 #  activemq:
 #    type: activemq
-#    host: demo.intelie.net
+#    host: localhost 
 #    port: 61613
 #    destination: '/queue/events'
 #
@@ -63,10 +63,25 @@ specs:
 
 conf:
 #Reading from stdin and writing to stdout
-- reader:
-    type: stdin
-  writer:
-    type: stdout
+#- reader:
+#    type: stdin
+#  writer:
+#    type: stdout
+
+#Reading from an nginx log and writing to activemq
+#- reader:
+#    type: azion_analytics
+#    logpath: /var/log/nginx/sa/AZ.0058b.log
+#    delimiter: \t
+#    columns: [request_time, host, remote_addr, time_local, request, status, request_method, bytes_sent, request_uri, http_user_agent, http_referer, upstream_cache_status]
+#    count:
+#      request_method: ['GET', 1] #count GET's in 'request_method' column in 1 minute periods
+#      status: ['200', 1]
+#  writer:
+#    spec: activemq
+#    blockable: True
+#    retry_interval: 5 
+#    retry_timeout: 7200
 
 #Reading from arduino and writing in file
 #- reader:
