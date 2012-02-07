@@ -15,8 +15,17 @@ class ActivemqWriter(Writer):
         - port (required): activemq port
         - destination (required): queue destination,
             e.g. /queue/events
-        - eventtype (required): header eventtype
+        - eventtype (optional): header eventtype
         - additional_properties: dict with additional fields"""
+
+    def setup(self):
+        self.check_conf(['host', 'port', 'destination', 'eventtype'])
+
+    def check_conf(self, items):
+        for item in items:
+            if not hasattr(self, item):
+                print '[ActivemqWriter] %s not defined in conf.yaml.' % item
+                exit(-1)
 
     def write(self, msg):
         try:
