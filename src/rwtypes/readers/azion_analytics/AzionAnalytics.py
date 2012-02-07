@@ -47,6 +47,9 @@ class AzionAnalytics(Reader):
     def get_minute(self, date):
         return date - datetime.timedelta(0, date.second)
 
+    def add_interval(self, date, seconds):
+        return date + datetime.timedelta(0, seconds)
+
     def get_empty_periods(self, beginning, end, period):
         empty_periods = []
         while beginning + period <= end:
@@ -102,8 +105,8 @@ class AzionAnalytics(Reader):
                             self.store(msg)
                             
                             #empty periods
-                            next_interval = metadata['start_time'] + \
-                                            datetime.timedelta(0, metadata['interval'])
+                            next_interval = self.add_interval(metadata['start_time'], 
+                                                              metadata['interval'])
                             empty_periods = self.get_empty_periods(next_interval,
                                                                    cur_minute, 
                                                                    datetime.timedelta(0, metadata['interval']))
