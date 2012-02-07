@@ -65,6 +65,10 @@ class AzionAnalytics(Reader):
             msg = Message(content=content)
             self.store(msg)
 
+    def set_first(self, metadata, time):
+        metadata['value'] = 1 
+        metadata['start_time'] = time
+
     def read(self):
         cur_time = 0
         while True:
@@ -84,8 +88,7 @@ class AzionAnalytics(Reader):
 
                         #first occurrence
                         if metadata['start_time'] == 0:
-                            metadata['start_time'] = cur_minute
-                            metadata['value'] = 1
+                            set_first(metadata, cur_minute)
                             continue
 
                         time_passed = cur_time - metadata['start_time']
@@ -111,9 +114,7 @@ class AzionAnalytics(Reader):
                                                                    cur_minute, 
                                                                    datetime.timedelta(0, metadata['interval']))
                             self.store_empty_periods(empty_periods)
-
-                            metadata['value'] = 1
-                            metadata['start_time'] = cur_minute
+                            set_first(metadata, cur_minute)
 
             except Exception, e:
                 print 'error reading line: %s' % line
