@@ -57,23 +57,32 @@ class AzionAnalytics(Reader):
             beginning = beginning + period
         return empty_periods
 
-    def store_empty_periods(self, empty_periods):
+    def store_empty_periods(self, line, metadata, empty_periods):
         for empty_period in empty_periods:
+            checkpoint = self.generate_checkpoint(line)
             content = {'count' : 0,
                        'client' : self.client,
+                       'match' : metadata['content'],
                        'time' : empty_period}
-            msg = Message(content=content)
+            msg = Message(checkpoint=checkpoint,
+                          content=content)
             self.store(msg)
 
     def set_first(self, metadata, time):
         metadata['value'] = 1 
         metadata['start_time'] = time
 
+    def generate_checkpoint(self, line):
+        checkpoint = {'pos' : line}
+        checkpoint.update({'count' : self.agg_count})
+        return checkpoint
+
     def read(self):
         cur_time = 0
         while True:
             try:
                 line = self.tail.nextline()
+                current_line = self.tail.pos
                 line_data = self.dictify_line(line)
                 try:
                     cur_time = self.get_datetime(line_data['time_local'][1:21])
@@ -101,10 +110,13 @@ class AzionAnalytics(Reader):
                         #closing interval
                         else:
                             time = metadata['start_time'].strftime(self.time_format)
+                            checkpoint = self.generate_checkpoint(current_line)
                             content={'count_' + column : metadata['value'],
                                      'client' : self.client,
+                                     'match' : metadata['content'],
                                      'time' : time}
-                            msg = Message(content=content)
+                            msg = Message(checkpoint=checkpoint,
+                                          content=content)
                             self.store(msg)
                             
                             #empty periods
@@ -113,7 +125,7 @@ class AzionAnalytics(Reader):
                             empty_periods = self.get_empty_periods(next_interval,
                                                                    cur_minute, 
                                                                    datetime.timedelta(0, metadata['interval']))
-                            self.store_empty_periods(empty_periods)
+                            self.store_empty_periods(current_line, metadata, empty_periods)
                             self.set_first(metadata, cur_minute)
 
             except Exception, e:
