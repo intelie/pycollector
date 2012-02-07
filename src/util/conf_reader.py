@@ -7,6 +7,10 @@ def read_conf(file_path='../../conf/conf.yaml'):
     file_conf = yaml.load(f.read())
     
     conf = file_conf['conf']
+    if not conf:
+        print """No configurations found, check your conf.yaml. 
+        Nothing to do. Killing myself."""
+        exit(-1)
     specs = file_conf['specs']
 
     new_conf = []
