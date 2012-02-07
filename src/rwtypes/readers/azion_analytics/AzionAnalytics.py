@@ -79,6 +79,9 @@ class AzionAnalytics(Reader):
 
     def read(self):
         cur_time = 0
+        if self.checkpoint_enabled and self.last_checkpoint:
+            self.agg_count = self.last_checkpoint['count']
+            self.tail.seek_bytes(self.last_checkpoint['pos'])
         while True:
             try:
                 line = self.tail.nextline()

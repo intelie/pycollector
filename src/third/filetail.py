@@ -73,16 +73,15 @@ class Tail(object):
             #seek to current end of file
             self.f.seek(file_len)
         if seek > 0:
-            self.seek_to_line(self.f, seek)
+            self.seek_bytes(seek)
         self.pos = self.f.tell()        # where am I in the file?
         self.last_read = time()         # when did I last get some data?
         self.queue = []                 # queue of lines that are ready
         self.window = []                # sliding window for dynamically
                                         # adjusting the sleep_interval
 
-    def seek_to_line(self, f, n):
-        for i in range(n):
-            f.readline()
+    def seek_bytes(self, bs):
+        self.f.seek(bs)
 
     def _recompute_rate(self, n, start, stop):
         """Internal function for recomputing the sleep interval. I get

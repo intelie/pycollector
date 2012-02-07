@@ -75,7 +75,7 @@ class Writer(threading.Thread):
             f = open(self.checkpoint_path, 'w')
             pickle.dump(lc, f)
             f.close()
-            print 'checkpoint [%s] written' % lc
+            print '[writer] checkpoint [%s] written' % lc
         except Exception, e:
             print 'Error writing checkpoint in %s' % self.checkpoint_path
             print e 
