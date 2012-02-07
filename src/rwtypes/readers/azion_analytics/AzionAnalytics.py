@@ -57,13 +57,14 @@ class AzionAnalytics(Reader):
             beginning = beginning + period
         return empty_periods
 
-    def store_empty_periods(self, line, metadata, empty_periods):
+    def store_empty_periods(self, pos, column, metadata, empty_periods):
         for empty_period in empty_periods:
-            checkpoint = self.generate_checkpoint(line)
+            checkpoint = self.generate_checkpoint(pos)
             content = {'count' : 0,
                        'client' : self.client,
-                       'match' : metadata['content'],
-                       'time' : empty_period}
+                       'interval_duration_sec' : metadata['interval'],
+                       column : metadata['content'],
+                       'interval_started_at' : empty_period}
             msg = Message(checkpoint=checkpoint,
                           content=content)
             self.store(msg)
@@ -116,8 +117,9 @@ class AzionAnalytics(Reader):
                             checkpoint = self.generate_checkpoint(cur_pos)
                             content={'count_' + column : metadata['value'],
                                      'client' : self.client,
-                                     'match' : metadata['content'],
-                                     'time' : time}
+                                     'interval_duration_sec' : metadata['interval'],
+                                      column : metadata['content'],
+                                     'interval_started_at' : time}
                             msg = Message(checkpoint=checkpoint,
                                           content=content)
                             self.store(msg)
@@ -128,7 +130,7 @@ class AzionAnalytics(Reader):
                             empty_periods = self.get_empty_periods(next_interval,
                                                                    cur_minute, 
                                                                    datetime.timedelta(0, metadata['interval']))
-                            self.store_empty_periods(cur_pos, metadata, empty_periods)
+                            self.store_empty_periods(cur_pos, column, metadata, empty_periods)
                             self.set_first(metadata, cur_minute)
 
             except Exception, e:
