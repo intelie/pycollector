@@ -88,7 +88,7 @@ class AzionAnalytics(Reader):
 
                         #first occurrence
                         if metadata['start_time'] == 0:
-                            set_first(metadata, cur_minute)
+                            self.set_first(metadata, cur_minute)
                             continue
 
                         time_passed = cur_time - metadata['start_time']
@@ -114,7 +114,7 @@ class AzionAnalytics(Reader):
                                                                    cur_minute, 
                                                                    datetime.timedelta(0, metadata['interval']))
                             self.store_empty_periods(empty_periods)
-                            set_first(metadata, cur_minute)
+                            self.set_first(metadata, cur_minute)
 
             except Exception, e:
                 print 'error reading line: %s' % line
