@@ -30,3 +30,4 @@ CHANGELOG
 - added parameter to daemon to disable web server (--noserver)
 - added 'messages in queue' info in mini web module
 - added AzionAnalytics reader
+- changed checkpoint format to pickle serialization
