@@ -23,16 +23,16 @@ def read_conf(file_path='../../conf/conf.yaml'):
         if 'spec' in reader:
             spec = reader['spec']
             new_reader.pop('spec')
-            if not spec in specs:
-                print "spec '%s' not found in conf" % spec
+            if not specs or (not spec in specs):
+                print 'cannot find spec %s in specs session' % spec
                 exit(-1)
             new_reader.update(specs[spec])
 
         if 'spec' in writer: 
             spec = writer['spec']
             new_writer.pop('spec')
-            if not spec in specs:
-                print "spec '%s' not found in conf" % spec
+            if not specs or (not spec in specs):
+                print "cannot find spec '%s' in specs session" % spec
                 exit(-1)
             new_writer.update(specs[spec])
         new_pair = {'reader': new_reader, 'writer' : new_writer}
