@@ -60,11 +60,11 @@ class AzionAnalytics(Reader):
     def store_empty_periods(self, pos, column, metadata, empty_periods):
         for empty_period in empty_periods:
             checkpoint = self.generate_checkpoint(pos)
-            content = {'count' : 0,
+            content = {'count_' + column : 0,
                        'client' : self.client,
                        'interval_duration_sec' : metadata['interval'],
                        column : metadata['content'],
-                       'interval_started_at' : empty_period}
+                       'interval_started_at' : empty_period.strftime(self.time_format)}
             msg = Message(checkpoint=checkpoint,
                           content=content)
             self.store(msg)
