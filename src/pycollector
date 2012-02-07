@@ -17,8 +17,9 @@ __email__ = "ronald at intelie dot com dot br"
 
 try:
     import sys, os
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    sys.path.append('../conf')
+    src_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(src_dir)
+    sys.path.append(os.path.join(os.path.dirname(src_dir), 'conf'))
 except Exception, e:
     print e
     exit(-1)
