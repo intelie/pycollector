@@ -6,6 +6,8 @@
 """
 
 import threading
+import cherrypy
+
 
 class Home:
     def __init__(self, collector=None):
@@ -83,8 +85,4 @@ class Server(threading.Thread):
         cherrypy.quickstart(Home(self.collector))
 
 if __name__ == '__main__':  
-    import sys; sys.path.append('helpers')
-
-
-import cherrypy
-Server().start()
+    Server().start()
