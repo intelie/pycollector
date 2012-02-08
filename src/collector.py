@@ -14,7 +14,7 @@ import logging, logging.config
 import sys; sys.path.extend(['rwtypes', 'third'])
 
 import web
-from util import conf_reader 
+import conf_reader 
 from rwtypes import rwtypes
 
 

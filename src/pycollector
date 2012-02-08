@@ -29,7 +29,7 @@ import optparse
 import subprocess
 
 from helpers import daemon
-from util import daemon_util
+import daemon_util
 
 import ascii
 from rwtypes import rwtypes
@@ -57,8 +57,7 @@ def status(option, opt, value, parser):
 
 def start(option, opt, value, parser):
     collector = Collector(daemon_conf, 
-                          server=SERVER, 
-                          to_log=True)
+                          server=SERVER)
     daemon_util.start(collector, DAEMON)
     
 
