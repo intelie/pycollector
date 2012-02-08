@@ -15,23 +15,17 @@ __author__ = "Ronald Kaiser"
 __email__ = "ronald at intelie dot com dot br"
 
 
+import sys
 try:
-    import sys
     import __meta__
     sys.path.extend(__meta__.PATHS.values())
 except Exception, e:
     print e
     sys.exit(-1)
-
-
 import optparse
-import subprocess
 
-from helpers import daemon
 import daemon_util
-
 import ascii
-import daemon_conf
 import conf_reader
 from rwtypes import rwtypes
 from collector import Collector
