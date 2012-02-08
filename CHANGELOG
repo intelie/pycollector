@@ -31,3 +31,7 @@ CHANGELOG
 - added 'messages in queue' info in mini web module
 - added AzionAnalytics reader
 - changed checkpoint format to pickle serialization
+
+0.1.8
+- imports/configuration refactoring (created __meta__ with paths and default values)
+
