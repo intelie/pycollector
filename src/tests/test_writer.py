@@ -1,5 +1,6 @@
 import os
 import time
+import pickle
 import unittest
 import Queue
 
@@ -87,7 +88,7 @@ class TestWriter(unittest.TestCase):
         self.assertEqual('bar', mywriter.last_checkpoint)
 
         f = open(checkpoint_path, 'r+')
-        self.assertEqual('bar', f.read().strip())
+        self.assertEqual('bar', pickle.load(f))
         f.close()
 
         os.remove(checkpoint_path)
@@ -95,7 +96,7 @@ class TestWriter(unittest.TestCase):
     def test_restore_last_checkpoint(self):
         checkpoint_path = '/tmp/wcheckpoint'
         f = open(checkpoint_path, 'w+')
-        f.write('foo')
+        pickle.dump('foo', f)
         f.close()
 
         class MyWriter(Writer):
