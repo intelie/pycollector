@@ -46,6 +46,9 @@ class Home:
         return html
 
     def index(self):
+        if not self.collector or \
+            not hasattr(self.collector, 'pairs'):
+            return "Unavailable"
         data = {}
         data.update({'number_of_pairs': len(self.collector.pairs) or 'Unavailable'}) 
         data.update({'pairs' : self.get_html_for_pairs(self.collector.pairs) or 'Unavailable'})
