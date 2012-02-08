@@ -1,4 +1,5 @@
 import os
+import pickle
 import unittest
 import time
 import Queue
@@ -76,8 +77,8 @@ class TestReader(unittest.TestCase):
         self.assertEqual(2, myreader.processed)
         self.assertEqual('bar', myreader.last_checkpoint)
 
-        f = open(checkpoint_path, 'r+')
-        self.assertEqual('bar', f.read().strip())
+        f = open(checkpoint_path, 'rb')
+        self.assertEqual('bar', pickle.load(f))
         f.close()
 
         os.remove(checkpoint_path)
