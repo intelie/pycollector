@@ -31,8 +31,9 @@ from helpers import daemon
 import daemon_util
 
 import ascii
-from rwtypes import rwtypes
 import daemon_conf
+import conf_reader
+from rwtypes import rwtypes
 from collector import Collector
 
 
@@ -55,7 +56,9 @@ def status(option, opt, value, parser):
 
 
 def start(option, opt, value, parser):
-    collector = Collector(daemon_conf, server=SERVER)
+    collector_conf = conf_reader.read_yaml_conf()
+    daemon_conf = conf_reader.read_daemon_conf()
+    collector = Collector(collector_conf, daemon_conf, server=SERVER)
     daemon_util.start(collector, DAEMON)
     
 

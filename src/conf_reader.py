@@ -1,10 +1,16 @@
 import os
+import sys
+
+import __meta__
+sys.path.extend(__meta__.PATHS.values())
+
+import daemon_conf
 from helpers import yaml
 
 #todo: refactor! experiment
 
-def read_conf(file_path):
-    f = open(os.path.join(file_path, "conf.yaml"), 'r+')
+def read_yaml_conf():
+    f = open(os.path.join(__meta__.PATHS["CONF_PATH"], "conf.yaml"), 'r+')
     file_conf = yaml.load(f.read())
     
     conf = file_conf['conf']
@@ -40,5 +46,17 @@ def read_conf(file_path):
         new_conf.append(new_pair)
     return new_conf
 
+
+def read_daemon_conf():
+    conf = {}
+    for key, value in __meta__.DEFAULTS.items():
+        try:
+            exec("conf['%s'] = daemon_conf.%s" % (key, key))
+        except AttributeError:
+            conf[key] = __meta__.DEFAULTS[key]
+    return conf
+
+
+
 if __name__ == '__main__':
-    print read_conf()
+    print read_daemon_conf()

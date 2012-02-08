@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-sys.path.append('../../conf/daemon_conf.py')
-
 import os
+import sys
 import shlex
 from subprocess import call, Popen, PIPE
-import daemon_conf
 
-
-LOGGING_PATH_DEFAULT=os.path.join(os.path.dirname(__file__), "logs", "")
-PID_PATH_DEFAULT=os.path.join(os.path.dirname(__file__), "pycollector.pid")
+import __meta__
 
 
 def write_pid(pidfile):
@@ -60,6 +55,7 @@ def log_dir_exists(path):
 
 
 def suggest_log_path_creation(path):
+    path = os.path.split(path)[0]
     choice = raw_input('Do you want me to create the directory: %s ? [Y|n] ' % path)
     if choice == "" or choice.upper() == 'Y':
         return_code = call(shlex.split('mkdir %s' % path))
@@ -72,39 +68,22 @@ def suggest_log_path_creation(path):
     return True
 
 
-def get_log_path():
-    try:
-        path = daemon_conf.LOGGING_PATH
-    except AttributeError:
-        path = LOGGING_PATH_DEFAULT
-    return path
-
-
-def get_pid_path():
-    try:
-        path = daemon_conf.PID_PATH
-    except AttributeError:
-        path = PID_PATH_DEFAULT 
-    return path
-
-
-def start(collector, daemon=True):
+def start(collector, to_daemon=True):
     if is_running()[0]:
         print "Daemon already running."
         sys.exit(-1)
 
     print "Starting daemon..."
-
-    log_path = get_log_path() 
-    print log_path
-    if not (log_dir_exists(log_path) or suggest_log_path_creation(log_path)):
+    log_path = collector.daemon_conf['LOG_FILE_PATH']
+    log_dir = os.path.split(log_path)[0]
+    if not (log_dir_exists(log_dir) or suggest_log_path_creation(log_path)):
         exit(-1)
 
-    if daemon: 
+    if to_daemon:
         d = daemon.DaemonContext(working_directory=os.getcwd())
         d.open()
 
-    write_pid(get_pid_path())
+    write_pid(collector.daemon_conf['PID_FILE_PATH'])
     collector.start()
 
 
