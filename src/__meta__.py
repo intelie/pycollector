@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+    File: __meta__.py
+    Description: centralizes paths and default values
+"""
+
 import os
 import sys
 
