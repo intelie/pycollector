@@ -3,7 +3,7 @@
 
 """
     File: pycollector
-    Description: Collector daemon.
+    Description: Collector wrapper/daemon.
 """
 
 __software__ = "pycollector"
@@ -141,8 +141,6 @@ def stop(option, opt, value, parser):
                     print """
     Daemon stopped, but can't remove pidfile.\nRemove manually the file %s.""" % pidpath
         sys.exit(0)
-
-
 
 
 def show_reader_types(option, opt, value, parser):
