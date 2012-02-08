@@ -61,6 +61,7 @@ class Reader(threading.Thread):
                 return ''
             f = open(self.checkpoint_path, 'rb')
             read = pickle.load(f)
+            f.close()
             if read:
                 return read
             else:
