@@ -16,20 +16,12 @@ __email__ = "ronald at intelie dot com dot br"
 
 
 try:
-    import sys, os
-    BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    paths = {
-        'BASE_PATH' : BASE_PATH,
-        'CONF_PATH' : os.path.join(BASE_PATH, "conf"),
-        'HELPERS_PATH' : os.path.join(BASE_PATH, "src", "helpers"),
-        'THIRD_PATH' : os.path.join(BASE_PATH, "src", "third"),
-        'RWTYPES_PATH' : os.path.join(BASE_PATH, "src", "rwtypes"),}
-    sys.path.extend(paths.values())
+    import sys
+    import __meta__
+    sys.path.extend(__meta__.PATHS.values())
 except Exception, e:
     print e
-    exit(-1)
-
-print sys.path
+    sys.exit(-1)
 
 
 import optparse
