@@ -24,6 +24,7 @@ def get_pid(pidfile):
     f.close()
     return pid
 
+
 def kill_pids(pids):
     """Input: a list of ints (pids) | Output: the returning code from kill."""
     pids = map(lambda x: str(x), pids)
@@ -62,25 +63,3 @@ def dir_exists(path):
                 return True
     return True
 
-
-def get_pattern_conf(filename):
-    if filename:
-        if filename.endswith('.py'):
-            filename = filename[:-3]
-        try:
-            exec('from %s import conf as pattern_conf' % filename)
-            print "Configuration file in use: %s" % filename
-            return pattern_conf
-        except Exception, e:
-            print "Can't import configuration file. Aborting."
-            print e
-            exit(-1)
-    else:
-        try:
-            from pattern_conf import conf
-            print "Configuration file in use: pattern_conf"
-            return conf
-        except Exception, e:
-            print "Can't import configuration file."
-            print e
-            exit(-1)
