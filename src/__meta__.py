@@ -10,8 +10,8 @@ try:
         'THIRD_PATH' : os.path.join(BASE_PATH, "src", "third"),
         'RWTYPES_PATH' : os.path.join(BASE_PATH, "src", "rwtypes"),}
     DEFAULTS = {
-        'LOG_FILEPATH' : os.path.join(BASE_PATH, "logs", "pycollector.log"),
-        'PID_FILEPATH': os.path.join(BASE_PATH, "pycollector.pid"),
+        'LOG_FILE_PATH' : os.path.join(BASE_PATH, "logs", "pycollector.log"),
+        'PID_FILE_PATH': os.path.join(BASE_PATH, "pycollector.pid"),
         'LOG_SEVERITY' : "DEBUG",
         'LOG_ROTATING' : 'midnight',
         'LOG_FORMATTER' : '%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s)] % (levelname)s - %(message)s',}
