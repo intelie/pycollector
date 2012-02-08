@@ -32,7 +32,7 @@ import daemon_util
 
 import ascii
 from rwtypes import rwtypes
-import daemon_conf as conf
+import daemon_conf
 from collector import Collector
 
 
@@ -55,7 +55,7 @@ def status(option, opt, value, parser):
 
 
 def start(option, opt, value, parser):
-    collector = Collector(paths, conf, server=SERVER)
+    collector = Collector(daemon_conf, server=SERVER)
     daemon_util.start(collector, DAEMON)
     
 

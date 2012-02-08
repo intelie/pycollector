@@ -12,20 +12,15 @@ import Queue
 import threading
 import logging, logging.config
 
+
+import __meta__
 import web
 import conf_reader 
 from rwtypes import rwtypes
 
 
-SEVERITY_DEFAULT = "DEBUG"
-LOGGING_PATH_DEFAULT = os.path.join(os.path.dirname(__file__), "logs", "")
-ROTATING_DEFAULT = "midnight"
-FORMATTER_DEFAULT = "%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s)] %(levelname)s - %(message)s"
-
-
 class Collector:
     def __init__(self,
-                 paths,
                  conf=None,
                  to_log=False,
                  server=True,
@@ -34,7 +29,7 @@ class Collector:
         self.to_log = to_log
         self.server = server
 
-        log_filename = os.path.join(paths['CONF_PATH'])
+        log_filename = os.path.join(__meta__.PATHS['CONF_PATH'])
         self.conf = conf_reader.read_conf(log_filename)
 
         self.default_queue_maxsize = default_queue_maxsize
@@ -49,22 +44,21 @@ class Collector:
             try:
                 severity = self.conf.SEVERITY
             except AttributeError:
-                severity = SEVERITY_DEFAULT
+                severity = __meta__.DEFAULTS['LOG_SEVERITY']
 
             self.logger.setLevel(severity)
 
             try:
-                logging_path = self.conf.LOGGING_PATH
+                log_file_path = self.conf.LOGGING_PATH
             except AttributeError:
-                logging_path = LOGGING_PATH_DEFAULT
-            filename = logging_path + 'collector.log'
+                log_file_path = __meta__.DEFAULTS['LOG_FILE_PATH']
 
             try:
                 rotating = self.conf.ROTATING
             except AttributeError:
-                rotating = ROTATING_DEFAULT
+                rotating = __meta__.DEFAULTS['LOG_ROTATING'] 
 
-            log_handler = logging.handlers.TimedRotatingFileHandler(filename, 
+            log_handler = logging.handlers.TimedRotatingFileHandler(log_file_path, 
                                                                     when=rotating)
 
             try:
