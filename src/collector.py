@@ -38,35 +38,42 @@ class Collector:
         if to_log: 
             self.set_logging()
 
+    def get_log_severity(self):
+        try:
+            severity = self.conf.LOG_SEVERITY
+        except AttributeError:
+            severity = __meta__.DEFAULTS['LOG_SEVERITY']
+        return severity
+
+    def get_log_file_path(self):
+        try:
+            path = self.conf.LOG_FILE_PATH
+        except AttributeError:
+            path = __meta__.DEFAULTS['LOG_FILE_PATH']
+        return path
+
+    def get_log_rotating(self):
+        try:
+            rotating = self.conf.LOG_ROTATING
+        except AttributeError:
+            rotating = __meta__.DEFAULTS['LOG_ROTATING'] 
+        return rotating
+
+    def get_formatter(self):
+        try:
+            formatter = self.conf.LOG_FORMATTER
+        except AttributeError:
+            formatter = __meta__.DEFAULTS['LOG_FORMATTER'] 
+        return formatter
+
     def set_logging(self):
         try:
             self.logger = logging.getLogger()
-            try:
-                severity = self.conf.SEVERITY
-            except AttributeError:
-                severity = __meta__.DEFAULTS['LOG_SEVERITY']
+            self.logger.setLevel(self.get_log_severity())
 
-            self.logger.setLevel(severity)
-
-            try:
-                log_file_path = self.conf.LOGGING_PATH
-            except AttributeError:
-                log_file_path = __meta__.DEFAULTS['LOG_FILE_PATH']
-
-            try:
-                rotating = self.conf.ROTATING
-            except AttributeError:
-                rotating = __meta__.DEFAULTS['LOG_ROTATING'] 
-
-            log_handler = logging.handlers.TimedRotatingFileHandler(log_file_path, 
-                                                                    when=rotating)
-
-            try:
-                formatter = self.conf.FORMATTER
-            except AttributeError:
-                formatter = FORMATTER_DEFAULT
-
-            formatter = logging.Formatter(formatter)
+            log_handler = logging.handlers.TimedRotatingFileHandler(get_log_file_path(), 
+                                                                    when=get_log_rotating())
+            formatter = logging.Formatter(get_formatter())
             log_handler.setFormatter(formatter)
             self.logger.addHandler(log_handler)
         except Exception, e:
