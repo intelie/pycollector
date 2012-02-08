@@ -1,9 +1,10 @@
+import os
 from helpers import yaml
 
 #todo: refactor! experiment
 
-def read_conf(file_path='../../conf/conf.yaml'):
-    f = open(file_path, 'r+')
+def read_conf(file_path):
+    f = open(os.path.join(file_path, "conf.yaml"), 'r+')
     file_conf = yaml.load(f.read())
     
     conf = file_conf['conf']

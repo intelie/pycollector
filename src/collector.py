@@ -11,7 +11,6 @@ import time
 import Queue
 import threading
 import logging, logging.config
-import sys; sys.path.extend(['rwtypes', 'third'])
 
 import web
 import conf_reader 
@@ -26,16 +25,17 @@ FORMATTER_DEFAULT = "%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s
 
 class Collector:
     def __init__(self,
-                 daemon_conf=None,
+                 paths,
+                 conf=None,
                  to_log=False,
                  server=True,
                  default_queue_maxsize=1000):
-        self.daemon_conf = daemon_conf
+        self.conf = conf
         self.to_log = to_log
         self.server = server
 
-        #TODO: fix this relative path, use os.path
-        self.conf = conf_reader.read_conf('../conf/conf.yaml')
+        log_filename = os.path.join(paths['CONF_PATH'])
+        self.conf = conf_reader.read_conf(log_filename)
 
         self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
@@ -47,20 +47,20 @@ class Collector:
         try:
             self.logger = logging.getLogger()
             try:
-                severity = self.daemon_conf.SEVERITY
+                severity = self.conf.SEVERITY
             except AttributeError:
                 severity = SEVERITY_DEFAULT
 
             self.logger.setLevel(severity)
 
             try:
-                logging_path = self.daemon_conf.LOGGING_PATH
+                logging_path = self.conf.LOGGING_PATH
             except AttributeError:
                 logging_path = LOGGING_PATH_DEFAULT
             filename = logging_path + 'collector.log'
 
             try:
-                rotating = self.daemon_conf.ROTATING
+                rotating = self.conf.ROTATING
             except AttributeError:
                 rotating = ROTATING_DEFAULT
 
@@ -68,7 +68,7 @@ class Collector:
                                                                     when=rotating)
 
             try:
-                formatter = self.daemon_conf.FORMATTER
+                formatter = self.conf.FORMATTER
             except AttributeError:
                 formatter = FORMATTER_DEFAULT
 
@@ -95,6 +95,7 @@ class Collector:
                 exit(-1)
             writer_type = writer_conf['type'] 
             writer_type = rwtypes.get_writer_type(writer_type)
+
             exec('import %s' % writer_type['module'])
             exec('writer_class = %s.%s' % (writer_type['module'], writer_type['class']))
             writer = writer_class(queue, writer_conf)

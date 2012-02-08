@@ -5,11 +5,7 @@
     Description: going to be a simple web server with realtime data. 
 """
 
-import sys; sys.path.append('helpers')
 import threading
-
-import cherrypy
-
 
 class Home:
     def __init__(self, collector=None):
@@ -86,5 +82,9 @@ class Server(threading.Thread):
     def run(self):
         cherrypy.quickstart(Home(self.collector))
 
-if __name__ == '__main__':
-    Server().start()
+if __name__ == '__main__':  
+    import sys; sys.path.append('helpers')
+
+
+import cherrypy
+Server().start()

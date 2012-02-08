@@ -17,12 +17,19 @@ __email__ = "ronald at intelie dot com dot br"
 
 try:
     import sys, os
-    src_dir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(src_dir)
-    sys.path.append(os.path.join(os.path.dirname(src_dir), 'conf'))
+    BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    paths = {
+        'BASE_PATH' : BASE_PATH,
+        'CONF_PATH' : os.path.join(BASE_PATH, "conf"),
+        'HELPERS_PATH' : os.path.join(BASE_PATH, "src", "helpers"),
+        'THIRD_PATH' : os.path.join(BASE_PATH, "src", "third"),
+        'RWTYPES_PATH' : os.path.join(BASE_PATH, "src", "rwtypes"),}
+    sys.path.extend(paths.values())
 except Exception, e:
     print e
     exit(-1)
+
+print sys.path
 
 
 import optparse
@@ -33,7 +40,7 @@ import daemon_util
 
 import ascii
 from rwtypes import rwtypes
-import daemon_conf
+import daemon_conf as conf
 from collector import Collector
 
 
@@ -56,8 +63,7 @@ def status(option, opt, value, parser):
 
 
 def start(option, opt, value, parser):
-    collector = Collector(daemon_conf, 
-                          server=SERVER)
+    collector = Collector(paths, conf, server=SERVER)
     daemon_util.start(collector, DAEMON)
     
 
