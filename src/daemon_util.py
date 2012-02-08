@@ -7,6 +7,7 @@ import shlex
 from subprocess import call, Popen, PIPE
 
 import __meta__
+import conf_reader
 
 
 def write_pid(pidfile):
@@ -88,7 +89,7 @@ def start(collector, to_daemon=True):
 
 
 def status():
-    pid_path = get_pid_path()
+    pid_path = conf_reader.read_daemon_conf()['PID_FILE_PATH']
 
     if not is_running()[0]:
         print "Status: NOT RUNNING."
@@ -106,7 +107,7 @@ def stop():
         print "Daemon was not running."
         sys.exit(-1)
 
-    pid_path = get_pid_path()
+    pid_path = conf_reader.read_daemon_conf()['PID_FILE_PATH']
 
     if not pid_path or not os.path.exists(pid_path):
         print "WARNING: Seems to be running, but can't get pidfile in %s. Kill it manually." % pid_path
