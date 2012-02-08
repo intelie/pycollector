@@ -85,8 +85,8 @@ class TestReader(unittest.TestCase):
 
     def test_restore_checkpoint_from_writer_when_starting(self):
         writer_checkpoint_path = '/tmp/wcheckpoint'
-        f = open(writer_checkpoint_path, 'w+')
-        f.write('42')
+        f = open(writer_checkpoint_path, 'w')
+        pickle.dump('42', f)
         f.close()
                 
         class MyWriter(Writer):
