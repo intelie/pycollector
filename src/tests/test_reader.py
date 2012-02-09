@@ -30,9 +30,9 @@ class TestReader(unittest.TestCase):
         myreader.start()
  
         #waits to process messages
-        time.sleep(3)
+        time.sleep(3.5)
 
-        self.assertTrue(q.qsize() >= 3)
+        self.assertEqual(4, q.qsize())
 
     def test_single_scheduling_adding_to_queue(self):
         class MyReader(Reader):
