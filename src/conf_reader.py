@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 
 import __meta__
 sys.path.extend(__meta__.PATHS.values())
@@ -7,7 +8,9 @@ sys.path.extend(__meta__.PATHS.values())
 import daemon_conf
 from helpers import yaml
 
-#todo: refactor! experiment
+
+log = logging.getLogger()
+
 
 def read_yaml_conf():
     f = open(os.path.join(__meta__.PATHS["CONF_PATH"], "conf.yaml"), 'r+')
@@ -15,8 +18,8 @@ def read_yaml_conf():
     
     conf = file_conf['conf']
     if not conf:
-        print """No configurations found, check your conf.yaml. 
-        Nothing to do. Killing myself."""
+        log.error("No configurations found, check your conf.yaml.")
+        log.info('Nothing to do. Aborting.')
         exit(-1)
     specs = file_conf['specs']
 
@@ -31,17 +34,30 @@ def read_yaml_conf():
             spec = reader['spec']
             new_reader.pop('spec')
             if not specs or (not spec in specs):
-                print 'cannot find spec %s in specs session' % spec
+                log.error('Cannot find spec %s in specs session.' % spec)
+                log.info('Aborting.')
                 exit(-1)
             new_reader.update(specs[spec])
+
+        if not 'type' in new_reader:
+            log.error('Missing reader type in conf.yaml.')
+            log.info('Aborting.')
+            exit(-1)
 
         if 'spec' in writer: 
             spec = writer['spec']
             new_writer.pop('spec')
             if not specs or (not spec in specs):
-                print "cannot find spec '%s' in specs session" % spec
+                log.error("Cannot find spec '%s' in specs session." % spec)
+                log.info('Aborting.')
                 exit(-1)
             new_writer.update(specs[spec])
+
+        if not 'type' in new_writer:
+            log.error('Missing writer type in conf.yaml.')
+            log.info('Aborting.')
+            exit(-1)
+
         new_pair = {'reader': new_reader, 'writer' : new_writer}
         new_conf.append(new_pair)
     return new_conf

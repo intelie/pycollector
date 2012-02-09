@@ -46,9 +46,6 @@ class Collector:
 
             queue = Queue.Queue(maxsize = queue_maxsize)
 
-            if not 'type' in writer_conf:
-                self.log.error('Missing writer type in conf.yaml')
-                exit(-1)
             writer_type = writer_conf['type'] 
             writer_type = rwtypes.get_writer_type(writer_type)
 
@@ -58,9 +55,6 @@ class Collector:
 
 
             reader_conf = pair['reader']
-            if not 'type' in reader_conf:
-                self.log.error('Missing writer type in conf.yaml')
-                exit(-1)
             reader_type = reader_conf['type']
             reader_type = rwtypes.get_reader_type(reader_type)
             exec('import %s' % reader_type['module'])

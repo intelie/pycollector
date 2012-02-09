@@ -51,6 +51,7 @@ def status(option, opt, value, parser):
 
 
 def start(option, opt, value, parser):
+
     log = daemon_util.set_logging()
 
     log.info('Reading daemon_conf.py...')

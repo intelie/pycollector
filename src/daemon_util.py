@@ -85,6 +85,7 @@ def set_logging():
         formatter = logging.Formatter(daemon_conf['LOG_FORMATTER'])
         handler.setFormatter(formatter)
         logger.addHandler(handler)
+        logger.addHandler(logging.StreamHandler())
         return logger
     except Exception, e:
         print "Cannot set logging."
@@ -97,6 +98,7 @@ def start(collector, to_daemon=True):
         sys.exit(-1)
     
     print "Starting daemon..."
+    set_logging()
     if to_daemon:
         d = daemon.DaemonContext(working_directory=os.getcwd())
         d.open()
