@@ -88,9 +88,9 @@ class AzionAnalytics(Reader):
             self.tail.seek_bytes(self.last_checkpoint['pos'])
         while True:
             try:
-                line = self.tail.nextline()
+                self.current_line = self.tail.nextline()
                 cur_pos = self.tail.pos
-                line_data = self.dictify_line(line)
+                line_data = self.dictify_line(self.current_line)
                 try:
                     cur_time = self.get_datetime(line_data['time_local'][1:21])
                     cur_minute = self.get_minute(cur_time)
@@ -137,5 +137,5 @@ class AzionAnalytics(Reader):
                             self.set_first(metadata, cur_minute)
 
             except Exception, e:
-                self.log.error('Error reading line: %s' % line)
+                self.log.debug('Error reading line: %s' % self.current_line)
                 self.log.error(e)

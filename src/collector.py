@@ -14,8 +14,8 @@ import threading
 import logging, logging.config
 
 
-import __meta__
 import web
+import __meta__
 from rwtypes import rwtypes
 
 

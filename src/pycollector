@@ -51,10 +51,7 @@ def status(option, opt, value, parser):
 
 
 def start(option, opt, value, parser):
-    collector = Collector(conf_reader.read_yaml_conf(), 
-                          conf_reader.read_daemon_conf(), 
-                          server=SERVER)
-    daemon_util.start(collector, DAEMON)
+    daemon_util.start(Collector, DAEMON, SERVER)
     
 
 def stop(option, opt, value, parser):

@@ -99,26 +99,41 @@ def set_logging():
         print e
 
 
-def start(collector, to_daemon=True):
+def start(collector_clazz, to_daemon=True, start_server=True):
     if is_running()[0]:
         print "Daemon already running."
         sys.exit(-1)    
 
-    log = set_logging()
-
-    log.info("daemon_conf.py settings (missing values are replaced by defaults):")
-    log.info(collector.daemon_conf)
-
-    log.info("conf.yaml settings:")
-    log.info(collector.conf)
-
-    log.info("Starting collector...")
+    #starts daemon context
     if to_daemon:
-        d = daemon.DaemonContext(working_directory=__meta__.BASE_PATH)
+        d = daemon.DaemonContext(working_directory=os.getcwd())
         d.open()
 
-    write_pid(collector.daemon_conf['PID_FILE_PATH'])
-    collector.start()
+    try:
+        #guarantees that libs are available in daemon context
+        sys.path.append(__meta__.PATHS.values())
+
+        log = set_logging()
+
+        collector = collector_clazz(conf_reader.read_yaml_conf(), 
+                                    conf_reader.read_daemon_conf(), 
+                                    server=start_server)
+
+        log.info("daemon_conf.py settings (missing values are replaced by defaults):")
+        log.info(collector.daemon_conf)
+
+        log.info("conf.yaml settings:")
+        log.info(collector.conf)
+
+        log.info("Starting collector...")
+        write_pid(collector.daemon_conf['PID_FILE_PATH'])
+        collector.start()
+    except Exception, e:
+        log.error(e)
+
+    #finishes daemon context
+    if to_daemon:
+        d.close()
 
 
 def status():
