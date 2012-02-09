@@ -63,11 +63,13 @@ class AzionAnalytics(Reader):
     def store_empty_periods(self, pos, column, metadata, empty_periods):
         for empty_period in empty_periods:
             checkpoint = self.generate_checkpoint(pos)
-            content = {'count_' + column : 0,
+            content = {'value' : 0,
                        'client' : self.client,
                        'interval_duration_sec' : metadata['interval'],
-                       column : metadata['content'],
-                       'interval_started_at' : empty_period.strftime(self.time_format)}
+                       'field_name' : column,
+                       'field_value' : metadata['content'],
+                       'interval_started_at' : empty_period.strftime(self.time_format),
+                       'aggregation_type' : 'count',}
             msg = Message(checkpoint=checkpoint,
                           content=content)
             self.store(msg)
@@ -118,11 +120,13 @@ class AzionAnalytics(Reader):
                         else:
                             time = metadata['start_time'].strftime(self.time_format)
                             checkpoint = self.generate_checkpoint(cur_pos)
-                            content={'count_' + column : metadata['value'],
+                            content={'value' : metadata['value'],
                                      'client' : self.client,
                                      'interval_duration_sec' : metadata['interval'],
-                                      column : metadata['content'],
-                                     'interval_started_at' : time}
+                                     'field_name' : column,
+                                     'field_value' : metadata['content'], 
+                                     'interval_started_at' : time,
+                                     'aggregation_type': 'count'}
                             msg = Message(checkpoint=checkpoint,
                                           content=content)
                             self.store(msg)
