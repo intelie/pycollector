@@ -90,8 +90,7 @@ class Collector:
 
             self.pairs.append((writer, reader))
 
-
-    def start(self):
+    def start_pairs(self):
         try:
             for (writer, reader) in self.pairs:
                 writer.setDaemon(True)
@@ -102,14 +101,18 @@ class Collector:
             print "Cannot start pair"
             print e
 
+    def start_server(self):
         try:
-            if self.server:
-                self.web_server.start()
-
+            self.web_server.start()
         except Exception, e:
             print "Cannot start server"
             print e
-        
+
+    def start(self):
+        self.start_pairs()
+        if self.server:
+            self.start_server()
+
 
 if __name__ == '__main__':
     c = Collector()
