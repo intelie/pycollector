@@ -113,6 +113,8 @@ def start(collector_clazz, to_daemon=True, start_server=True):
         #guarantees that libs are available in daemon context
         sys.path.append(__meta__.PATHS.values())
 
+        log.info("Starting collector...")
+
         log = set_logging()
 
         collector = collector_clazz(conf_reader.read_yaml_conf(), 
@@ -125,7 +127,6 @@ def start(collector_clazz, to_daemon=True, start_server=True):
         log.info("conf.yaml settings:")
         log.info(collector.conf)
 
-        log.info("Starting collector...")
         write_pid(collector.daemon_conf['PID_FILE_PATH'])
         collector.start()
     except Exception, e:
