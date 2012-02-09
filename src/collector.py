@@ -9,6 +9,7 @@
 import os
 import time
 import Queue
+import logging
 import threading
 import logging, logging.config
 
@@ -24,34 +25,16 @@ class Collector:
                  daemon_conf=None,
                  server=True,
                  default_queue_maxsize=1000):
-
+        self.log = logging.getLogger()
         self.conf = conf
         self.daemon_conf = daemon_conf
         self.server = server
         self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
         self.web_server = web.Server(self)
-        self.set_logging()
-
-    def set_logging(self):
-        try:
-            self.logger = logging.getLogger()
-            log_severity = self.daemon_conf['LOG_SEVERITY']
-            self.logger.setLevel(log_severity)
-            log_file_path = self.daemon_conf['LOG_FILE_PATH']
-            log_rotating = self.daemon_conf['LOG_ROTATING']
-            log_handler = logging.handlers.TimedRotatingFileHandler(log_file_path, 
-                                                                    when=log_rotating)
-            log_formatter = self.daemon_conf['LOG_FORMATTER']
-            formatter = logging.Formatter(log_formatter)
-            log_handler.setFormatter(formatter)
-            self.logger.addHandler(log_handler)
-            
-        except Exception, e:
-            print 'Cannot set logging.'
-            print e
 
     def prepare_readers_writers(self):
+        #TODO: refactoring
         self.pairs = []
         queue_maxsize = self.default_queue_maxsize
         for pair in self.conf:
@@ -64,7 +47,7 @@ class Collector:
             queue = Queue.Queue(maxsize = queue_maxsize)
 
             if not 'type' in writer_conf:
-                print 'Missing writer type in conf.yaml'
+                self.log.error('Missing writer type in conf.yaml')
                 exit(-1)
             writer_type = writer_conf['type'] 
             writer_type = rwtypes.get_writer_type(writer_type)
@@ -76,7 +59,7 @@ class Collector:
 
             reader_conf = pair['reader']
             if not 'type' in reader_conf:
-                print 'Missing writer type in conf.yaml'
+                self.log.error('Missing writer type in conf.yaml')
                 exit(-1)
             reader_type = reader_conf['type']
             reader_type = rwtypes.get_reader_type(reader_type)
@@ -97,21 +80,25 @@ class Collector:
                 writer.start()
                 reader.setDaemon(True)
                 reader.start()
+            self.log.info('Readers/writers started.')
         except Exception, e:
-            print "Cannot start pair"
-            print e
+            self.log.error("Cannot start pair.")
+            self.log.error(e)
 
     def start_server(self):
         try:
             self.web_server.start()
+            self.log.info('Web started.')
         except Exception, e:
-            print "Cannot start server"
-            print e
+            self.log.error("Cannot start server")
+            self.log.error(e)
 
     def start(self):
         self.start_pairs()
         if self.server:
             self.start_server()
+        self.log.info("Collector started.")
+        
 
 
 if __name__ == '__main__':

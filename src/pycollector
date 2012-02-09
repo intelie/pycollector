@@ -22,6 +22,7 @@ try:
 except Exception, e:
     print e
     sys.exit(-1)
+import logging
 import optparse
 
 import daemon_util
@@ -50,8 +51,15 @@ def status(option, opt, value, parser):
 
 
 def start(option, opt, value, parser):
-    collector_conf = conf_reader.read_yaml_conf()
+    log = daemon_util.set_logging()
+
+    log.info('Reading daemon_conf.py...')
     daemon_conf = conf_reader.read_daemon_conf()
+
+    log.info('Reading conf.yaml...')
+    collector_conf = conf_reader.read_yaml_conf()
+
+    log.info('Starting collector...')
     collector = Collector(collector_conf, daemon_conf, server=SERVER)
     daemon_util.start(collector, DAEMON)
     

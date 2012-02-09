@@ -4,6 +4,7 @@
 import os
 import sys
 import shlex
+import logging
 from subprocess import call, Popen, PIPE
 
 import __meta__
@@ -69,17 +70,33 @@ def suggest_log_path_creation(path):
     return True
 
 
+def set_logging():
+    try:
+        daemon_conf = conf_reader.read_daemon_conf()
+        log_path = daemon_conf['LOG_FILE_PATH']
+        log_dir = os.path.split(log_path)[0]
+        if not (log_dir_exists(log_dir) or suggest_log_path_creation(log_path)):
+            exit(-1)
+
+        logger = logging.getLogger()
+        logger.setLevel(daemon_conf['LOG_SEVERITY'])
+        rotating = daemon_conf['LOG_ROTATING']
+        handler = logging.handlers.TimedRotatingFileHandler(log_path, when=rotating)
+        formatter = logging.Formatter(daemon_conf['LOG_FORMATTER'])
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        return logger
+    except Exception, e:
+        print "Cannot set logging."
+        print e
+
+
 def start(collector, to_daemon=True):
     if is_running()[0]:
         print "Daemon already running."
         sys.exit(-1)
-
+    
     print "Starting daemon..."
-    log_path = collector.daemon_conf['LOG_FILE_PATH']
-    log_dir = os.path.split(log_path)[0]
-    if not (log_dir_exists(log_dir) or suggest_log_path_creation(log_path)):
-        exit(-1)
-
     if to_daemon:
         d = daemon.DaemonContext(working_directory=os.getcwd())
         d.open()
