@@ -98,7 +98,6 @@ def start(collector, to_daemon=True):
         sys.exit(-1)
     
     print "Starting daemon..."
-    set_logging()
     if to_daemon:
         d = daemon.DaemonContext(working_directory=os.getcwd())
         d.open()
