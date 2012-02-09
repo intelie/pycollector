@@ -102,8 +102,17 @@ def set_logging():
 def start(collector, to_daemon=True):
     if is_running()[0]:
         print "Daemon already running."
-        sys.exit(-1)
-    
+        sys.exit(-1)    
+
+    log = set_logging()
+
+    log.info("daemon_conf.py settings (missing values are replaced by defaults):")
+    log.info(collector.daemon_conf)
+
+    log.info("conf.yaml settings:")
+    log.info(collector.conf)
+
+    log.info("Starting collector...")
     if to_daemon:
         d = daemon.DaemonContext(working_directory=__meta__.BASE_PATH)
         d.open()
