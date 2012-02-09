@@ -7,8 +7,15 @@ import shlex
 import logging
 from subprocess import call, Popen, PIPE
 
+from helpers import daemon
+
 import __meta__
 import conf_reader
+
+
+def log_tail():
+    file_path = conf_reader.read_daemon_conf()['LOG_FILE_PATH']
+    os.system("tail -42f %s" % file_path)
 
 
 def write_pid(pidfile):
@@ -98,7 +105,7 @@ def start(collector, to_daemon=True):
         sys.exit(-1)
     
     if to_daemon:
-        d = daemon.DaemonContext(working_directory=os.getcwd())
+        d = daemon.DaemonContext(working_directory=__meta__.BASE_PATH)
         d.open()
 
     write_pid(collector.daemon_conf['PID_FILE_PATH'])

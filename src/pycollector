@@ -71,6 +71,10 @@ def stop(option, opt, value, parser):
     daemon_util.stop()
 
 
+def log_tail(option, opt, value, parser):
+    daemon_util.log_tail()
+
+
 def show_reader_types(option, opt, value, parser):
     keys = rwtypes.get_reader_keys()
     for key in keys:
@@ -88,6 +92,12 @@ def show_writer_types(option, opt, value, parser):
 if __name__ == '__main__':
     parser = optparse.OptionParser(prog=__software__, version=__version__)
     parser.set_description(__desc__)
+
+    parser.add_option("--logtail",
+                      action="callback",
+                      callback=log_tail,
+                      nargs=0,
+                      help="tail -f in pycollector log")
 
     parser.add_option("--rtypes",
                       action="callback",
