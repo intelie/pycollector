@@ -35,4 +35,5 @@ CHANGELOG
 0.1.8
 - imports/configuration refactoring (created __meta__ with paths and default values)
 - logging support
+- added --logtail option
 
