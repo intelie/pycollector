@@ -23,35 +23,32 @@ class Collector:
                  conf,
                  daemon_conf=None,
                  server=True,
-                 to_log=False,
                  default_queue_maxsize=1000):
 
         self.conf = conf
         self.daemon_conf = daemon_conf
         self.to_log = to_log
         self.server = server
-        log_filename = os.path.join(__meta__.PATHS['CONF_PATH'])
         self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
         self.web_server = web.Server(self)
-        if to_log:
-            self.set_logging()
+        self.set_logging()
 
     def set_logging(self):
         try:
             self.logger = logging.getLogger()
-            log_severity = self.conf['LOG_SEVERITY']
+            log_severity = self.daemon_conf['LOG_SEVERITY']
             self.logger.setLevel(log_severity)
-
-            log_file_path = self.conf['LOG_FILE_PATH']
-            log_rotating = self.conf['LOG_ROTATING']
+            log_file_path = self.daemon_conf['LOG_FILE_PATH']
+            log_rotating = self.daemon_conf['LOG_ROTATING']
             log_handler = logging.handlers.TimedRotatingFileHandler(log_file_path, 
                                                                     when=log_rotating)
-            log_formatter = self.conf['LOG_FORMATTER']
+            log_formatter = self.daemon_conf['LOG_FORMATTER']
             formatter = logging.Formatter(log_formatter)
             log_handler.setFormatter(formatter)
             self.logger.addHandler(log_handler)
         except Exception, e:
+            print 'Cannot set logging.'
             print e
 
     def prepare_readers_writers(self):
