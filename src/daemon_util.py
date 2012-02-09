@@ -15,7 +15,10 @@ import conf_reader
 
 def log_tail():
     file_path = conf_reader.read_daemon_conf()['LOG_FILE_PATH']
-    os.system("tail -42f %s" % file_path)
+    try:
+        os.system("tail -42f %s" % file_path)
+    except KeyboardInterrupt:
+        sys.exit(0)
 
 
 def write_pid(pidfile):
@@ -113,9 +116,10 @@ def start(collector_clazz, to_daemon=True, start_server=True):
         #guarantees that libs are available in daemon context
         sys.path.append(__meta__.PATHS.values())
 
-        log.info("Starting collector...")
 
         log = set_logging()
+
+        log.info("Starting collector...")
 
         collector = collector_clazz(conf_reader.read_yaml_conf(), 
                                     conf_reader.read_daemon_conf(), 
