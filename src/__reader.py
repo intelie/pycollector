@@ -2,6 +2,7 @@
 
 import time
 import pickle
+import logging
 import threading
 
 import helpers.kronos as kronos
@@ -16,7 +17,7 @@ class Reader(threading.Thread):
                  checkpoint_enabled=False,# default is to not deal with checkpoint 
                  checkpoint_interval=60   # interval between checkpoints
                  ):
-
+        self.log = logging.getLogger()
         self.conf = conf
         self.processed = 0
         self.discarded = 0
@@ -38,7 +39,8 @@ class Reader(threading.Thread):
             if not hasattr(self, 'checkpoint_interval'):
                 self.checkpoint_interval = checkpoint_interval
             if not hasattr(self, 'checkpoint_path'):
-                print 'Error. Please, configure a checkpoint_path'
+                self.log.error('Please, configure a checkpoint_path.')
+                self.log.info('Aborting.')
                 exit(-1)
             self.schedule_checkpoint_writing()
 
@@ -57,7 +59,7 @@ class Reader(threading.Thread):
         """Read checkpoint file from disk."""
         try:
             if not os.path.exists(self.checkpoint_path):
-                print 'No checkpoint found in %s.' % self.checkpoint_path
+                self.log.info('No checkpoint found in %s.' % self.checkpoint_path)
                 return ''
             f = open(self.checkpoint_path, 'rb')
             read = pickle.load(f)
@@ -67,8 +69,8 @@ class Reader(threading.Thread):
             else:
                 return ''
         except Exception, e:
-            print 'Error reading checkpoint'
-            print e
+            self.log.error('Error reading checkpoint')
+            self.log.error(e)
 
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
@@ -77,10 +79,10 @@ class Reader(threading.Thread):
             f = open(self.checkpoint_path, 'w')
             pickle.dump(lc, f)
             f.close()
-            print '[reader] checkpoint [%s] written' % lc
+            self.log.info('checkpoint [%s] written' % lc)
         except Exception, e:
-            print 'Error writing checkpoint in %s' % self.checkpoint_path
-            print e
+            self.log.error('Error writing checkpoint in %s' % self.checkpoint_path)
+            self.log.error(e)
 
     def set_conf(self, conf):
         """Turns configuration properties 
@@ -92,7 +94,8 @@ class Reader(threading.Thread):
                 else:
                     exec("self.%s = %s" % (item, conf[item]))
         except Exception, e:
-            print "Invalid configuration item: %s " % item
+            self.log.error("Invalid configuration item: %s" % item)
+            self.log.error(e)
 
     def schedule_tasks(self):
         self.scheduler = kronos.ThreadedScheduler()
@@ -124,8 +127,8 @@ class Reader(threading.Thread):
         try:
             self.writer.process()
         except Exception, e:
-            print 'Error when executing writer_callback'
-            print e
+            self.log.error('Error when executing writer_callback')
+            self.log.error(e)
 
     def _store(self, msg):
         """Internal method to store read messages.
@@ -136,9 +139,9 @@ class Reader(threading.Thread):
                 self.processed += 1
             else:
                 self.discarded += 1
-                print "discarding message [%s], full queue" % msg
+                self.log.warning("Discarding message [%s], full queue" % msg)
         except Exception, e:
-            print "can't store in queue, message %s" % msg
+            self.log.error("Can't store in queue, message %s" % msg)
             print e
 
         if self.checkpoint_enabled:
@@ -154,7 +157,7 @@ class Reader(threading.Thread):
            in the case of a periodic task.
            Shouldn't be called by subclasses"""
         if not self._read():
-            print "Message can't be read"
+            self.log.info("Message can't be read")
 
     def _read(self):
         """Internal method that calls read() method. 
@@ -162,7 +165,7 @@ class Reader(threading.Thread):
         try:
             return self.read()
         except Exception, e:
-            print e
+            self.log.error(e)
 
     def _set_checkpoint(self, checkpoint):
         """Wrapper method to set_checkpoint (user defined)
@@ -170,8 +173,8 @@ class Reader(threading.Thread):
         try:
             self.last_checkpoint = checkpoint
         except Exception, e:
-            print 'Error setting checkpoint'
-            print e
+            self.log.error('Error setting checkpoint')
+            self.log.error(e)
 
     def store(self, msg):
         """Stores a read message. 

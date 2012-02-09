@@ -1,3 +1,4 @@
+import logging
 import datetime
 
 from third import filetail
@@ -16,6 +17,7 @@ class AzionAnalytics(Reader):
             e.g. ['date', 'hour', 'message']"""
 
     def setup(self):
+        self.log = logging.getLogger()
         self.check_conf(['delimiter', 'columns', 'logpath'])
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
         self.client = self.logpath.split('.')[1]
@@ -35,7 +37,8 @@ class AzionAnalytics(Reader):
     def check_conf(self, items):
         for item in items:
             if not hasattr(self, item):
-                print '%s not defined in conf.yaml.' % item
+                self.log.error('%s not defined in conf.yaml.' % item)
+                self.log.info('Aborting.')
                 exit(-1)
     
     def dictify_line(self, line):
@@ -92,7 +95,7 @@ class AzionAnalytics(Reader):
                     cur_time = self.get_datetime(line_data['time_local'][1:21])
                     cur_minute = self.get_minute(cur_time)
                 except ValueError:
-                    print 'Cannot parse date, skipping line'
+                    self.log.error('Cannot parse date %s, skipping line' % line_data['time_local'])
                     continue
 
                 for column, metadata in self.agg_count.items():
@@ -134,5 +137,5 @@ class AzionAnalytics(Reader):
                             self.set_first(metadata, cur_minute)
 
             except Exception, e:
-                print 'error reading line: %s' % line
-                print e
+                self.log.error('Error reading line: %s' % line)
+                self.log.error(e)
