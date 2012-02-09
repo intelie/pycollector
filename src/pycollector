@@ -54,11 +54,13 @@ def start(option, opt, value, parser):
 
     log = daemon_util.set_logging()
 
-    log.info('Reading daemon_conf.py...')
+    log.info('Reading daemon_conf.py (missing values are replaced by defaults)...')
     daemon_conf = conf_reader.read_daemon_conf()
+    log.info(daemon_conf)
 
     log.info('Reading conf.yaml...')
     collector_conf = conf_reader.read_yaml_conf()
+    log.info(collector_conf)
 
     log.info('Starting collector...')
     collector = Collector(collector_conf, daemon_conf, server=SERVER)

@@ -97,7 +97,6 @@ def start(collector, to_daemon=True):
         print "Daemon already running."
         sys.exit(-1)
     
-    print "Starting daemon..."
     if to_daemon:
         d = daemon.DaemonContext(working_directory=os.getcwd())
         d.open()
