@@ -48,11 +48,9 @@ class Collector:
 
             writer_type = writer_conf['type'] 
             writer_type = rwtypes.get_writer_type(writer_type)
-
             exec('import %s' % writer_type['module'])
             exec('writer_class = %s.%s' % (writer_type['module'], writer_type['class']))
             writer = writer_class(queue, writer_conf)
-
 
             reader_conf = pair['reader']
             reader_type = reader_conf['type']
