@@ -27,7 +27,6 @@ class Collector:
 
         self.conf = conf
         self.daemon_conf = daemon_conf
-        self.to_log = to_log
         self.server = server
         self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
@@ -47,6 +46,7 @@ class Collector:
             formatter = logging.Formatter(log_formatter)
             log_handler.setFormatter(formatter)
             self.logger.addHandler(log_handler)
+            
         except Exception, e:
             print 'Cannot set logging.'
             print e
