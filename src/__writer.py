@@ -3,6 +3,7 @@
 import os
 import time
 import pickle
+import logging
 import threading
 
 import helpers.kronos as kronos
@@ -19,7 +20,7 @@ class Writer(threading.Thread):
                  checkpoint_enabled=False,# deafult is to not deal with checkpoints
                  checkpoint_interval=60   # interval of checkpoint writing
                  ):
-
+        self.log = logging.getLogger()
         self.conf = conf
         self.processed = 0
         self.discarded = 0
@@ -40,7 +41,8 @@ class Writer(threading.Thread):
             if not hasattr(self, 'checkpoint_interval'):
                 self.checkpoint_interval = checkpoint_interval
             if not hasattr(self, 'checkpoint_path'):
-                print 'Error. Please, configure a checkpoint_path'
+                self.log.error('Error. Please, configure a checkpoint_path')
+                self.log.info('Aborting.')
                 exit(-1)
             self.schedule_checkpoint_writing()
 
@@ -59,7 +61,7 @@ class Writer(threading.Thread):
         """Read checkpoint file from disk."""
         try:
             if not os.path.exists(self.checkpoint_path):
-                print 'No checkpoint found in %s.' % self.checkpoint_path
+                self.log.info('No checkpoint found in %s.' % self.checkpoint_path)
                 return ''
             f = open(self.checkpoint_path, 'rb')
             read = pickle.load(f)
@@ -69,8 +71,8 @@ class Writer(threading.Thread):
             else:
                 return ''
         except Exception, e:
-            print 'Error reading writer checkpoint'
-            print e
+            self.log.error('Error reading writer checkpoint')
+            self.log.error(e)
 
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
@@ -79,10 +81,10 @@ class Writer(threading.Thread):
             f = open(self.checkpoint_path, 'w')
             pickle.dump(lc, f)
             f.close()
-            print '[writer] checkpoint [%s] written' % lc
+            self.log.info('checkpoint [%s] written' % lc)
         except Exception, e:
-            print 'Error writing checkpoint in %s' % self.checkpoint_path
-            print e 
+            self.log.error('Error writing checkpoint in %s' % self.checkpoint_path)
+            self.log.error(e)
 
     def set_conf(self, conf):
         """Turns configuration properties
@@ -94,8 +96,8 @@ class Writer(threading.Thread):
                 else:
                     exec("self.%s = %s" % (item, conf[item]))
         except Exception, e:
-            print "Invalid configuration item: %s" % item
-            print e
+            self.log.error("Invalid configuration item: %s" % item)
+            self.log.error(e)
 
     def reschedule_tasks(self):
         self.schedule_tasks()
@@ -144,22 +146,22 @@ class Writer(threading.Thread):
                             break
                         time.sleep(self.retry_interval)
                         time_passed += self.retry_interval 
-                        print "Rewriting..."
+                        self.log.info("Rewriting...")
                     self.blocked = False
                     self.reschedule_tasks()
                 else:
                     self.discarded += 1
-                    print "Message [%s] can't be written" % msg
+                    self.log.info("Message [%s] can't be written" % msg)
             else:
                 wrote = True
 
             if wrote:
-                print "Message [%s] written" % msg
+                self.log.info("Message [%s] written" % msg)
                 self.processed += 1
                 if self.checkpoint_enabled:
                     self._set_checkpoint(msg.checkpoint)
         else:
-            print "No messages in the queue to write"
+            self.log.info("No messages in the queue to write")
 
     def _write(self, msg):
         """Method that calls write method defined by subclasses.
@@ -167,8 +169,8 @@ class Writer(threading.Thread):
         try:
             return self.write(msg)
         except Exception, e:
-            print "Can't write message %s" % msg
-            print e
+            self.log.error("Can't write message %s" % msg)
+            self.log.error(e)
             return False
 
     def setup(self):
@@ -183,8 +185,8 @@ class Writer(threading.Thread):
         try:
             self.last_checkpoint = checkpoint 
         except Exception, e:
-            print 'error updating last_checkpoint'
-            print e
+            self.log.error('error updating last_checkpoint')
+            self.log.error(e)
 
     def run(self):
         """Starts the writer"""
