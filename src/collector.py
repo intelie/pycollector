@@ -92,7 +92,6 @@ class Collector:
         self.log.info("Collector started.")
         
 
-
 if __name__ == '__main__':
     c = Collector()
     c.start()
