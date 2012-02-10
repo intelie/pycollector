@@ -1,3 +1,5 @@
+import logging
+
 import SimpleCV
 
 from __reader import Reader
@@ -10,6 +12,7 @@ class CameraReader(Reader):
         - cam_number (optional): id number of your cam"""
 
     def setup(self):
+        self.log = logging.getLogger()
         if hasattr(self, 'cam_number'):
             self.cam = SimpleCV.Camera(self.cam_number)
         else:
@@ -21,6 +24,6 @@ class CameraReader(Reader):
             self.store(Message(content=image))
             return True
         except Exception, e:
-            print 'Error in storing image'
-            print e
+            self.log.error('error in storing image')
+            self.log.error(e)
             return False

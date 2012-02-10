@@ -1,5 +1,6 @@
 import time
 import serial
+import logging
 
 from __reader import Reader
 from __message import Message
@@ -13,6 +14,7 @@ class ArduinoReader(Reader):
             e.g. 9600 (default)"""
 
     def setup(self):
+        self.log = logging.getLogger()
         if not hasattr(self, 'interface'):
             self.interface = '/dev/ttyUSB0'
         if not hasattr(self, 'bps'):
@@ -25,5 +27,5 @@ class ArduinoReader(Reader):
                 msg = "%s,%s" % (time.time(), self.arduino.readline())
                 self.store(Message(content=msg))
             except Exception, e:
-                print 'error reading'
-                print e
+                self.log.error('error reading') 
+                self.log.error(e)

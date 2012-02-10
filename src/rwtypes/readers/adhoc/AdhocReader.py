@@ -1,5 +1,6 @@
-import time
 import os
+import time
+import logging
 import socket
 
 from __reader import Reader
@@ -7,6 +8,8 @@ from __message import Message
 
 class AdhocReader(Reader):
     """Start writing your reader here"""
+    def setup(self):
+        self.log = logging.getLogger()
 
     def read(self):
         try:
@@ -15,6 +18,6 @@ class AdhocReader(Reader):
             self.store(Message(content=msg))
             return True
         except Exception, e:
-            print 'error reading'
-            print e
+            self.log.error('error reading')
+            self.log.error(e)
             return False

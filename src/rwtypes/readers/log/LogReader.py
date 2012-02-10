@@ -1,3 +1,4 @@
+import logging
 from third import filetail
 
 from __reader import Reader
@@ -14,6 +15,7 @@ class LogReader(Reader):
             e.g. ['date', 'hour', 'message']"""
 
     def setup(self):
+        self.log = logging.getLogger()
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
         
     def read(self):
@@ -38,5 +40,5 @@ class LogReader(Reader):
                 self.store(Message(content=line))
 
             except Exception, e:
-                print 'error reading line: %s' % line
-                print e
+                self.log.error('error reading line: %s' % line)
+                self.log.error(e)

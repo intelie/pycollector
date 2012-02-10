@@ -2,6 +2,7 @@
 
 import datetime
 import calendar
+import logging
 
 from third.sqlalchemy import create_engine
 from third.sqlalchemy.orm import sessionmaker
@@ -27,6 +28,7 @@ class DBReader(Reader):
         Note: if checkpoint is used, query must guarantee sorted data"""
 
     def setup(self):
+        self.log = logging.getLogger()
         engine = create_engine(self.connection %(self.user, 
                                                  self.passwd, 
                                                  self.host, 
@@ -40,7 +42,7 @@ class DBReader(Reader):
             data = self.session.query(*self.columns).from_statement(self.query).all()
 
             if len(data) == 0:
-                print '[dbreader] no data for query: %s' % self.query
+                self.log.info('[dbreader] no data for query: %s' % self.query)
                 return True
 
             #getting only new data (based on checkpoint)
@@ -48,7 +50,7 @@ class DBReader(Reader):
                 data = data[:(len(data) - int(self.last_checkpoint))]
 
             if len(data) <= 0:
-                print "[dbreader] no new data based on checkpoint"
+                self.log.info("[dbreader] no new data based on checkpoint")
                 return True
             else:
                 for datum in data:
@@ -79,6 +81,6 @@ class DBReader(Reader):
                         self.store(Message(content=to_send, checkpoint=str(int(self.last_checkpoint) + 1)))
             return True
         except Exception, e:
-            print '[dbreader] error reading from database'
-            print e
+            self.log.error('error reading from database')
+            self.log.error(e)
             return False
