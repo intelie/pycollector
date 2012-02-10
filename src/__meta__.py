@@ -13,6 +13,7 @@ try:
     BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     PATHS = {
         'BASE_PATH' : BASE_PATH,
+        'SRC_PATH' : os.path.join(BASE_PATH, "src"),
         'CONF_PATH' : os.path.join(BASE_PATH, "conf"),
         'HELPERS_PATH' : os.path.join(BASE_PATH, "src", "helpers"),
         'THIRD_PATH' : os.path.join(BASE_PATH, "src", "third"),
