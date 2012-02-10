@@ -5,6 +5,8 @@ from __writer import Writer
 
 class StdoutWriter(Writer):
     """Conf: none"""
+    def setup(self):
+        self.log = logging.getLogger()
 
     def write(self, msg):
         try:
