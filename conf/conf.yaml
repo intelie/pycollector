@@ -40,11 +40,11 @@ specs:
 #    connection: 'mssql+pyodbc://%s:%s@%s/%s'
 #
 #Activemq example
-  activemq:
-    type: activemq
-    host: localhost 
-    port: 61613
-    destination: '/queue/events'
+#  activemq:
+#    type: activemq
+#    host: localhost 
+#    port: 61613
+#    destination: '/queue/events'
 #
 #Log example
 #  log:
@@ -75,10 +75,10 @@ conf:
 #    delimiter: \t
 #    columns: [request_time, host, remote_addr, time_local, request, status, request_method, bytes_sent, request_uri, http_user_agent, http_referer, upstream_cache_status]
 #    counts:
-#      request_method: ['GET', 1] #count GET's in 'request_method' column in 60 seconds period
+#      request_method: ['GET', 1] #count GET's in 'request_method' column in 1 minute period
 #      status: ['200', 1]
 #    sums:
-#      bytes_sent: 1 #sum bytes_sent in 60 second periods
+#      bytes_sent: 1 #sum bytes_sent in 1 minute periods
 #    checkpoint_enabled: True
 #    checkpoint_path: /home/user/rAZ.0058b.log
 #    checkpoint_interval: 10
