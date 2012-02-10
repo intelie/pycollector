@@ -52,7 +52,8 @@ mkdir -p %{buildroot}/etc/init.d
 cp src/pycollector src/__meta__.py %{buildroot}%{prefix}/bin/
 
 #conf files
-cp -r conf/* %{buildroot}%{prefix}/conf/
+mv conf/conf.yaml.prod conf/conf.yaml
+cp conf/conf.yaml conf/daemon_conf.py %{buildroot}%{prefix}/conf/
 
 #lib files
 cp CHANGELOG LICENSE README %{buildroot}%{prefix}
