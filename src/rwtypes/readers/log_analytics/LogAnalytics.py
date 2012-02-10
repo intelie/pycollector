@@ -22,17 +22,28 @@ class AzionAnalytics(Reader):
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
         self.client = self.logpath.split('.')[1]
         self.time_format = "%d/%b/%Y:%H:%M:%S"
-        self.start_counters()
+        self.start_counts()
+        self.start_sums()
 
-    def start_counters(self):
-        if self.count:
-            self.agg_count = {}
-            for key, value in self.count.items():
+    def start_counts(self):
+        if self.counts:
+            self.agg_counts = {}
+            for key, value in self.counts.items():
                 d = {'value' : 0,
                      'start_time' : 0,
                      'content' : value[0],
                      'interval' : value[1]*60}
-                self.agg_count[key] = d
+                self.agg_counts[key] = d
+
+#    def start_sums(self):
+#        if self.sums:
+#            self.agg_sums = {}
+#            for key, value in self.sums.items():
+#                d = {'value' : 0,
+#                     'start_time' : 0,
+#                     'content' : value[0],
+#                     'interval' : value[1]*60}
+#                self.agg_sums[key] = d
 
     def check_conf(self, items):
         for item in items:
@@ -74,20 +85,27 @@ class AzionAnalytics(Reader):
                           content=content)
             self.store(msg)
 
-    def set_first(self, metadata, time):
+    def set_first_count(self, metadata, time):
         metadata['value'] = 1 
         metadata['start_time'] = time
 
+#    def set_first_sum(self, metadata, time, value):
+#        metadata['value'] = value 
+#        metadata['start_time'] = time
+
     def generate_checkpoint(self, pos):
         checkpoint = {'pos' : pos}
-        checkpoint.update({'count' : self.agg_count})
+        checkpoint.update({'counts' : self.agg_counts})
         return checkpoint
 
     def read(self):
-        cur_time = 0
+
+        #recover after failure
         if self.checkpoint_enabled and self.last_checkpoint:
-            self.agg_count = self.last_checkpoint['count']
+            self.agg_counts = self.last_checkpoint['counts']
+#            self.agg_sums = self.last_checkpoint['sums']
             self.tail.seek_bytes(self.last_checkpoint['pos'])
+        cur_time = 0
         while True:
             try:
                 self.current_line = self.tail.nextline()
@@ -100,13 +118,13 @@ class AzionAnalytics(Reader):
                     self.log.error('Cannot parse date %s, skipping line' % line_data['time_local'])
                     continue
 
-                for column, metadata in self.agg_count.items():
+                for column, metadata in self.agg_counts.items():
                     #match occurred
                     if line_data[column] == metadata['content']:
 
                         #first occurrence
                         if metadata['start_time'] == 0:
-                            self.set_first(metadata, cur_minute)
+                            self.set_first_count(metadata, cur_minute)
                             continue
 
                         time_passed = cur_time - metadata['start_time']
@@ -138,8 +156,18 @@ class AzionAnalytics(Reader):
                                                                    cur_minute, 
                                                                    datetime.timedelta(0, metadata['interval']))
                             self.store_empty_periods(cur_pos, column, metadata, empty_periods)
-                            self.set_first(metadata, cur_minute)
+                            self.set_first_count(metadata, cur_minute)
 
-            except Exception, e:
+
+                #for column, metadata in self.agg_sum.items():
+#                    try:
+#                        value = int(line_data[column].strip())
+#                    except Exception, e:
+#                        self.log.error("Cannot get value from %s" % column)
+#                        self.log.error(e)
+#
+#                    if metadata['start_time'] == 0:
+                        
+            except Exception, e: 
                 self.log.debug('Error reading line: %s' % self.current_line)
                 self.log.error(e)
