@@ -1,4 +1,7 @@
+import logging
+
 from __writer import Writer
+
 
 class StdoutWriter(Writer):
     """Conf: none"""
@@ -8,5 +11,6 @@ class StdoutWriter(Writer):
             print "\n[WRITER] message: %s" % msg
             return True
         except Exception, e:
-            print e
+            self.log.error("Can't write in stdout")
+            self.log.error(e) 
             return False

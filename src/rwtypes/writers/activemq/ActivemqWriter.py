@@ -1,8 +1,8 @@
+import time
+import json
 import socket
 import datetime
-import time
 import calendar
-import json
 
 
 from third.stomp import stomp_sender
@@ -19,12 +19,13 @@ class ActivemqWriter(Writer):
         - additional_properties: dict with additional fields"""
 
     def setup(self):
+        self.log = logging.getLogger()
         self.check_conf(['host', 'port', 'destination', 'eventtype'])
 
     def check_conf(self, items):
         for item in items:
             if not hasattr(self, item):
-                print '[ActivemqWriter] %s not defined in conf.yaml.' % item
+                self.log.error('%s not defined in conf.yaml.' % item)
                 exit(-1)
 
     def write(self, msg):
@@ -51,5 +52,6 @@ class ActivemqWriter(Writer):
             stomp_sender.send_message_via_stomp([(self.host, self.port)], headers, body)
             return True
         except Exception, e:
-            print e
+            self.log.error("Can't write")
+            self.log.error(e)
             return False

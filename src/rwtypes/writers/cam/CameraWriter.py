@@ -1,4 +1,5 @@
 import time
+import logging
 
 from __writer import Writer
 
@@ -10,6 +11,7 @@ class CameraWriter(Writer):
         - prefix (optional): prefix added to each image filename. 
     """
     def setup(self):
+        self.log = logging.getLogger()
         if not hasattr(self, 'path'):
             self.path = '/tmp'
         elif self.path[-1] == '/':
@@ -23,6 +25,6 @@ class CameraWriter(Writer):
                 msg.save('%s/%s.jpg' % (self.path, time.time()))
             return True
         except Exception, e:
-            print 'error writing img'
-            print e
+            self.log.error('error writing img')
+            self.log.error(e)
             return False

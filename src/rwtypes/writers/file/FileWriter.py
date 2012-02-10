@@ -1,4 +1,7 @@
+import logging
+
 from __writer import Writer
+
 
 class FileWriter(Writer):
     """Conf:
@@ -6,6 +9,7 @@ class FileWriter(Writer):
             e.g. /home/user/myfile (default: /tmp/timestamp)"""
 
     def setup(self):
+        self.log = logging.getLogger()
         if hasattr(self, 'filepath'):
             self.f = open(self.filepath, 'a+')
         else:    
@@ -20,5 +24,6 @@ class FileWriter(Writer):
 
            return True
         except Exception, e:
-            print e
+            self.log.error('error writing file')
+            self.log.error(e)
             return False
