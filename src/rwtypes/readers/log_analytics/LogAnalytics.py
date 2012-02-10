@@ -7,7 +7,7 @@ from __reader import Reader
 from __message import Message
 
 
-class AzionAnalytics(Reader):
+class LogAnalytics(Reader):
     """Conf:
         - logpath (required): path of log file,
             e.g. /tmp/my.log
