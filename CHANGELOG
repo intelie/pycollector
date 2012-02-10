@@ -37,3 +37,4 @@ CHANGELOG
 - logging support
 - added --logtail option
 - fixed daemon bug (it was not possible to start in a daemon mode)
+- rpm packaging
