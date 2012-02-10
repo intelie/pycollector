@@ -55,6 +55,7 @@ cp src/pycollector src/__meta__.py %{buildroot}%{prefix}/bin/
 cp -r conf/* %{buildroot}%{prefix}/conf/
 
 #lib files
+cp CHANGELOG LICENSE README %{buildroot}%{prefix}
 cp -r src/* %{buildroot}%{prefix}/lib/
 rm -rf %{buildroot}%{prefix}/lib/pycollector
 
@@ -69,7 +70,7 @@ ln -s %{prefix}/bin/pycollector %{buildroot}/etc/init.d
 
 
 %preun
-sudo service pycollector --stop
+sudo service pycollector --stop || :
 
 
 %postun
@@ -80,10 +81,15 @@ rm -rf %{buildroot}
 
 
 %files
-%attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/bin
-%attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/lib
+%dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/bin
+%dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/lib
+%dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/logs
+%dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/conf
 %attr(777, %{pycollector_user}, %{pycollector_group}) %{prefix}/lib/**
-%attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/logs
-%attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/conf
+%attr(644, %{pycollector_user}, %{pycollector_group}) %{prefix}/bin/__meta__.py
+%attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/bin/pycollector
+%attr(644, %{pycollector_user}, %{pycollector_group}) %{prefix}/LICENSE
+%attr(644, %{pycollector_user}, %{pycollector_group}) %{prefix}/CHANGELOG
+%attr(644, %{pycollector_user}, %{pycollector_group}) %{prefix}/README
 %config %attr(666, %{pycollector_user}, %{pycollector_group}) %{prefix}/conf/**
 %attr(755, root, root) /etc/init.d/pycollector
