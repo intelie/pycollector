@@ -107,7 +107,7 @@ class Reader(threading.Thread):
                 self.schedule_single_task()
             self.log.info("Tasks scheduled with success")
         except Exception, e:
-            self.log.error("Error scheduling task")
+            self.log.error("Error while scheduling task")
             selg.log.error(e)
 
     def schedule_interval_task(self):

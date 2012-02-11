@@ -70,8 +70,9 @@ class Writer(threading.Thread):
                 return read 
             else:
                 return ''
+            self.log.info("Checkpoint read from %s" % self.checkpoint_path)
         except Exception, e:
-            self.log.error('Error reading writer checkpoint')
+            self.log.error('Error reading checkpoint in %s' % self.checkcpoint_path)
             self.log.error(e)
 
     def _write_checkpoint(self):
@@ -81,7 +82,7 @@ class Writer(threading.Thread):
             f = open(self.checkpoint_path, 'w')
             pickle.dump(lc, f)
             f.close()
-            self.log.info('checkpoint [%s] written' % lc)
+            self.log.info('Checkpoint written: %s' % lc)
         except Exception, e:
             self.log.error('Error writing checkpoint in %s' % self.checkpoint_path)
             self.log.error(e)
@@ -95,18 +96,28 @@ class Writer(threading.Thread):
                     exec("self.%s = '%s'" % (item, conf[item]))
                 else:
                     exec("self.%s = %s" % (item, conf[item]))
+            self.log.info("Configuration settings added with success into writer.")
         except Exception, e:
             self.log.error("Invalid configuration item: %s" % item)
             self.log.error(e)
 
     def reschedule_tasks(self):
-        self.schedule_tasks()
-        self.scheduler.start()
+        try:
+            self.schedule_tasks()
+            self.scheduler.start()
+            self.log.info("Success in rescheduling")
+        except Exception, e:
+            self.log.error("Error while rescheduling tasks")
+            self.log.error(e)
 
     def schedule_tasks(self):
-        self.scheduler = kronos.ThreadedScheduler()
-        if self.interval:
-            self.schedule_interval_task()
+        try:
+            self.scheduler = kronos.ThreadedScheduler()
+            if self.interval:
+                self.schedule_interval_task()
+        except Exception, e:
+            self.log.error("Error while scheduling tasks")
+            self.log.error(e)
 
     def schedule_interval_task(self):
         self.scheduler.add_interval_task(self.process,
@@ -117,7 +128,7 @@ class Writer(threading.Thread):
                                          [],
                                          None)
 
-    def process(self):
+    def process(self): 
         """Method called to process (write) a message.
             It is called in the end of each interval 
             in the case of a periodic task.
@@ -134,34 +145,38 @@ class Writer(threading.Thread):
                 if self.blockable:
                     self.scheduler.stop()
                     self.blocked = True
-                    time_passed = 0
+                    self.log.warning("Writer blocked.")
 
+                    time_passed = 0
                     while True:
+                        self.log.info("Trying to rewrite message...")
                         if self._write(msg.content):
                             wrote = True
-                            break
+                            self.log.info("Rewriting done with success.")
+                            break   
                         elif self.retry_timeout and \
                              time_passed > self.retry_timeout:
                             self.discarded += 1
+                            self.log.info("Retry timeout reached. Discarding message...")
                             break
                         time.sleep(self.retry_interval)
                         time_passed += self.retry_interval 
-                        self.log.info("Rewriting...")
                     self.blocked = False
+                    self.log.info("Writer unblocked.")
                     self.reschedule_tasks()
                 else:
                     self.discarded += 1
-                    self.log.info("Message [%s] can't be written" % msg)
+                    self.log.info("Since it's not blockable, discarding message: %s" % msg)
             else:
                 wrote = True
 
             if wrote:
-                self.log.info("Message [%s] written" % msg)
+                self.log.info("Message written: %s" % msg)
                 self.processed += 1
                 if self.checkpoint_enabled:
                     self._set_checkpoint(msg.checkpoint)
         else:
-            self.log.info("No messages in the queue to write")
+            self.log.info("No messages in the queue to write.")
 
     def _write(self, msg):
         """Method that calls write method defined by subclasses.
@@ -169,7 +184,7 @@ class Writer(threading.Thread):
         try:
             return self.write(msg)
         except Exception, e:
-            self.log.error("Can't write message %s" % msg)
+            self.log.error("Can't write message: %s" % msg)
             self.log.error(e)
             return False
 
@@ -184,8 +199,9 @@ class Writer(threading.Thread):
     def _set_checkpoint(self, checkpoint):
         try:
             self.last_checkpoint = checkpoint 
+            self.log.debug("Last checkpoint: %s" %checkpoint)
         except Exception, e:
-            self.log.error('error updating last_checkpoint')
+            self.log.error('Error updating last_checkpoint')
             self.log.error(e)
 
     def run(self):
