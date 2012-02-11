@@ -29,7 +29,7 @@ CHANGELOG
 0.1.7
 - added parameter to daemon to disable web server (--noserver)
 - added 'messages in queue' info in mini web module
-- added AzionAnalytics reader
+- added LogAnalytics reader
 - changed checkpoint format to pickle serialization
 
 0.1.8
