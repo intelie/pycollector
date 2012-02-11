@@ -25,7 +25,6 @@ class Reader(threading.Thread):
         self.writer = writer
         self.interval = interval
         self.checkpoint_enabled = checkpoint_enabled
-
         self.set_conf(conf)
         self.setup()
 
@@ -50,7 +49,7 @@ class Reader(threading.Thread):
         self.scheduler.add_interval_task(self._write_checkpoint,
                                          "checkpoint writing",
                                          0,
-                                         self.checkpoint_interval,
+                                         self.checkpoint_inteval,
                                          kronos.method.threaded,
                                          [],
                                          None)
@@ -68,8 +67,9 @@ class Reader(threading.Thread):
                 return read
             else:
                 return ''
+            self.log.info("Checkpoint read from %s" % self.checkpoint_path)
         except Exception, e:
-            self.log.error('Error reading checkpoint')
+            self.log.error('Error reading checkpoint in %s' % self.checkpoint_path)
             self.log.error(e)
 
     def _write_checkpoint(self):
@@ -79,7 +79,7 @@ class Reader(threading.Thread):
             f = open(self.checkpoint_path, 'w')
             pickle.dump(lc, f)
             f.close()
-            self.log.info('checkpoint [%s] written' % lc)
+            self.log.info('Checkpoint written: %s' % lc)
         except Exception, e:
             self.log.error('Error writing checkpoint in %s' % self.checkpoint_path)
             self.log.error(e)
@@ -93,16 +93,22 @@ class Reader(threading.Thread):
                     exec("self.%s = '%s'" % (item, conf[item]))
                 else:
                     exec("self.%s = %s" % (item, conf[item]))
+            self.log.info("Configuration settings added with success into reader.")
         except Exception, e:
             self.log.error("Invalid configuration item: %s" % item)
             self.log.error(e)
 
     def schedule_tasks(self):
-        self.scheduler = kronos.ThreadedScheduler()
-        if self.interval:
-            self.schedule_interval_task()
-        else:
-            self.schedule_single_task()
+        try:
+            self.scheduler = kronos.ThreadedScheduler()
+            if self.interval:
+                self.schedule_interval_task()
+            else:
+                self.schedule_single_task()
+            self.log.info("Tasks scheduled with success")
+        except Exception, e:
+            self.log.error("Error scheduling task")
+            selg.log.error(e)
 
     def schedule_interval_task(self):
         self.scheduler.add_interval_task(self._process,
@@ -125,6 +131,7 @@ class Reader(threading.Thread):
         """Callback to writer for non periodic tasks.
            Shouldn't be called by subclasses."""
         try:
+            self.log.debug("Calling writer_callback")
             self.writer.process()
         except Exception, e:
             self.log.error('Error when executing writer_callback')
@@ -137,9 +144,10 @@ class Reader(threading.Thread):
             if not self.queue.full():
                 self.queue.put(msg)
                 self.processed += 1
+                self.log.debug("Stored message: %s" % msg)
             else:
                 self.discarded += 1
-                self.log.warning("Discarding message [%s], full queue" % msg)
+                self.log.debug("Discarded message: %s, full queue" % msg)
         except Exception, e:
             self.log.error("Can't store in queue, message %s" % msg)
             print e
@@ -172,6 +180,7 @@ class Reader(threading.Thread):
            to get exceptions"""
         try:
             self.last_checkpoint = checkpoint
+            self.log.debug("Last checkpoint: %s" % checkpoint)
         except Exception, e:
             self.log.error('Error setting checkpoint')
             self.log.error(e)
