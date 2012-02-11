@@ -49,7 +49,7 @@ class Reader(threading.Thread):
         self.scheduler.add_interval_task(self._write_checkpoint,
                                          "checkpoint writing",
                                          0,
-                                         self.checkpoint_inteval,
+                                         self.checkpoint_interval,
                                          kronos.method.threaded,
                                          [],
                                          None)
