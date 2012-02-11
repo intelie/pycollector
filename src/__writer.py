@@ -170,7 +170,7 @@ class Writer(threading.Thread):
             else:
                 wrote = True
 
-            if wrotei
+            if wrote:
                 self.log.debug("Message written: %s" % msg)
                 self.processed += 1
                 if self.checkpoint_enabled:
