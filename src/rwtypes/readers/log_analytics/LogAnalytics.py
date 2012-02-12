@@ -72,6 +72,17 @@ class LogAnalytics(Reader):
             beginning = beginning + period
         return empty_periods
     
+    def get_sum_message(self, column, agg):
+        formatted_time = agg['interval_started_at'].strftime(self.time_format)
+        checkpoint = self.generate_checkpoint()
+        content = {'field_name' : column, 
+                   'client' : self.client,
+                   'value' : agg['value'],
+                   'interval_duration_sec' : agg['interval_duration_sec'],
+                   'interval_started_at' : formatted_time,
+                   'aggregation_type' : 'sum'}
+        return Message(checkpoint=checkpoint, content=content)
+
     def get_count_message(self, column, agg):
         formatted_time = agg['interval_started_at'].strftime(self.time_format)
         checkpoint = self.generate_checkpoint()
@@ -84,7 +95,19 @@ class LogAnalytics(Reader):
                    'aggregation_type' : 'count'}
         return Message(checkpoint=checkpoint, content=content)
 
-    def store_empty_periods(self, pos, column, agg, empty_periods):
+    def store_empty_sum_periods(self, column, agg, empty_periods):
+        for empty_period in empty_periods:
+            checkpoint = self.generate_checkpoint()
+            content = {'value' : 0,
+                       'field_name' : column,
+                       'client' : self.client,
+                       'interval_duration_sec' : agg['interval_duration_sec'],
+                       'interval_started_at' : empty_period.strftime(self.time_format),
+                       'aggregation_type' : 'sum',}
+            msg = Message(checkpoint=checkpoint, content=content)
+            self.store(msg)
+
+    def store_empty_count_periods(self, column, agg, empty_periods):
         for empty_period in empty_periods:
             checkpoint = self.generate_checkpoint()
             content = {'value' : 0,
@@ -98,17 +121,11 @@ class LogAnalytics(Reader):
             self.store(msg)
 
     def recover_from_previous_failure(self):
-        try:
-            if self.checkpoint_enabled and \
-                self.last_checkpoint:
-                self.agg_counts = self.last_checkpoint['counts']
-                self.agg_sums = self.last_checkpoint['sums']
-                self.tail.seek_bytes(self.last_checkpoint['pos'])
-        except Exception, e:
-            self.log.error("Can't recover from previous checkpoint: %s" % 
-                           self.last_checkpoint)
-            self.log.error(e)
-            return False
+        if self.checkpoint_enabled and \
+            self.last_checkpoint:
+            self.agg_counts = self.last_checkpoint['counts']
+            self.agg_sums = self.last_checkpoint['sums']
+            self.tail.seek_bytes(self.last_checkpoint['pos'])
 
     def generate_checkpoint(self):
         checkpoint = {'pos' : self.current_position}
@@ -138,16 +155,40 @@ class LogAnalytics(Reader):
                 empty_periods = self.get_empty_periods(next_interval,
                                                        self.current_time, 
                                                        datetime.timedelta(0, agg['interval_duration_sec']))
-                self.store_empty_periods(self.current_position, column, agg, empty_periods)
+                self.store_empty_count_periods(column, agg, empty_periods)
 
                 agg['value'] = 1 
                 agg['interval_started_at'] = self.current_minute
 
     def do_agg_sums(self):
-        pass
+        for column, agg in self.agg_sums.items():
+            if agg['interval_started_at'] == 0:
+                agg['value'] += int(self.log_line_data[column])
+                agg['interval_started_at'] = self.current_minute
+                continue
+
+            time_passed = self.current_time - agg['interval_started_at']
+
+            if time_passed.seconds <= agg['interval_duration_sec']:
+                agg['value'] += int(self.log_line_data[column])
+                continue
+            else:
+                self.store(self.get_sum_message(column, agg)) 
+                next_interval = self.add_interval(agg['interval_started_at'],
+                                                  agg['interval_duration_sec'])
+                empty_periods = self.get_empty_periods(next_interval,
+                                                       self.current_time,
+                                                       datetime.timedelta(0, agg['interval_duration_sec']))
+                self.store_empty_sum_periods(column, agg, empty_periods)
+
+                agg['value'] = int(self.log_line_data[column])
+                agg['interval_started_at'] = self.current_minute
 
     def read(self):
-        self.recover_from_previous_failure()
+        try:
+            self.recover_from_previous_failure()
+        except Exception, e:
+            self.log.error("Can't recover from previous checkpoint")
         self.current_time = 0
         while True:
             try:
