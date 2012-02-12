@@ -7,6 +7,8 @@ from __reader import Reader
 from __message import Message
 
 
+#TODO: it still needs refactoring
+
 class LogAnalytics(Reader):
     """Conf:
         - logpath (required): path of log file,
