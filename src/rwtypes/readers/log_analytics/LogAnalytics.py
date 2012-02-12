@@ -101,19 +101,50 @@ class LogAnalytics(Reader):
         try:
             if self.checkpoint_enabled and \
                 self.last_checkpoint:
-                self.agg_counts = self.last_checkpoint['count']
+                self.agg_counts = self.last_checkpoint['counts']
                 self.agg_sums = self.last_checkpoint['sums']
                 self.tail.seek_bytes(self.last_checkpoint['pos'])
         except Exception, e:
             self.log.error("Can't recover from previous checkpoint: %s" % 
                            self.last_checkpoint)
             self.log.error(e)
+            return False
 
     def generate_checkpoint(self):
         checkpoint = {'pos' : self.current_position}
         checkpoint.update({'counts' : self.agg_counts,
                            'sums' : self.agg_sums,})
         return checkpoint
+
+    def do_agg_counts(self):
+        for column, agg in self.agg_counts.items():
+            if not self.log_line_data[column] == agg['field_value']:   
+                continue
+
+            if agg['interval_started_at'] == 0:
+                agg['value'] += 1
+                agg['interval_started_at'] = self.current_minute
+                continue
+
+            time_passed = self.current_time - agg['interval_started_at']
+
+            if time_passed.seconds <= agg['interval_duration_sec']:
+                agg['value'] += 1
+                continue
+            else:
+                self.store(self.get_count_message(column, agg))
+                next_interval = self.add_interval(agg['interval_started_at'], 
+                                                  agg['interval_duration_sec'])
+                empty_periods = self.get_empty_periods(next_interval,
+                                                       self.current_time, 
+                                                       datetime.timedelta(0, agg['interval_duration_sec']))
+                self.store_empty_periods(self.current_position, column, agg, empty_periods)
+
+                agg['value'] = 1 
+                agg['interval_started_at'] = self.current_minute
+
+    def do_agg_sums(self):
+        pass
 
     def read(self):
         self.recover_from_previous_failure()
@@ -132,33 +163,14 @@ class LogAnalytics(Reader):
                 continue
 
             try:
-                for column, agg in self.agg_counts.items():
-                    if not self.log_line_data[column] == agg['field_value']:
-                        continue
-
-                    if agg['interval_started_at'] == 0:
-                        agg['value'] += 1
-                        agg['interval_started_at'] = self.current_minute
-                        continue
-
-                    time_passed = self.current_time - agg['interval_started_at']
-
-                    if time_passed.seconds <= agg['interval_duration_sec']:
-                        agg['value'] += 1
-                        continue
-                    else:
-                        self.store(self.get_count_message(column, agg))
-                        next_interval = self.add_interval(agg['interval_started_at'], 
-                                                          agg['interval_duration_sec'])
-                        empty_periods = self.get_empty_periods(next_interval,
-                                                               self.current_time, 
-                                                               datetime.timedelta(0, agg['interval_duration_sec']))
-                        self.store_empty_periods(self.current_position, column, agg, empty_periods)
-
-                        agg['value'] = 1 
-                        agg['interval_started_at'] = self.current_minute
-                    
+                self.do_agg_counts()
                 self.log.debug('Applied counts successfully.')
             except Exception, e:
-                self.log.error('Cannot apply count in %s' % self.current_line)
+                self.log.error('Cannot apply counts in %s' % self.current_line)
+                self.log.error(e)
+            try:
+                self.do_agg_sums()
+                self.log.debug('Applied sums successfully.')
+            except Exception, e:
+                self.log.error('Cannot apply sums in %s' % self.current_line)
                 self.log.error(e)
