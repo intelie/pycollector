@@ -162,15 +162,21 @@ class LogAnalytics(Reader):
 
     def do_agg_sums(self):
         for column, agg in self.agg_sums.items():
+            try:
+                current_value = int(self.log_line_data[column])
+            except ValueError:
+                self.log.error("Can't cast value: %s, for column: %" % (self.log_line_data[column], column))
+                self.log.error(e)
+
             if agg['interval_started_at'] == 0:
-                agg['value'] += int(self.log_line_data[column])
+                agg['value'] = current_value 
                 agg['interval_started_at'] = self.current_minute
                 continue
 
             time_passed = self.current_time - agg['interval_started_at']
 
             if time_passed.seconds <= agg['interval_duration_sec']:
-                agg['value'] += int(self.log_line_data[column])
+                agg['value'] += current_value 
                 continue
             else:
                 self.store(self.get_sum_message(column, agg)) 
@@ -181,7 +187,7 @@ class LogAnalytics(Reader):
                                                        datetime.timedelta(0, agg['interval_duration_sec']))
                 self.store_empty_sum_periods(column, agg, empty_periods)
 
-                agg['value'] = int(self.log_line_data[column])
+                agg['value'] = current_value 
                 agg['interval_started_at'] = self.current_minute
 
     def read(self):
