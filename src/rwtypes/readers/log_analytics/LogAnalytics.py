@@ -185,6 +185,7 @@ class LogAnalytics(Reader):
                     do_sum = True
             else:
                 do_sum = True
+
             if not do_sum:
                 continue
 
@@ -219,6 +220,7 @@ class LogAnalytics(Reader):
     def read(self):
         try:
             self.recover_from_previous_failure()
+            self.log.debug("Recovered from previous checkpoint with success.")
         except Exception, e:
             self.log.error("Can't recover from previous checkpoint")
         self.current_time = 0
