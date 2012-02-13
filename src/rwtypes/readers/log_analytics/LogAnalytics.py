@@ -155,7 +155,7 @@ class LogAnalytics(Reader):
 
             time_passed = self.current_time - agg['interval_started_at']
 
-            if time_passed.seconds <= agg['interval_duration_sec']:
+            if time_passed.seconds < agg['interval_duration_sec']:
                 agg['value'] += 1
                 continue
             else:
@@ -202,7 +202,7 @@ class LogAnalytics(Reader):
 
             time_passed = self.current_time - agg['interval_started_at']
 
-            if time_passed.seconds <= agg['interval_duration_sec']:
+            if time_passed.seconds < agg['interval_duration_sec']:
                 agg['value'] += current_value 
                 continue
             else:
@@ -220,6 +220,7 @@ class LogAnalytics(Reader):
     def read(self):
         try:
             self.recover_from_previous_failure()
+            
             self.log.debug("Recovered from previous checkpoint with success.")
         except Exception, e:
             self.log.error("Can't recover from previous checkpoint")
