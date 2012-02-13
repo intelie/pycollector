@@ -181,7 +181,7 @@ class LogAnalytics(Reader):
                 elif self.log_line_data['x-category'] == 'stream' and \
                       self.log_line_data['x-event'] == 'destroy' and \
                       self.log_line_data['c_proto'].find('rtmp') < 0 and \
-                      self.log_line_data['x-suri'][:4].find('rtpm') < 0:
+                      self.log_line_data['x-suri'][:4].find('rtmp') < 0:
                     do_sum = True
             else:
                 do_sum = True
