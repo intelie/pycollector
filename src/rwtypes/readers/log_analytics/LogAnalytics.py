@@ -174,7 +174,7 @@ class LogAnalytics(Reader):
         for column, agg in self.agg_sums.items():
 
             #business filter 
-            do_sum = False
+            do_sum = False 
             if (column == 'cs-bytes' or column == 'sc-bytes'):
                 if self.log_line_data['x-event'] == 'disconnect':
                     do_sum = True
@@ -183,6 +183,8 @@ class LogAnalytics(Reader):
                       self.log_line_data['c_proto'].find('rtmp') < 0 and \
                       self.log_line_data['x-suri'][:4].find('rtpm') < 0:
                     do_sum = True
+            else:
+                do_sum = True
             if not do_sum:
                 continue
 
