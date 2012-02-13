@@ -201,6 +201,9 @@ class LogAnalytics(Reader):
         while True:
             try:
                 self.current_line = self.tail.nextline()
+                if self.current_line.startswith("#"):
+                    self.log.debug("Skipping comment line: %s" % self.current_line)
+                    continue
                 self.current_position = self.tail.pos
                 self.log_line_data = self.dictify_line()
                 self.current_time = self.get_current_time()
