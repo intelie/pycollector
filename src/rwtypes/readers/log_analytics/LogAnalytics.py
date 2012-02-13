@@ -172,6 +172,20 @@ class LogAnalytics(Reader):
 
     def do_agg_sums(self):
         for column, agg in self.agg_sums.items():
+
+            #business filter 
+            do_sum = False
+            if (column == 'cs-bytes' or column == 'sc-bytes'):
+                if self.log_line_data['x-event'] == 'disconnect':
+                    do_sum = True
+                elif self.log_line_data['x-category'] == 'stream' and \
+                      self.log_line_data['x-event'] == 'destroy' and \
+                      self.log_line_data['c_proto'].find('rtmp') < 0 and \
+                      self.log_line_data['x-suri'][:4].find('rtpm') < 0:
+                    do_sum = True
+            if not do_sum:
+                continue
+
             try:
                 current_value = int(self.log_line_data[column])
             except ValueError:
@@ -221,7 +235,6 @@ class LogAnalytics(Reader):
                 self.log.error('Cannot parse line: %s' % self.current_line)
                 self.log.error(e)
                 continue
-
             try:
                 self.do_agg_counts()
                 self.log.debug('Applied counts successfully.')
