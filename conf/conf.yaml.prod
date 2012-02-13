@@ -40,11 +40,11 @@ specs:
 #    connection: 'mssql+pyodbc://%s:%s@%s/%s'
 #
 #Activemq example
-#  activemq:
-#    type: activemq
-#    host: localhost 
-#    port: 61613
-#    destination: '/queue/events'
+  activemq:
+    type: activemq
+    host: localhost 
+    port: 61613
+    destination: '/queue/events'
 #
 #Log example
 #  log:
@@ -68,19 +68,21 @@ conf:
 #  writer:
 #    type: stdout
 
-#Reading from an nginx/wowza log and writing to activemq
+##Reading from an nginx/wowza log and writing to activemq
 #- reader:
 #    type: log_analytics
 #    logpath: /var/log/nginx/sa/AZ.0058b.log
 #    delimiter: \t
 #    columns: [request_time, host, remote_addr, time_local, request, status, request_method, bytes_sent, request_uri, http_user_agent, http_referer, upstream_cache_status]
 #    counts:
+#      #column : period (in minutes)
 #      request_method: ['GET', 1] #count GET's in 'request_method' column in 1 minute period
 #      status: ['200', 1]
 #    sums:
-#      bytes_sent: 1 #sum bytes_sent in 1 minute periods
+#      #column : period (in minutes)
+#      bytes_sent: 1 
 #    checkpoint_enabled: True
-#    checkpoint_path: /home/user/rAZ.0058b.log
+#    checkpoint_path: /tmp/rAZ.0058b.log
 #    checkpoint_interval: 10
 #  writer:
 #    spec: activemq
@@ -89,8 +91,29 @@ conf:
 #    retry_interval: 5
 #    retry_timeout: 7200
 #    checkpoint_enabled: True
-#    checkpoint_path: /home/user/wAZ.0058b.log
+#    checkpoint_path: /tmp/wAZ.0058b.log
 #    checkpoint_interval: 10
+
+#- reader:
+#    type: log_analytics
+#    logpath: /var/log/wowza/ls/AZ.0041b.log
+#    delimiter: \t
+#    columns: [x-severity, x-category, x-event, tz, date, time, c-client-id, c-ip, c-port, cs-bytes, sc-bytes, x-duration, x-sname, x-stream-id, x-spos, sc-stream-bytes, sc-stream-bytes, x-file-size, x-file-length, x-ctx, x-comment, c_proto, c_referrer, c_user_agent, x-app, x-suri]
+#    sums:
+#        #column : period (in minutes)
+#        cs-bytes : 1 
+#        sc-bytes : 1
+#    checkpoint_enabled: True
+#    checkpoint_path: /tmp/rAZ.0041b.log
+#    checkpoint_interval: 10
+#  writer:
+#    spec: activemq
+#    eventtype: wowza
+#    blockable: True
+#    retry_interval: 5
+#    retry_timeout: 7200
+#    checkpoint_enabled: True
+#    checkpoint_path: /tmp/wAZ.0041b.log
 
 #Reading from arduino and writing in file
 #- reader:
