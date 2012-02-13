@@ -59,7 +59,15 @@ class LogAnalytics(Reader):
         return dict(zip(self.columns, self.current_line.strip().split(self.delimiter)))
 
     def get_current_time(self):
-        return datetime.datetime.strptime(self.log_line_data['time_local'][1:21], self.time_format)
+        if 'time_local' in self.log_line_data:
+            return datetime.datetime.strptime(self.log_line_data['time_local'][1:21], self.time_format)
+        else:
+            #wowza format
+            date = self.log_line_data['date']
+            time = self.log_line_data['time']
+            dt = "%s %s" % (date, time)
+            return datetime.datetime.strptime(dt, "%Y-%m-%d %H:%M:%S")
+            
 
     def get_minute(self):
         return self.current_time - datetime.timedelta(0, self.current_time.second)
