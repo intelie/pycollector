@@ -90,7 +90,8 @@ class Collector:
         if self.server:
             self.start_server()
         self.log.info("Collector started.")
-        
+        while True: time.sleep(3600)
+
 
 if __name__ == '__main__':
     c = Collector()

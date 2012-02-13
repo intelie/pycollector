@@ -20,11 +20,11 @@ Group:        Applications/Utils
 URL:          http://github.com/intelie/pycollector
 Vendor:       Intelie
 Packager:     Intelie
-Prefix:       /opt/intelie/%{name}
+Prefix:       /usr/local/%{name}
 BuildRoot:    /tmp/%{name}-%{version}-%{release}
 AutoReqProv:  no
 BuildArch:    noarch
-Requires:     python >= 2.7
+Requires:     python >= 2.6
 
 
 %description
@@ -47,6 +47,8 @@ mkdir -p %{buildroot}%{prefix}/lib
 mkdir -p %{buildroot}%{prefix}/conf
 mkdir -p %{buildroot}%{prefix}/logs
 mkdir -p %{buildroot}/etc/init.d
+mkdir -p %{buildroot}/var/run/pycollector
+mkdir -p %{buildroot}/var/log/pycollector
 
 #bin files
 cp src/pycollector src/__meta__.py %{buildroot}%{prefix}/bin/
@@ -86,6 +88,10 @@ rm -rf %{buildroot}
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/lib
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/logs
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/conf
+%dir %attr(755, %{pycollector_user}, %{pycollector_group}) /var/run/pycollector
+%dir %attr(755, %{pycollector_user}, %{pycollector_group}) /var/log/pycollector
+
+
 %attr(777, %{pycollector_user}, %{pycollector_group}) %{prefix}/lib/**
 %attr(644, %{pycollector_user}, %{pycollector_group}) %{prefix}/bin/__meta__.py
 %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/bin/pycollector

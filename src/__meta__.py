@@ -26,3 +26,7 @@ try:
         'LOG_FORMATTER' : '%(asctime)s - %(filename)s (%(lineno)d) [(%(threadName)-10s)] %(levelname)s - %(message)s',}
 except Exception, e:
     print e
+
+
+if __name__ == "__main__":
+    print PATHS, DEFAULTS

@@ -89,7 +89,8 @@ def set_logging():
             exit(-1)
 
         logger = logging.getLogger()
-        exec("logger.setLevel(logging.%s)" % daemon_conf['LOG_SEVERITY'])
+        #exec("logger.setLevel(logging.%s)" % daemon_conf['LOG_SEVERITY'])
+        logger.setLevel('DEBUG')
         rotating = daemon_conf['LOG_ROTATING']
         handler = logging.handlers.TimedRotatingFileHandler(log_path, when=rotating)
         formatter = logging.Formatter(daemon_conf['LOG_FORMATTER'])

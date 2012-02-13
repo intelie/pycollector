@@ -13,7 +13,7 @@ RPM_PATH=`pwd`/rpmbuild
 
 
 VERSION=`../../src/./pycollector --version`
-RELEASE='0'
+RELEASE='1'
 
 
 if [ "$?" -eq "0" ]; then
