@@ -34,6 +34,7 @@ from collector import Collector
 
 DAEMON=True
 SERVER=True
+SERVER_PORT=8442
 
 
 def disable_daemon(option, ospt, value, parser):
@@ -46,12 +47,17 @@ def disable_server(option, opt, value, parser):
     SERVER = False
 
 
+def set_server_port(option, opt, value, parser, *args):
+    global SERVER_PORT
+    SERVER_PORT = int(parser.rargs[0])
+
+
 def status(option, opt, value, parser):
     daemon_util.status()
 
 
 def start(option, opt, value, parser):
-    daemon_util.start(Collector, DAEMON, SERVER)
+    daemon_util.start(Collector, DAEMON, SERVER, SERVER_PORT)
     
 
 def stop(option, opt, value, parser):
@@ -109,6 +115,12 @@ if __name__ == '__main__':
                       callback=disable_server,
                       nargs=0,
                       help="disable default web server with realtime data")
+
+    parser.add_option("--serverport",
+                      action="callback",
+                      callback=set_server_port,
+                      nargs=1,
+                      help="change web server port")
 
     parser.add_option("--start",
                       action="callback",

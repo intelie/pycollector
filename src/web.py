@@ -76,10 +76,10 @@ class Home:
 
 
 class Server(threading.Thread):
-    def __init__(self, collector=None):
+    def __init__(self, collector=None, server_port=8442):
         threading.Thread.__init__(self)
         self.collector = collector
-        cherrypy.config.update({'server.socket_port' : 8442})
+        cherrypy.config.update({'server.socket_port' : server_port})
 
     def run(self):
         cherrypy.quickstart(Home(self.collector))

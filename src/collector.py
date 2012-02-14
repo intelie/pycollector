@@ -24,14 +24,17 @@ class Collector:
                  conf,
                  daemon_conf=None,
                  server=True,
+                 server_port=8442,
                  default_queue_maxsize=1000):
+
         self.log = logging.getLogger()
+        self.server_port = server_port
         self.conf = conf
         self.daemon_conf = daemon_conf
         self.server = server
         self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
-        self.web_server = web.Server(self)
+        self.web_server = web.Server(self, self.server_port)
 
     def prepare_readers_writers(self):
         #TODO: refactoring
