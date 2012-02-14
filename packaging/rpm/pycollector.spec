@@ -55,6 +55,8 @@ cp src/pycollector src/__meta__.py %{buildroot}%{prefix}/bin/
 
 #conf files
 mv conf/conf.yaml.prod conf/conf.yaml
+mv conf/daemon_conf.prod.py conf/daemon_conf.py
+cp conf/conf.yaml conf/daemon_conf.py %{buildroot}%{prefix}/conf/
 cp conf/conf.yaml conf/daemon_conf.py %{buildroot}%{prefix}/conf/
 
 #lib files
