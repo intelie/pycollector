@@ -90,7 +90,12 @@ class Collector:
         if self.server:
             self.start_server()
         self.log.info("Collector started.")
-        while True: time.sleep(3600)
+        while True: 
+            self.log.debug("Threads alive: %s" % threading.enumerate())
+            if not self.web_server.is_alive():
+                self.log.debug("Restarting webserver...")
+                self.start_server()
+            time.sleep(60) 
 
 
 if __name__ == '__main__':

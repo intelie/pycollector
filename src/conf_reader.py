@@ -2,8 +2,12 @@ import os
 import sys
 import logging
 
-import __meta__
-sys.path.extend(__meta__.PATHS.values())
+try:
+    import __meta__
+    sys.path = __meta__.PATHS.values() + sys.path
+except Exception, e:
+    print e
+    sys.exit(-1)
 
 import daemon_conf
 from helpers import yaml
