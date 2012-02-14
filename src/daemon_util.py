@@ -103,7 +103,6 @@ def set_logging():
 
 
 def start(collector_clazz, to_daemon=True, start_server=True, server_port=8442):
-    print server_port
     if is_running()[0]:
         print "Daemon already running."
         sys.exit(-1)    
