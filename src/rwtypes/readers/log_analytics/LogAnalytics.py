@@ -220,11 +220,11 @@ class LogAnalytics(Reader):
     def read(self):
         try:
             self.recover_from_previous_failure()
-            
             self.log.debug("Recovered from previous checkpoint with success.")
         except Exception, e:
             self.log.error("Can't recover from previous checkpoint")
         self.current_time = 0
+        self.current_line = ''
         while True:
             try:
                 self.current_line = self.tail.nextline()
@@ -236,7 +236,7 @@ class LogAnalytics(Reader):
                 self.current_time = self.get_current_time()
                 self.current_minute = self.get_minute()
                 self.log.debug('Line parsed with success: %s' % self.current_line)
-            except ValueError:
+            except Exception, e:
                 self.log.error('Cannot parse line: %s' % self.current_line)
                 self.log.error(e)
                 continue
