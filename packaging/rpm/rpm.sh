@@ -29,7 +29,7 @@ if [ "$?" -eq "0" ]; then
   cp -r ../../* $TAR_PATH/pycollector-$VERSION
 
   cd $TAR_PATH
-  tar --exclude='*.pid' --exclude='*.pyc' --exclude='.git*' -czvf pycollector-$VERSION.tar.gz pycollector-$VERSION
+  tar --exclude='*.pid' --exclude='*.pyc' --exclude-vcs -czvf pycollector-$VERSION.tar.gz pycollector-$VERSION
   cd -
 
   echo "Preparing source code..."
