@@ -228,6 +228,7 @@ class LogAnalytics(Reader):
         while True:
             try:
                 self.current_line = self.tail.nextline()
+                self.log.debug("Trying to parse line: %s" % self.current_line)
                 if self.current_line.startswith("#"):
                     self.log.debug("Skipping comment line: %s" % self.current_line)
                     continue
