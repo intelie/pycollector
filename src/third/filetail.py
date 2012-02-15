@@ -122,9 +122,9 @@ class Tail(object):
         """
         pos = self.f.tell()
         line = self.f.readline()
-        while (not line == "" and not line.endswith("\n")):
+        if (not line == "" and not line.endswith("\n")):
             self.f.seek(pos)
-            line = self.f.readline()
+            return ""
         return line
 
     def _fill_cache(self):
