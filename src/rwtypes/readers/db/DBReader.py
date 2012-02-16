@@ -56,7 +56,9 @@ class DBReader(Reader):
             if current_len < self.current_checkpoint:
                 self.current_checkpoint = 0
 
-            data = data[(self.current_checkpoint):]
+            if self.checkpoint_enabled:
+                data = data[(self.current_checkpoint):]
+
             if len(data) == 0:
                 self.log.info("No new data based on checkpoint.")
                 return True
