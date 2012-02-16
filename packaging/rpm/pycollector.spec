@@ -20,7 +20,7 @@ Group:        Applications/Utils
 URL:          http://github.com/intelie/pycollector
 Vendor:       Intelie
 Packager:     Intelie
-Prefix:       /usr/local/%{name}
+Prefix:       /opt/intelie/%{name}
 BuildRoot:    /tmp/%{name}-%{version}-%{release}
 AutoReqProv:  no
 BuildArch:    noarch
@@ -88,7 +88,6 @@ rm -rf %{buildroot}
 %files
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/bin
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/lib
-%dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/logs
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/conf
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) /var/run/pycollector
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) /var/log/pycollector

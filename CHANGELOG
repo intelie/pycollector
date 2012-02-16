@@ -42,3 +42,9 @@ CHANGELOG
 - fixed python2.6 logging bug
 - added --serverport option
 - LogAnalytics bug fixes (catching exceptions and dealing with incomplete lines reading)
+
+
+0.1.9
+- DBReader when checkpoint is enabled behaves like logs being rotated
+- __reader.store() now returns a boolean
+
