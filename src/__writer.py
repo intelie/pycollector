@@ -30,11 +30,7 @@ class Writer(threading.Thread):
         self.blockable = blockable
         self.blocked = False 
         self.checkpoint_enabled = checkpoint_enabled
-
         self.set_conf(conf)
-        self.setup()
-   
-        self.schedule_tasks()
 
         if self.checkpoint_enabled: 
             self.last_checkpoint = self._read_checkpoint()
@@ -44,6 +40,12 @@ class Writer(threading.Thread):
                 self.log.error('Error. Please, configure a checkpoint_path')
                 self.log.info('Aborting.')
                 exit(-1)
+
+        self.setup()
+
+        self.scheduler = kronos.ThreadedScheduler()
+        self.schedule_tasks()
+        if self.checkpoint_enabled:
             self.schedule_checkpoint_writing()
 
         threading.Thread.__init__(self)
@@ -112,7 +114,6 @@ class Writer(threading.Thread):
 
     def schedule_tasks(self):
         try:
-            self.scheduler = kronos.ThreadedScheduler()
             if self.interval:
                 self.schedule_interval_task()
         except Exception, e:
