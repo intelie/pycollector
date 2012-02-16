@@ -57,6 +57,9 @@ class DBReader(Reader):
                 self.current_checkpoint = 0
 
             data = data[(self.current_checkpoint):]
+            if len(data) == 0:
+                self.log.info("No new data based on checkpoint.")
+                return True
             
             for datum in data:
                 to_send = { column : datum[i] for i, column in enumerate(self.columns)}
