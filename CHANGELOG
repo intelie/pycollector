@@ -41,3 +41,4 @@ CHANGELOG
 - rpm packaging
 - fixed python2.6 logging bug
 - added --serverport option
+- LogAnalytics bug fixes (catching exceptions and dealing with incomplete lines reading)
