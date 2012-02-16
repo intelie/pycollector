@@ -21,7 +21,7 @@ class DBReader(Reader):
         - connection (required): connection string,
             e.g. 'mysql+mysqldb://%s:%s@%s/%s' (see sqlalchemy doc)
         - query (required): sql statement,
-            e.g. select name, descriptrion from user
+            e.g. select name, description from user
         - columns (required): list of columns in the same order from 'query',
             e.g. [name, description]
 
@@ -36,51 +36,53 @@ class DBReader(Reader):
                                                  echo=True)
         Session = sessionmaker(bind=engine)
         self.session = Session()
+        self.set_current_checkpoint()
+
+    def set_current_checkpoint(self):
+        if self.checkpoint_enabled:
+            self.current_checkpoint = self.last_checkpoint or 0 
+        else:
+            self.current_checkpoint = 0 
 
     def read(self):
         try:
             data = self.session.query(*self.columns).from_statement(self.query).all()
-
-            if len(data) == 0:
-                self.log.info('[dbreader] no data for query: %s' % self.query)
+            current_len = len(data)
+            if current_len == 0:
+                self.log.info('No data for query: %s' % self.query)
+                self.current_checkpoint = 0
                 return True
 
-            #getting only new data (based on checkpoint)
-            if self.last_checkpoint:
-                data = data[:(len(data) - int(self.last_checkpoint))]
+            if current_len < self.current_checkpoint:
+                self.current_checkpoint = 0
 
-            if len(data) <= 0:
-                self.log.info("[dbreader] no new data based on checkpoint")
-                return True
-            else:
-                for datum in data:
-                    to_send = { column : datum[i] for i, column in enumerate(self.columns)}
+            data = data[(self.current_checkpoint):]
+            
+            for datum in data:
+                to_send = { column : datum[i] for i, column in enumerate(self.columns)}
 
-                    #XXX: Specific use, deals with datetime and None
-                    to_add = {}
-                    for item in to_send:
-                        if isinstance(to_send[item], datetime.datetime):
-                            t = to_send[item]
-                            to_send[item] = t.isoformat()
-                            time_tuple = (t.year,
-                                          t.month,
-                                          t.day,
-                                          t.hour,
-                                          t.minute,
-                                          t.second,
-                                          t.microsecond)
-                            to_add['%s_ts' % item] = calendar.timegm(time_tuple)*1000
-                        elif to_send[item] == None:
-                           to_send[item] = 'NULL'
+                #XXX: Specific use, deals with datetime and None
+                to_add = {}
+                for item in to_send:
+                    if isinstance(to_send[item], datetime.datetime):
+                        t = to_send[item]
+                        to_send[item] = t.isoformat()
+                        time_tuple = (t.year,
+                                      t.month,
+                                      t.day,
+                                      t.hour,
+                                      t.minute,
+                                      t.second,
+                                      t.microsecond)
+                        to_add['%s_ts' % item] = calendar.timegm(time_tuple)*1000
+                    elif to_send[item] == None:
+                       to_send[item] = 'NULL'
 
-                    to_send.update(to_add)
-
-                    if not self.last_checkpoint:
-                        self.store(Message(content=to_send, checkpoint=1))
-                    else:
-                        self.store(Message(content=to_send, checkpoint=str(int(self.last_checkpoint) + 1)))
+                to_send.update(to_add)
+                self.current_checkpoint += 1
+                self.store(Message(content=to_send, checkpoint=self.current_checkpoint))
             return True
         except Exception, e:
-            self.log.error('error reading from database')
+            self.log.error('Error reading from database')
             self.log.error(e)
             return False
