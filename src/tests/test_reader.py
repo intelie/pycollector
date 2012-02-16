@@ -17,16 +17,14 @@ def get_queue(maxsize=1024):
 class TestReader(unittest.TestCase):
     def test_periodic_scheduling_adding_to_queue(self):
         class MyReader(Reader):
-            def setup(self):
-                self.interval = 1
-
             def read(self):
                 self.store(Message(content="life is beautiful"))
                 return True
 
         q = get_queue()
 
-        myreader = MyReader(q)
+        conf = {'interval' : 1}
+        myreader = MyReader(q, conf=conf)
         myreader.start()
  
         #waits to process messages
@@ -38,8 +36,10 @@ class TestReader(unittest.TestCase):
         class MyReader(Reader):
             def read(self):
                 n = 0
+                phrase = "love is all you need"
                 while n < 3:
-                    self.store(Message(content="love is all you need"))
+                    m = Message(content=phrase)
+                    self.store(m)
                     n += 1
                 return True
 
@@ -57,18 +57,18 @@ class TestReader(unittest.TestCase):
     def test_checkpoint_saving(self):
         checkpoint_path = '/tmp/rcheckpoint'
         class MyReader(Reader):
-            def setup(self):
-                self.checkpoint_enabled = True
-                self.checkpoint_path = checkpoint_path
-
             def read(self):
-                self.store(Message(content='foo', checkpoint='foo'))
-                self.store(Message(content='bar', checkpoint='bar'))
+                m1 = Message(content='foo', checkpoint='foo')
+                self.store(m1)
+                m2 = Message(content='bar', checkpoint='bar')
+                self.store(m2)
                 return True
 
         q = get_queue()
 
-        myreader = MyReader(q)
+        conf = {'checkpoint_enabled' : True,
+                'checkpoint_path' : checkpoint_path}
+        myreader = MyReader(q, conf=conf)
         myreader.start()
 
         #waits to process messages
@@ -89,16 +89,15 @@ class TestReader(unittest.TestCase):
         pickle.dump('42', f)
         f.close()
                 
-        class MyWriter(Writer):
-            def setup(self):
-                self.checkpoint_enabled = True
-                self.checkpoint_path = writer_checkpoint_path
-
         q = get_queue()
-        myreader = Reader(q, 
-                          conf={'checkpoint_enabled' : True,
-                                'checkpoint_path' : '/tmp/test'}, 
-                          writer=MyWriter(q))
+
+        conf = {'checkpoint_enabled' : True,
+                'checkpoint_path' : writer_checkpoint_path}
+        mywriter = Writer(q, conf=conf)
+
+        conf = {'checkpoint_enabled' : True,
+                'checkpoint_path' : '/tmp/test'}
+        myreader = Reader(q, conf=conf, writer=mywriter)
 
         self.assertEqual('42', myreader.last_checkpoint)
 
