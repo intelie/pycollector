@@ -13,7 +13,7 @@ class Writer(threading.Thread):
     def __init__(self, 
                  queue,                   # source of messages to be written
                  conf={},                 # additional configurations
-                 blockable=False,         # stops if a message were not delivered
+                 blockable=True,          # stops if a message were not delivered
                  interval=None,           # interval to read from queue
                  retry_interval=0,        # retry interval (in seconds) to writing
                  retry_timeout=None,      # if timeout is reached, discard message
