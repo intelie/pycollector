@@ -16,9 +16,6 @@ def get_queue(maxsize=1024):
 class TestWriter(unittest.TestCase):
     def test_periodic_scheduling_removing_from_queue(self):
         class MyWriter(Writer):
-            def setup(self):
-                self.interval = 1
-
             def write(self, msg):
                 return msg
 
@@ -26,7 +23,8 @@ class TestWriter(unittest.TestCase):
         q.put(Message(content=1))
         q.put(Message(content=2))
 
-        mywriter = MyWriter(q)
+        conf = {'interval' : 1}
+        mywriter = MyWriter(q, conf=conf)
         mywriter.start()
 
         #waits interval to write messages
@@ -55,11 +53,6 @@ class TestWriter(unittest.TestCase):
     def test_checkpoint_saving(self):
         checkpoint_path = '/tmp/wcheckpoint'
         class MyWriter(Writer):
-            def setup(self):
-                self.checkpoint_enabled = True
-                self.checkpoint_path = checkpoint_path 
-                self.checkpoint_interval = 1
-
             def write(self, msg):
                 return True
 
@@ -67,7 +60,10 @@ class TestWriter(unittest.TestCase):
         q.put(Message(content='foo', checkpoint='foo'))
         q.put(Message(content='bar', checkpoint='bar'))
 
-        mywriter = MyWriter(q)
+        conf = {'checkpoint_enabled' : True,
+                'checkpoint_path' : checkpoint_path,
+                'checkpoint_interval' : 1}
+        mywriter = MyWriter(q, conf=conf)
         mywriter.start()
 
         #should process message 1
@@ -100,15 +96,14 @@ class TestWriter(unittest.TestCase):
         f.close()
 
         class MyWriter(Writer):
-            def setup(self):
-                self.checkpoint_enabled = True
-                self.checkpoint_path = checkpoint_path
-
             def write(self, msg):
                 return True
 
         q = get_queue()
-        mywriter = MyWriter(q)
+
+        conf = {'checkpoint_enabled' : True,
+                'checkpoint_path' : checkpoint_path}
+        mywriter = MyWriter(q, conf=conf)
         self.assertEqual('foo', mywriter.last_checkpoint)
 
         os.remove(checkpoint_path)
