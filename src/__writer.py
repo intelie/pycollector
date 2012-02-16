@@ -105,7 +105,10 @@ class Writer(threading.Thread):
 
     def reschedule_tasks(self):
         try:
+            self.scheduler = kronos.ThreadedScheduler()
             self.schedule_tasks()
+            if self.checkpoint_enabled:
+                self.schedule_checkpoint_writing()
             self.scheduler.start()
             self.log.info("Success in rescheduling")
         except Exception, e:
