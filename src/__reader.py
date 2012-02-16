@@ -154,7 +154,7 @@ class Reader(threading.Thread):
                 self.log.debug("Discarded message: %s, full queue" % msg)
         except Exception, e:
             self.log.error("Can't store in queue, message %s" % msg)
-            print e
+            self.log.error(e)
 
         if success:
             if self.checkpoint_enabled:
@@ -162,7 +162,7 @@ class Reader(threading.Thread):
 
             if self.writer and not self.writer.interval:
                 self._writer_callback()
-
+        return success
 
     def _process(self):
         """Method called internally to process (read) a message.
@@ -193,7 +193,7 @@ class Reader(threading.Thread):
     def store(self, msg):
         """Stores a read message. 
            This should be called by subclasses."""
-        self._store(msg)
+        return self._store(msg)
 
     def setup(self):
         """Subclasses should implement."""

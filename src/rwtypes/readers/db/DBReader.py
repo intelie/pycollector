@@ -46,6 +46,7 @@ class DBReader(Reader):
 
     def read(self):
         try:
+            self.set_current_checkpoint()
             data = self.session.query(*self.columns).from_statement(self.query).all()
             current_len = len(data)
             if current_len == 0:
@@ -85,7 +86,8 @@ class DBReader(Reader):
 
                 to_send.update(to_add)
                 self.current_checkpoint += 1
-                self.store(Message(content=to_send, checkpoint=self.current_checkpoint))
+                if not self.store(Message(content=to_send, checkpoint=self.current_checkpoint)):
+                    return False
             return True
         except Exception, e:
             self.log.error('Error reading from database')
