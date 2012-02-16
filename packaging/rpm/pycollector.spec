@@ -45,7 +45,7 @@ mkdir -m 755 -p %{buildroot}%{prefix}
 mkdir -p %{buildroot}%{prefix}/bin 
 mkdir -p %{buildroot}%{prefix}/lib
 mkdir -p %{buildroot}%{prefix}/conf
-mkdir -p %{buildroot}%{prefix}/logs
+mkdir -p %{buildroot}%{prefix}/checkpoints
 mkdir -p %{buildroot}/etc/init.d
 mkdir -p %{buildroot}/var/run/pycollector
 mkdir -p %{buildroot}/var/log/pycollector
@@ -89,6 +89,7 @@ rm -rf %{buildroot}
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/bin
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/lib
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/conf
+%dir %attr(755, %{pycollector_user}, %{pycollector_group}) %{prefix}/checkpoints
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) /var/run/pycollector
 %dir %attr(755, %{pycollector_user}, %{pycollector_group}) /var/log/pycollector
 
