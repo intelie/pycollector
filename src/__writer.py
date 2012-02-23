@@ -27,6 +27,7 @@ class Writer(threading.Thread):
         self.queue = queue
         self.interval = interval
         self.retry_interval = retry_interval 
+        self.retry_timeout = retry_timeout
         self.blockable = blockable
         self.blocked = False 
         self.checkpoint_enabled = checkpoint_enabled
