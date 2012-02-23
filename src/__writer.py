@@ -75,7 +75,7 @@ class Writer(threading.Thread):
                 return ''
             self.log.info("Checkpoint read from %s" % self.checkpoint_path)
         except Exception, e:
-            self.log.error('Error reading checkpoint in %s' % self.checkcpoint_path)
+            self.log.error('Error reading checkpoint in %s' % self.checkpoint_path)
             self.log.error(e)
 
     def _write_checkpoint(self):
