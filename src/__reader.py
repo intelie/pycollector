@@ -14,7 +14,7 @@ class Reader(threading.Thread):
                  conf={},                 # additional configurations
                  writer=None,             # if writer is async, it must be provided
                  interval=None,           # interval of readings
-                 blockable=True,          # stops if a message were not stored
+                 blockable=True,          # stops if a message was not stored
                  retry_interval=0,        # retry interval (in seconds) to store
                  retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# default is to not deal with checkpoint 
