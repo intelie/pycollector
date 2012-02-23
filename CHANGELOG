@@ -48,3 +48,6 @@ CHANGELOG
 - DBReader when checkpoint is enabled behaves like logs being rotated
 - __reader.store() now returns a boolean
 
+0.1.10
+- Writer is blockable by default
+- rpm creates checkpoint directory
