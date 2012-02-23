@@ -14,6 +14,9 @@ class Reader(threading.Thread):
                  conf={},                 # additional configurations
                  writer=None,             # if writer is async, it must be provided
                  interval=None,           # interval of readings
+                 blockable=True,          # stops if a message were not stored
+                 retry_interval=0,        # retry interval (in seconds) to store
+                 retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# default is to not deal with checkpoint 
                  checkpoint_interval=60   # interval between checkpoints
                  ):
@@ -22,8 +25,12 @@ class Reader(threading.Thread):
         self.processed = 0
         self.discarded = 0
         self.queue = queue
+        self.blocked = False
         self.writer = writer
         self.interval = interval
+        self.blockable = blockable
+        self.retry_timeout = retry_timeout
+        self.retry_interval = retry_interval
         self.checkpoint_enabled = checkpoint_enabled
         self.set_conf(conf)
 
@@ -101,6 +108,18 @@ class Reader(threading.Thread):
             self.log.error("Invalid configuration item: %s" % item)
             self.log.error(e)
 
+    def reschedule_tasks(self):
+        try:
+            self.scheduler = kronos.ThreadedScheduler()
+            self.schedule_tasks()
+            if self.checkpoint_enabled:
+                self.schedule_checkpoint_writing()
+            self.scheduler.start()
+            self.log.info("Success in rescheduling")
+        except Exception, e:
+            self.log.error("Error while rescheduling tasks")
+            self.log.error(e)
+    
     def schedule_tasks(self):
         try:
             if self.interval:
@@ -150,8 +169,34 @@ class Reader(threading.Thread):
                 self.log.debug("Stored message: %s" % msg)
                 success = True
             else:
-                self.discarded += 1
-                self.log.debug("Discarded message: %s, full queue" % msg)
+                if self.blockable:
+                    self.blocked = True
+                    self.scheduler.stop()
+                    self.log.warning("Reader blocked.")
+
+                    time_passed = 0
+                    while True:
+                        self.log.info("Waiting for a slot in queue...")
+                        if not self.queue.full():
+                            self.queue.put(msg)
+                            self.processed += 1
+                            self.log.debug("Stored message: %s" % msg )
+                            success = True
+                            break
+                        elif self.retry_timeout and \
+                            time_passed > self.retry_timeout:
+                            self.discarded += 1 
+                            self.log.debug("Discarded message: %s, full queue" % msg) 
+                            break
+                        time.sleep(self.retry_interval)
+                        time_passed += self.retry_interval
+
+                    self.blocked = False
+                    self.log.info("Reader unblocked.")
+                    self.reschedule_tasks()
+                else:
+                    self.discarded += 1
+                    self.log.debug("Discarded message: %s, full queue" % msg)
         except Exception, e:
             self.log.error("Can't store in queue, message %s" % msg)
             self.log.error(e)

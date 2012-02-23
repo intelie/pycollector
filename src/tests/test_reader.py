@@ -67,7 +67,9 @@ class TestReader(unittest.TestCase):
         q = get_queue()
 
         conf = {'checkpoint_enabled' : True,
-                'checkpoint_path' : checkpoint_path}
+                'checkpoint_path' : checkpoint_path,
+                'blockable' : False}
+
         myreader = MyReader(q, conf=conf)
         myreader.start()
 
@@ -112,7 +114,7 @@ class TestReader(unittest.TestCase):
 
         q = get_queue(5)
         
-        myreader = MyReader(q)
+        myreader = MyReader(q, conf={'blockable' : False})
         myreader.start()
 
         #waits to get a full queue
