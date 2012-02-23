@@ -103,7 +103,7 @@ class TestReader(unittest.TestCase):
 
         os.remove(writer_checkpoint_path)
 
-    def test_store_discarded_messages_due_to_full_queue(self):
+    def test_store_number_of_discarded_messages_due_to_full_queue(self):
         class MyReader(Reader):
             def read(self):
                 while(True):
@@ -119,6 +119,40 @@ class TestReader(unittest.TestCase):
         time.sleep(0.01)
 
         self.assertTrue(myreader.discarded > 0)
+
+    def test_blockable_reader(self):
+        result = []
+        expected = range(1, 5)
+
+        class MyReader(Reader):
+            def setup(self):
+                self.current = 1
+
+            def read(self):
+                if self.current > 4:
+                    return False
+                self.store(Message(content=self.current))
+                self.current += 1
+                return True
+
+        q = get_queue(3)
+        myreader = MyReader(q, conf={'interval' : 1,
+                                     'blockable' : True})
+        myreader.start()
+
+        #waits to get a full queue
+        time.sleep(3.5)
+
+        #remove an item from queue
+        result.append(q.get().content)
+
+        #waits for another read
+        time.sleep(1)
+
+        #remove rest of items from the queue
+        while q.qsize() > 0: result.append(q.get().content)
+
+        self.assertEqual(expected, result)
 
 
 if __name__ == "__main__":
