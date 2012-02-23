@@ -120,7 +120,7 @@ class TestWriter(unittest.TestCase):
         q.put(Message(content='foo2'))
         q.put(Message(content='foo3'))
 
-        mywriter = MyWriter(q)
+        mywriter = MyWriter(q, conf={'blockable': False})
         mywriter.start()
 
         #force processing messages
