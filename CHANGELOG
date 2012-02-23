@@ -52,3 +52,7 @@ CHANGELOG
 0.1.10
 - Writer is blockable by default
 - rpm creates checkpoint directory
+
+
+0.1.11
+- LogAnalytics events now have service and service_type properties
