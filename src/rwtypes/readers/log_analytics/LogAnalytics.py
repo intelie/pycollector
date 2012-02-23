@@ -23,6 +23,7 @@ class LogAnalytics(Reader):
         self.check_conf(['delimiter', 'columns', 'logpath'])
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
         self.client = self.logpath.split('.')[1]
+        self.service_type = self.logpath.split('/')[4]
         self.time_format = "%d/%b/%Y:%H:%M:%S"
         self.start_counts()
         self.start_sums()
@@ -87,6 +88,7 @@ class LogAnalytics(Reader):
         checkpoint = self.generate_checkpoint()
         content = {'field_name' : column, 
                    'client' : self.client,
+                   'service_type' : self.service_type,
                    'value' : agg['value'],
                    'interval_duration_sec' : agg['interval_duration_sec'],
                    'interval_started_at' : formatted_time,
@@ -99,6 +101,7 @@ class LogAnalytics(Reader):
         content = {'field_name' : column, 
                    'field_value' : agg['field_value'],
                    'client' : self.client,
+                   'service_type' : self.service_type,
                    'value' : agg['value'],
                    'interval_duration_sec' : agg['interval_duration_sec'],
                    'interval_started_at' : formatted_time,
@@ -111,6 +114,7 @@ class LogAnalytics(Reader):
             content = {'value' : 0,
                        'field_name' : column,
                        'client' : self.client,
+                       'service_type' : self.service_type,
                        'interval_duration_sec' : agg['interval_duration_sec'],
                        'interval_started_at' : empty_period.strftime(self.time_format),
                        'aggregation_type' : 'sum',}
@@ -124,6 +128,7 @@ class LogAnalytics(Reader):
                        'field_name' : column,
                        'field_value' : agg['field_value'],
                        'client' : self.client,
+                       'service_type' : self.service_type,
                        'interval_duration_sec' : agg['interval_duration_sec'],
                        'interval_started_at' : empty_period.strftime(self.time_format),
                        'aggregation_type' : 'count',}
