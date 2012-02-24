@@ -61,6 +61,8 @@ class Reader(threading.Thread):
         threading.Thread.__init__(self)
 
     def validate_conf(self):
+        """Validate if required confs are present.
+           required_confs are supposed to be set in setup() method."""
         for item in self.required_confs:
             if not hasattr(self, item):
                 self.log.error('%s not defined in conf.yaml' % item)
