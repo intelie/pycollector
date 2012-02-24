@@ -181,7 +181,7 @@ class Writer(threading.Thread):
                 if self.checkpoint_enabled:
                     self._set_checkpoint(msg.checkpoint)
         else:
-            self.log.info("No messages in the queue to write.")
+            self.log.debug("No messages in the queue to write.")
 
     def _write(self, msg):
         """Method that calls write method defined by subclasses.
