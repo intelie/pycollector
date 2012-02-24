@@ -7,6 +7,7 @@ import Queue
 import sys; sys.path.append('..')
 from __writer import Writer
 from __message import Message
+from __exceptions import ConfigurationError
 
 
 def get_queue(maxsize=1024):
@@ -129,6 +130,14 @@ class TestWriter(unittest.TestCase):
         mywriter.process()
 
         self.assertEqual(2, mywriter.discarded)
+
+    def test_when_required_confs_are_missing_get_exception(self):
+        class MyWriter(Writer):
+            def setup(self):
+                self.required_confs = ['jack', 'white']
+
+        q = get_queue()
+        self.assertRaises(ConfigurationError, MyWriter, q, {'jack': 'bauer'})
 
 
 if __name__ == "__main__":
