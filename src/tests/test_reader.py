@@ -8,7 +8,7 @@ import sys; sys.path.append('..')
 from __reader import Reader
 from __writer import Writer
 from __message import Message
-
+from __exceptions import ConfigurationError
 
 def get_queue(maxsize=1024):
     return Queue.Queue(maxsize=maxsize)
@@ -155,6 +155,14 @@ class TestReader(unittest.TestCase):
         while q.qsize() > 0: result.append(q.get().content)
 
         self.assertEqual(expected, result)
+
+    def test_when_required_confs_are_missing_get_exception(self):
+        class MyReader(Reader):
+            def setup(self):
+                self.required_confs = ['a', 'b']
+
+        q = get_queue(3)
+        self.assertRaises(ConfigurationError,  MyReader,  q, {'a' : 'foo'})
 
 
 if __name__ == "__main__":
