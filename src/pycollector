@@ -64,6 +64,10 @@ def stop(option, opt, value, parser):
     daemon_util.stop()
 
 
+def force_stop(option, opt, value, parser):
+    daemon_util.force_stop()
+
+
 def log_tail(option, opt, value, parser):
     daemon_util.log_tail()
 
@@ -133,6 +137,12 @@ if __name__ == '__main__':
                       callback=stop,
                       nargs=0,
                       help="stop collector")
+
+    parser.add_option("--forcestop",
+                      action="callback",
+                      callback=force_stop,
+                      nargs=0,
+                      help="stop all running instances")
 
     parser.add_option("--status",
                       action="callback",

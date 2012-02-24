@@ -154,6 +154,22 @@ def status():
     print "Status: RUNNING."
     sys.exit(0)
 
+def force_stop():
+    running, pids = is_running()
+    try:
+        if len(pids) == 0:
+            print "No instance running."
+            sys.exit(0)
+        print "Force stopping..."
+        if kill_pids(pids) != 0:
+            print "Couldn't stop."
+            sys.exit(-1)
+        else:
+            print "Done."
+            sys.exit(0)
+    except Exception, e:
+        print e
+        sys.exit(-1)
 
 def stop():
     running, pids = is_running()
