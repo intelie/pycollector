@@ -58,4 +58,5 @@ CHANGELOG
 - LogAnalytics events now have service and service_type properties
 - Every reader by default is blockable (retry_interval and retry_timeout may be configured)
 - Starting performance measures
+- Added a --forcestop
 
