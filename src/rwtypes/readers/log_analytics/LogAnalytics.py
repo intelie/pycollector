@@ -20,7 +20,7 @@ class LogAnalytics(Reader):
 
     def setup(self):
         self.log = logging.getLogger()
-        self.check_conf(['delimiter', 'columns', 'logpath'])
+        self.required_confs = ['delimiter', 'columns', 'logpath']
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
         self.client = self.logpath.split('.')[1]
         self.service = self.logpath.split('/')[3]
@@ -50,13 +50,6 @@ class LogAnalytics(Reader):
                      'interval_duration_sec' : value[1]*60}
                 self.agg_counts[key] = d
 
-    def check_conf(self, items):
-        for item in items:
-            if not hasattr(self, item):
-                self.log.error('%s not defined in conf.yaml.' % item)
-                self.log.info('Aborting.')
-                exit(-1)
-    
     def dictify_line(self):
         return dict(zip(self.columns, self.current_line.strip().split(self.delimiter)))
 
