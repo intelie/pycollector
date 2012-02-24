@@ -59,4 +59,5 @@ CHANGELOG
 - Every reader by default is blockable (retry_interval and retry_timeout may be configured)
 - Starting performance measures
 - Added a --forcestop
+- Readers/Writers setup now may define a 'required_confs' list of properties that must exist in conf.yaml
 
