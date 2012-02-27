@@ -27,6 +27,7 @@ class TestQueue(unittest.TestCase):
             time.sleep(1)
 
         # guarantees order of processed msgs
+        # probability of wrong answer = (1/6.0)**8 ~ 6 x 10^-6
         self.assertEqual(range(0, 8), processed)
 
 
