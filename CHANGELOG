@@ -61,3 +61,7 @@ CHANGELOG
 - Added a --forcestop
 - Readers/Writers setup now may define a 'required_confs' list of properties that must exist in conf.yaml
 
+
+0.1.12
+- loose coupled readers/writers 
+- answering in /queues and /coll 
