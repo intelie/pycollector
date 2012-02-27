@@ -74,6 +74,18 @@ class Home:
 
     index.exposed = True
 
+    @cherrypy.expose
+    def coll(self):
+        return str(self.collector)
+
+    @cherrypy.expose
+    def queues(self):
+        msg = ''
+        for pair in self.collector.pairs:
+            msg += str(pair[0].queue)
+            msg += ' '
+        return msg
+
 
 class Server(threading.Thread):
     def __init__(self, collector=None, server_port=8442):
