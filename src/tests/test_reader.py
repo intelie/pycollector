@@ -6,7 +6,6 @@ import Queue
 
 import sys; sys.path.append('..')
 from __reader import Reader
-from __writer import Writer
 from __message import Message
 from __exceptions import ConfigurationError
 
@@ -84,26 +83,6 @@ class TestReader(unittest.TestCase):
         f.close()
 
         os.remove(checkpoint_path)
-
-    def test_restore_checkpoint_from_writer_when_starting(self):
-        writer_checkpoint_path = '/tmp/wcheckpoint'
-        f = open(writer_checkpoint_path, 'w')
-        pickle.dump('42', f)
-        f.close()
-                
-        q = get_queue()
-
-        conf = {'checkpoint_enabled' : True,
-                'checkpoint_path' : writer_checkpoint_path}
-        mywriter = Writer(q, conf=conf)
-
-        conf = {'checkpoint_enabled' : True,
-                'checkpoint_path' : '/tmp/test'}
-        myreader = Reader(q, conf=conf, writer=mywriter)
-
-        self.assertEqual('42', myreader.last_checkpoint)
-
-        os.remove(writer_checkpoint_path)
 
     def test_store_number_of_discarded_messages_due_to_full_queue(self):
         class MyReader(Reader):

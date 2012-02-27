@@ -92,7 +92,7 @@ class TestWriter(unittest.TestCase):
 
     def test_restore_last_checkpoint(self):
         checkpoint_path = '/tmp/wcheckpoint'
-        f = open(checkpoint_path, 'w+')
+        f = open(checkpoint_path, 'w')
         pickle.dump('foo', f)
         f.close()
 
