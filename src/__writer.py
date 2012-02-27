@@ -16,7 +16,7 @@ class Writer(threading.Thread):
                  conf={},                 # additional configurations
                  blockable=True,          # stops if a message was not delivered
                  interval=None,           # interval to read from queue
-                 retry_interval=0,        # retry interval (in seconds) to writing
+                 retry_interval=1,        # retry interval (in seconds) to writing
                  retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# deafult is to not deal with checkpoints
                  checkpoint_interval=60   # interval of checkpoint writing

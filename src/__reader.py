@@ -16,7 +16,7 @@ class Reader(threading.Thread):
                  conf={},                 # additional configurations
                  interval=None,           # interval of readings
                  blockable=True,          # stops if a message was not stored
-                 retry_interval=0,        # retry interval (in seconds) to store
+                 retry_interval=1,        # retry interval (in seconds) to store
                  retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# default is to not deal with checkpoint 
                  checkpoint_interval=60   # interval between checkpoints
