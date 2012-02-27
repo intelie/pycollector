@@ -73,6 +73,15 @@ def get_writer_keys():
 def get_writer_type(type):
     return writer_types[type]
 
+def get_type(type):
+    try:
+        return reader_types[type]
+    except:
+        pass
+    try:
+        return writer_types[type]
+    except:
+        return None
 
 def get_all_types():
     return reader_types.values() + writer_types.values() 
@@ -81,3 +90,4 @@ def get_all_types():
 if __name__ == '__main__':
     print get_reader_type('db')
     print get_writer_type('activemq')
+    print get_type('db')
