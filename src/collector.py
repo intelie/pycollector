@@ -91,6 +91,9 @@ class Collector:
                 self.start_server()
             time.sleep(60) 
 
+    def __str__(self):
+        return str(self.__dict__)
+
 
 if __name__ == '__main__':
     c = Collector()
