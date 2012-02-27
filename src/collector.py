@@ -17,11 +17,12 @@ import logging, logging.config
 import web
 import __meta__
 from rwtypes import rwtypes
+from __queue import CustomQueue
 
 
 class Collector:
     def __init__(self,
-                 conf,
+                 conf, 
                  daemon_conf=None,
                  server=True,
                  server_port=8442,
@@ -36,36 +37,26 @@ class Collector:
         self.prepare_readers_writers()
         self.web_server = web.Server(self, self.server_port)
 
+    def instantiate(self, queue, conf):
+        rwtype = rwtypes.get_type(conf['type'])
+        exec('import %s' % rwtype['module']) 
+        exec('clazz = %s.%s' % (rwtype['module'], rwtype['class']))
+        return clazz(queue, conf)
+
     def prepare_readers_writers(self):
-        #TODO: refactoring
         self.pairs = []
-        queue_maxsize = self.default_queue_maxsize
         for pair in self.conf:
-            reader_conf = pair['reader']
-            writer_conf = pair['writer']
+            maxsize = pair['reader'].get('queue_maxsize', self.default_queue_maxsize)
+            queue = CustomQueue(maxsize=maxsize)
 
-            if 'queue_maxsize' in reader_conf:
-                queue_maxsize = reader_conf['queue_maxsize']
+            writer = self.instantiate(queue, pair['writer'])
+            if not 'interval' in pair['writer']:
+                queue.callback = writer.process
 
-            queue = Queue.Queue(maxsize = queue_maxsize)
+            reader = self.instantiate(queue, pair['reader'])
 
-            writer_type = writer_conf['type'] 
-            writer_type = rwtypes.get_writer_type(writer_type)
-            exec('import %s' % writer_type['module'])
-            exec('writer_class = %s.%s' % (writer_type['module'], writer_type['class']))
-            writer = writer_class(queue, writer_conf)
-
-            reader_conf = pair['reader']
-            reader_type = reader_conf['type']
-            reader_type = rwtypes.get_reader_type(reader_type)
-            exec('import %s' % reader_type['module'])
-            exec('reader_class = %s.%s' % (reader_type['module'], reader_type['class']))
-
-            if not 'interval' in writer_conf:
-                reader = reader_class(queue, reader_conf, writer)
-            else:
-                reader = reader_class(queue, reader_conf)
-
+            if reader.checkpoint_enabled:
+                reader.last_checkpoint = writer.last_checkpoint
             self.pairs.append((writer, reader))
 
     def start_pairs(self):

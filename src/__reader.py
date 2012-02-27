@@ -14,7 +14,6 @@ class Reader(threading.Thread):
     def __init__(self,
                  queue,                   # stores read messages
                  conf={},                 # additional configurations
-                 writer=None,             # if writer is async, it must be provided
                  interval=None,           # interval of readings
                  blockable=True,          # stops if a message was not stored
                  retry_interval=0,        # retry interval (in seconds) to store
@@ -28,7 +27,6 @@ class Reader(threading.Thread):
         self.discarded = 0
         self.queue = queue
         self.blocked = False
-        self.writer = writer
         self.interval = interval
         self.blockable = blockable
         self.retry_timeout = retry_timeout
@@ -37,10 +35,8 @@ class Reader(threading.Thread):
         self.set_conf(conf)
 
         if self.checkpoint_enabled:
-            self.last_checkpoint = ''
-            if writer and \
-                writer.last_checkpoint:
-                self.last_checkpoint = writer.last_checkpoint
+            if not hasattr(self, 'last_checkpoint'):
+                self.last_checkpoint = ''
             if not hasattr(self, 'checkpoint_interval'):
                 self.checkpoint_interval = checkpoint_interval
             if not hasattr(self, 'checkpoint_path'):
@@ -162,16 +158,6 @@ class Reader(threading.Thread):
                                        [],
                                        None)
 
-    def _writer_callback(self):
-        """Callback to writer for non periodic tasks.
-           Shouldn't be called by subclasses."""
-        try:
-            self.log.debug("Calling writer_callback")
-            self.writer.process()
-        except Exception, e:
-            self.log.error('Error when executing writer_callback')
-            self.log.error(e)
-
     def _store(self, msg):
         """Internal method to store read messages.
            Shouldn't be called by subclasses."""
@@ -218,9 +204,6 @@ class Reader(threading.Thread):
         if success:
             if self.checkpoint_enabled:
                 self._set_checkpoint(msg.checkpoint)
-
-            if self.writer and not self.writer.interval:
-                self._writer_callback()
         return success
 
     def _process(self):
