@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+#
+# File: run_all.py
+# Description: test suite to run all tests at once
+#
+
 import unittest
 
 import test_queue
