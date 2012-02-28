@@ -24,7 +24,7 @@ class CustomQueue(Queue.Queue):
             try:
                 while self.qsize() > 0:
                     self.callback()
-           except Exception, e:
+            except Exception, e:
                 self.log.error(e)
             time.sleep(1)
 
