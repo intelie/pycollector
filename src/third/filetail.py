@@ -32,7 +32,7 @@ from time import sleep, time
 
 class Tail(object):
     """The Tail monitor object."""
-    
+
     def __init__(self, path, only_new = False,
                  seek = 0, #jump to line number
                  min_sleep = 1,
@@ -45,7 +45,7 @@ class Tail(object):
                the beginning of the file when first opened. Set only_new to
                True to have it skip to the end when it first opens, so that
                you only get the new additions that arrive after you start
-               monitoring. 
+               monitoring.
              min_sleep: Shortest interval in seconds to sleep when waiting
                for more input to arrive. Defaults to 1.0 second.
              sleep_interval: The tail monitor will dynamically recompute an
@@ -120,10 +120,10 @@ class Tail(object):
         are retrieved without advancing file cursor in incomplete
         lines (preventing lines being written to be lost).
         """
-        pos = self.f.tell()
+        self.last_pos = self.f.tell()
         line = self.f.readline()
         if (not line == "" and not line.endswith("\n")):
-            self.f.seek(pos)
+            self.f.seek(self.last_pos)
             return ""
         return line
 
@@ -134,9 +134,13 @@ class Tail(object):
         """
         old_len = len(self.queue)
         line = self.read_real_line()
+        to_seek = False
         while line != "" and len(self.queue) < self.cache_size:
             self.queue.append(line)
             line = self.read_real_line()
+            to_seek = True
+        if to_seek: self.f.seek(self.last_pos)
+
         # how many did we just get?
         num_read = len(self.queue) - old_len
         if num_read > 0:
@@ -172,7 +176,7 @@ class Tail(object):
         line = self._dequeue()
         if line:
             return line
-        
+
         # ok, we are out of cache; let's get some lines from the file
         if self._fill_cache() > 0:
             # got some
