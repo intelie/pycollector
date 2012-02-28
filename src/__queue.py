@@ -6,20 +6,26 @@
 import time
 import Queue
 import thread
+import logging
 
 
 class CustomQueue(Queue.Queue):
     def __init__(self, maxsize=0, callback=None):
+        self.log = logging.getLogger() 
         Queue.Queue.__init__(self, maxsize)
+        self.set_callback(callback)
+
+    def set_callback(self, callback):
         self.callback = callback
         thread.start_new_thread(self.deliverer, ())
 
     def deliverer(self):
-        if self.callback == None:
-            return
         while True:
-            while self.qsize() > 0:
-                self.callback()
+            try:
+                while self.qsize() > 0:
+                    self.callback()
+           except Exception, e:
+                self.log.error(e)
             time.sleep(1)
 
     def __str__(self):

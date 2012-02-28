@@ -51,7 +51,7 @@ class Collector:
 
             writer = self.instantiate(queue, pair['writer'])
             if not 'interval' in pair['writer']:
-                queue.callback = writer.process
+                queue.set_callback(writer.process)
 
             reader = self.instantiate(queue, pair['reader'])
 
