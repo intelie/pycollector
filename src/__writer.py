@@ -144,7 +144,6 @@ class Writer(threading.Thread):
         self.scheduler.add_single_task(self.async_process,
                                        "single task",
                                        0,
-                                       self.interval,
                                        kronos.method.threaded,
                                        [],
                                        None)
