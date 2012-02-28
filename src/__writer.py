@@ -171,6 +171,7 @@ class Writer(threading.Thread):
                         self.log.info("Trying to rewrite message...")
                         if self._write(msg.content):
                             wrote = True
+                            self.log.debug("Message written: %s" % msg)
                             self.log.info("Rewriting done with success.")
                             break   
                         elif self.retry_timeout and \
@@ -188,9 +189,9 @@ class Writer(threading.Thread):
                     self.log.info("Since it's not blockable, discarding message: %s" % msg)
             else:
                 wrote = True
+                self.log.debug("Message written: %s" % msg)
 
             if wrote:
-                self.log.debug("Message written: %s" % msg)
                 self.processed += 1
                 if self.checkpoint_enabled:
                     self._set_checkpoint(msg.checkpoint)
