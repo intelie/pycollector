@@ -51,6 +51,10 @@ class TestQueue(unittest.TestCase):
         # the queue while the first is being processed
         self.assertEqual(15, cq.qsize())
 
+def suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestQueue))
+    return suite
 
 
 if __name__ == "__main__":

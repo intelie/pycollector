@@ -139,6 +139,11 @@ class TestWriter(unittest.TestCase):
         q = get_queue()
         self.assertRaises(ConfigurationError, MyWriter, q, {'jack': 'bauer'})
 
+def suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestWriter))
+    return suite
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -66,8 +66,7 @@ class TestReader(unittest.TestCase):
         q = get_queue()
 
         conf = {'checkpoint_enabled' : True,
-                'checkpoint_path' : checkpoint_path,
-                'blockable' : False}
+                'checkpoint_path' : checkpoint_path}
 
         myreader = MyReader(q, conf=conf)
         myreader.start()
@@ -92,8 +91,9 @@ class TestReader(unittest.TestCase):
                 return True
 
         q = get_queue(5)
-        
-        myreader = MyReader(q, conf={'blockable' : False})
+
+        conf = {'blockable' : False} 
+        myreader = MyReader(q, conf=conf)
         myreader.start()
 
         #waits to get a full queue
@@ -143,6 +143,11 @@ class TestReader(unittest.TestCase):
         q = get_queue(3)
         self.assertRaises(ConfigurationError,  MyReader,  q, {'a' : 'foo'})
 
+def suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestReader))
+    return suite
+             
 
 if __name__ == "__main__":
     unittest.main()
