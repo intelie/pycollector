@@ -50,9 +50,6 @@ class Collector:
             queue = CustomQueue(maxsize=maxsize)
 
             writer = self.instantiate(queue, pair['writer'])
-            if not 'interval' in pair['writer']:
-                queue.set_callback(writer.process)
-
             reader = self.instantiate(queue, pair['reader'])
 
             if reader.checkpoint_enabled:

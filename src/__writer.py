@@ -134,10 +134,21 @@ class Writer(threading.Thread):
         try:
             if self.interval:
                 self.schedule_interval_task()
+            else:
+                self.schedule_single_task()
         except Exception, e:
             self.log.error("Error while scheduling tasks")
             self.log.error(e)
 
+    def schedule_single_task(self):
+        self.scheduler.add_single_task(self.async_process,
+                                       "single task",
+                                       0,
+                                       self.interval,
+                                       kronos.method.threaded,
+                                       [],
+                                       None)
+    
     def schedule_interval_task(self):
         self.scheduler.add_interval_task(self.process,
                                          "periodic task",
@@ -147,6 +158,57 @@ class Writer(threading.Thread):
                                          [],
                                          None)
 
+    def async_process(self):
+        """Method that processes (write) a message.
+           It waits for new messages from the queue,
+           and as soon as one arrives, it tries to deliver it."""
+
+        #TODO: REFACTOR ME!
+        while True:
+            try:
+                #blocks if none
+                msg = self.queue.get()
+
+                wrote = False
+
+                if not self.write(msg.content):
+                    if self.blockable:
+                        self.blocked = True
+                        self.log.warning("Writer blocked.")
+
+                        time_passed = 0
+                        while True:
+                            self.log.info("Trying to rewrite message...")
+                            if self._write(msg.content):
+                                wrote = True
+                                self.log.debug("Message written: %s" % msg)
+                                self.log.info("Rewriting done with success.")
+                                break
+                            elif self.retry_timeout and \
+                                 time_passed > self.retry_timeout:
+                                 self.discarded += 1
+                                 self.log.info("Retry timeout reached. Discarding message...")
+                                 break
+                            time.sleep(self.retry_interval)
+                            time_passed += self.retry_interval
+                        self.blocked = False
+                        self.log.info("Writer unblocked.")
+                        self.reschedule_tasks()
+                    else:
+                        self.discarded += 1
+                        self.log.info("Since it's not blockable, discarding message: %s" % msg)
+                else:
+                    wrote = True
+                    self.log.debug("Message written: %s" % msg)
+
+                if wrote:
+                    self.processed += 1
+                    if self.checkpoint_enabled:
+                        self._set_checkpoint(msg.checkpoint)
+            except Exception, e:
+                self.log.error("Couldn't process message")
+                self.log.error(e)
+
     def process(self): 
         """Method called to process (write) a message.
             It is called in the end of each interval 
@@ -154,49 +216,53 @@ class Writer(threading.Thread):
             If it's an async writer it is called by a Reader as
             a callback.
             So, it may be called by subclasses."""
+        
+        try:
+            if self.queue.qsize() > 0:
+                msg = self.queue.get()
 
-        if self.queue.qsize() > 0:
-            msg = self.queue.get()
+                wrote = False
 
-            wrote = False
+                if not self._write(msg.content):
+                    if self.blockable:
+                        self.scheduler.stop()
+                        self.blocked = True
+                        self.log.warning("Writer blocked.")
 
-            if not self._write(msg.content):
-                if self.blockable:
-                    self.scheduler.stop()
-                    self.blocked = True
-                    self.log.warning("Writer blocked.")
-
-                    time_passed = 0
-                    while True:
-                        self.log.info("Trying to rewrite message...")
-                        if self._write(msg.content):
-                            wrote = True
-                            self.log.debug("Message written: %s" % msg)
-                            self.log.info("Rewriting done with success.")
-                            break   
-                        elif self.retry_timeout and \
-                             time_passed > self.retry_timeout:
-                            self.discarded += 1
-                            self.log.info("Retry timeout reached. Discarding message...")
-                            break
-                        time.sleep(self.retry_interval)
-                        time_passed += self.retry_interval 
-                    self.blocked = False
-                    self.log.info("Writer unblocked.")
-                    self.reschedule_tasks()
+                        time_passed = 0
+                        while True:
+                            self.log.info("Trying to rewrite message...")
+                            if self._write(msg.content):
+                                wrote = True
+                                self.log.debug("Message written: %s" % msg)
+                                self.log.info("Rewriting done with success.")
+                                break   
+                            elif self.retry_timeout and \
+                                 time_passed > self.retry_timeout:
+                                self.discarded += 1
+                                self.log.info("Retry timeout reached. Discarding message...")
+                                break
+                            time.sleep(self.retry_interval)
+                            time_passed += self.retry_interval 
+                        self.blocked = False
+                        self.log.info("Writer unblocked.")
+                        self.reschedule_tasks()
+                    else:
+                        self.discarded += 1
+                        self.log.info("Since it's not blockable, discarding message: %s" % msg)
                 else:
-                    self.discarded += 1
-                    self.log.info("Since it's not blockable, discarding message: %s" % msg)
-            else:
-                wrote = True
-                self.log.debug("Message written: %s" % msg)
+                    wrote = True
+                    self.log.debug("Message written: %s" % msg)
 
-            if wrote:
-                self.processed += 1
-                if self.checkpoint_enabled:
-                    self._set_checkpoint(msg.checkpoint)
-        else:
-            self.log.debug("No messages in the queue to write.")
+                if wrote:
+                    self.processed += 1
+                    if self.checkpoint_enabled:
+                        self._set_checkpoint(msg.checkpoint)
+            else:
+                self.log.debug("No messages in the queue to write.")
+        except Exception, e:
+            self.log.error("Couldn't process message")
+            self.log.error(e)
 
     def _write(self, msg):
         """Method that calls write method defined by subclasses.
