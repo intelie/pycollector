@@ -19,6 +19,7 @@ class LogReader(Reader):
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
         
     def read(self):
+        checkpoint = 0 
         while True:
             try:
                 line = self.tail.nextline()
@@ -30,14 +31,20 @@ class LogReader(Reader):
                         column_values = dict(zip(self.columns, values))
 
                         #XXX: if we have columns, save it as a dict
-                        self.store(Message(content=column_values))
+                        checkpoint += 1
+                        self.store(Message(content=column_values,
+                                           checkpoint=checkpoint))
                         continue
 
                     #XXX: if we have just a delimiter, save the list
-                    self.store(Message(content=values))
+                    self.store(Message(content=values,
+                                       checkpoint=checkpoint))
+                    checkpoint += 1
                     continue
 
-                self.store(Message(content=line))
+                self.store(Message(content=line,
+                                   checkpoint=checkpoint))
+                checkpoint += 1
 
             except Exception, e:
                 self.log.error('error reading line: %s' % line)
