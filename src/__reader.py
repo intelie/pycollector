@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import time
+import Queue
 import pickle
 import logging
 import threading
@@ -30,6 +31,9 @@ class Reader(threading.Thread):
         self.retry_timeout = retry_timeout
         self.checkpoint_enabled = checkpoint_enabled
         self.set_conf(conf)
+
+        if not self.blockable:
+            self.retry_timeout = 0
 
         if self.checkpoint_enabled:
             if not hasattr(self, 'last_checkpoint'):
@@ -163,14 +167,17 @@ class Reader(threading.Thread):
             self.queue.put(msg, block=self.blockable, timeout=self.retry_timeout)
             self.processed += 1
             success = True
-            if self.checkpoint_enabled:
-                self._set_checkpoint(msg.checkpoint)
-        except Full:
+        except Queue.Full:
             self.discarded += 1
             self.log.info("Discarded message: %s, due to full queue" % msg)
         except Exception, e:
+            self.discarded += 1
             self.log.error("Can't store in queue message: %s" % msg)
             self.log.error(e)
+
+        if success and self.checkpoint_enabled:
+            self._set_checkpoint(msg.checkpoint)
+
         return success
 
     def _process(self):
