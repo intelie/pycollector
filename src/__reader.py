@@ -119,18 +119,6 @@ class Reader(threading.Thread):
             self.log.error("Invalid configuration item: %s" % item)
             self.log.error(e)
 
-    def reschedule_tasks(self):
-        try:
-            self.scheduler = kronos.ThreadedScheduler()
-            self.schedule_tasks()
-            if self.checkpoint_enabled:
-                self.schedule_checkpoint_writing()
-            self.scheduler.start()
-            self.log.info("Success in rescheduling")
-        except Exception, e:
-            self.log.error("Error while rescheduling tasks")
-            self.log.error(e)
-    
     def schedule_tasks(self):
         try:
             if self.interval:
