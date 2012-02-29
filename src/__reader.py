@@ -9,14 +9,12 @@ import helpers.kronos as kronos
 
 from __exceptions import ConfigurationError
 
-
 class Reader(threading.Thread):
     def __init__(self,
                  queue,                   # stores read messages
                  conf={},                 # additional configurations
                  interval=None,           # interval of readings
                  blockable=True,          # stops if a message was not stored
-                 retry_interval=1,        # retry interval (in seconds) to store
                  retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# default is to not deal with checkpoint 
                  checkpoint_interval=60   # interval between checkpoints
@@ -30,7 +28,6 @@ class Reader(threading.Thread):
         self.interval = interval
         self.blockable = blockable
         self.retry_timeout = retry_timeout
-        self.retry_interval = retry_interval
         self.checkpoint_enabled = checkpoint_enabled
         self.set_conf(conf)
 
@@ -143,7 +140,7 @@ class Reader(threading.Thread):
 
     def schedule_interval_task(self):
         self.scheduler.add_interval_task(self._process,
-                                         "periodic task",
+                                         "periodic, started at: %s " % time.time(),
                                          0,
                                          self.interval,
                                          kronos.method.threaded,
@@ -152,7 +149,7 @@ class Reader(threading.Thread):
 
     def schedule_single_task(self):
         self.scheduler.add_single_task(self._process,
-                                       "single task",
+                                       "single task, started at: %s" % time.time(),
                                        0,
                                        kronos.method.threaded,
                                        [],
@@ -162,48 +159,17 @@ class Reader(threading.Thread):
         """Internal method to store read messages.
            Shouldn't be called by subclasses."""
         success = False
-        try: 
-            if not self.queue.full():
-                self.queue.put(msg)
-                self.processed += 1
-                self.log.debug("Stored message: %s" % msg)
-                success = True
-            else:
-                if self.blockable:
-                    self.blocked = True
-                    self.scheduler.stop()
-                    self.log.warning("Reader blocked.")
-
-                    time_passed = 0
-                    while True:
-                        self.log.info("Waiting for a slot in queue...")
-                        if not self.queue.full():
-                            self.queue.put(msg)
-                            self.processed += 1
-                            self.log.debug("Stored message: %s" % msg )
-                            success = True
-                            break
-                        elif self.retry_timeout and \
-                            time_passed > self.retry_timeout:
-                            self.discarded += 1 
-                            self.log.debug("Discarded message: %s, full queue" % msg) 
-                            break
-                        time.sleep(self.retry_interval)
-                        time_passed += self.retry_interval
-
-                    self.blocked = False
-                    self.log.info("Reader unblocked.")
-                    self.reschedule_tasks()
-                else:
-                    self.discarded += 1
-                    self.log.debug("Discarded message: %s, full queue" % msg)
-        except Exception, e:
-            self.log.error("Can't store in queue, message %s" % msg)
-            self.log.error(e)
-
-        if success:
+        try:
+            self.queue.put(msg, block=self.blockable, timeout=self.retry_timeout)
+            self.processed += 1
+            success = True
             if self.checkpoint_enabled:
                 self._set_checkpoint(msg.checkpoint)
+        except Full:
+            self.log.info("Discarded message: %s, due to full queue" % msg)
+        except Exception, e:
+            self.log.error("Can't store in queue message: %s" % msg)
+            self.log.error(e)
         return success
 
     def _process(self):
