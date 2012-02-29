@@ -166,6 +166,7 @@ class Reader(threading.Thread):
             if self.checkpoint_enabled:
                 self._set_checkpoint(msg.checkpoint)
         except Full:
+            self.discarded += 1
             self.log.info("Discarded message: %s, due to full queue" % msg)
         except Exception, e:
             self.log.error("Can't store in queue message: %s" % msg)
