@@ -38,7 +38,7 @@ def timeout(period=None, callback=None):
                     signal.alarm(period)
                 return fn(*args, **kwargs)
             except TimedOutException:
-                if callback != None():
+                if callback != None:
                     callback()
                 return None
         return wrapper
