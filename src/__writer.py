@@ -192,12 +192,32 @@ class Writer(threading.Thread):
                                          [],
                                          None)
 
+    def retry_sending(self, msg):
+        wrote = False
+        time_passed = 0
+        while True:
+            self.log.info("Trying to rewrite message...")
+            if self._write(msg.content):
+                wrote = True
+                self.processed += 1
+                self.log.debug("Message written: %s" % msg)
+                self.log.info("Rewriting done with success.")
+                break
+            elif self.retry_timeout and \
+                 time_passed > self.retry_timeout:
+                 self.discarded += 1
+                 self.log.debug("Message: %s discarded due to timeout")
+                 self.log.info("Retry timeout reached. Discarding message...")
+                 break
+            time.sleep(self.retry_interval)
+            time_passed += self.retry_interval
+        return wrote
+
     def async_process(self):
         """Method that processes (write) a message.
            It waits for new messages from the queue,
            and as soon as one arrives, it tries to deliver it."""
 
-        #TODO: REFACTOR ME!
         while True:
             try:
                 #blocks if none
@@ -207,34 +227,19 @@ class Writer(threading.Thread):
                     if self.blockable:
                         self.blocked = True
                         self.log.warning("Writer blocked.")
-                        time_passed = 0
-                        while True:
-                            self.log.info("Trying to rewrite message...")
-                            if self._write(msg.content):
-                                wrote = True
-                                self.log.debug("Message written: %s" % msg)
-                                self.log.info("Rewriting done with success.")
-                                break
-                            elif self.retry_timeout and \
-                                 time_passed > self.retry_timeout:
-                                 self.discarded += 1
-                                 self.log.info("Retry timeout reached. Discarding message...")
-                                 break
-                            time.sleep(self.retry_interval)
-                            time_passed += self.retry_interval
+                        wrote = self.retry_sending(msg)
                         self.blocked = False
                         self.log.info("Writer unblocked.")
                     else:
                         self.discarded += 1
                         self.log.info("Since it's not blockable, discarding message: %s" % msg)
                 else:
-                    wrote = True
+                    self.processed += 1
                     self.log.debug("Message written: %s" % msg)
 
-                if wrote:
-                    self.processed += 1
-                    if self.checkpoint_enabled:
-                        self._set_checkpoint(msg.checkpoint)
+                if wrote and self.checkpoint_enabled:
+                    self._set_checkpoint(msg.checkpoint)
+
             except Exception, e:
                 self.log.error("Couldn't process message")
                 self.log.error(e)
@@ -250,9 +255,7 @@ class Writer(threading.Thread):
         try:
             if self.queue.qsize() > 0:
                 msg = self.queue.get()
-
                 wrote = False
-
                 if not self._write(msg.content):
                     if self.blockable:
                         self.scheduler.stop()
