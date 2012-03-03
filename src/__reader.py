@@ -1,5 +1,39 @@
 # -*- coding:utf-8 -*-
 
+"""
+    File: __reader.py
+    Description: This module implements the logic of a Reader.
+
+    A Reader is responsible to collect data from some source and 
+    store it as a message in the internal queue of the collector.
+
+    In order to implement your Reader, you must extend this class
+    and write 2 methods, like this:
+
+    ==========
+    from __reader import Reader
+
+    class MyReader(Reader):
+        def setup(self):
+            ... # Provide here whatever initializations are necessary.
+            ... # Properties defined in a conf.yaml will be available
+            ... # here as instance variables (e.g., self.foo)
+
+        def read(self):
+            ... # Your code goes here.
+            ... # You must call the store() method to put your message
+            ... # in the queue.
+    ==========
+
+    There are basically 2 flavors of Readers: asynchronous and synchronous.
+
+    Synchronous Readers are defined with a 'period' in conf.yaml
+    Asynchronous Readers are defined WITHOUT a 'period' in conf.yaml.
+
+    For synchronous Readers, after each 'period', the read() method is called, 
+    For asynchronous Readers, read() is called just once.
+"""
+
 import time
 import Queue
 import pickle
