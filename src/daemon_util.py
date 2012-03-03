@@ -102,7 +102,7 @@ def set_logging():
         print e
 
 
-def start(collector_clazz, to_daemon=True, start_server=True, server_port=8442):
+def start(collector_clazz, to_daemon=True, enable_server=True, server_port=8442):
     if is_running()[0]:
         print "Daemon already running."
         sys.exit(-1)    
@@ -116,14 +116,12 @@ def start(collector_clazz, to_daemon=True, start_server=True, server_port=8442):
         #guarantees that libs are available in daemon context
         sys.path.append(__meta__.PATHS.values())
 
-
         log = set_logging()
-
         log.info("Starting collector...")
 
         collector = collector_clazz(conf_reader.read_yaml_conf(), 
                                     conf_reader.read_daemon_conf(), 
-                                    server=start_server,
+                                    enable_server=enable_server,
                                     server_port=server_port)
 
         log.info("daemon_conf.py settings (missing values are replaced by defaults):")

@@ -3,7 +3,7 @@
 
 """
     File: pycollector
-    Description: Collector wrapper/daemon.
+    Description: Collector wrapper.
 """
 
 __software__ = "pycollector"

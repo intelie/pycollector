@@ -10,6 +10,7 @@ import helpers.kronos as kronos
 
 from __exceptions import ConfigurationError
 
+
 class Reader(threading.Thread):
     def __init__(self,
                  queue,                   # stores read messages

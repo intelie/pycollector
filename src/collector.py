@@ -24,26 +24,28 @@ class Collector:
     def __init__(self,
                  conf, 
                  daemon_conf=None,
-                 server=True,
+                 enable_server=True,
                  server_port=8442,
                  default_queue_maxsize=1000):
 
         self.log = logging.getLogger()
-        self.server_port = server_port
         self.conf = conf
         self.daemon_conf = daemon_conf
-        self.server = server
+        self.server_port = server_port
+        self.enable_server = enable_server
+        self.server = web.Server(self, self.server_port)
         self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
-        self.web_server = web.Server(self, self.server_port)
 
     def instantiate(self, queue, conf):
+        """Instantiate a reader or writer"""
         rwtype = rwtypes.get_type(conf['type'])
         exec('import %s' % rwtype['module']) 
         exec('clazz = %s.%s' % (rwtype['module'], rwtype['class']))
         return clazz(queue, conf)
 
     def prepare_readers_writers(self):
+        """Append reader/writer references in self.pairs"""
         self.pairs = []
         for pair in self.conf:
             maxsize = pair['reader'].get('queue_maxsize', self.default_queue_maxsize)
@@ -57,6 +59,7 @@ class Collector:
             self.pairs.append((writer, reader))
 
     def start_pairs(self):
+        """Starts readers and writers threads"""
         try:
             for (writer, reader) in self.pairs:
                 writer.setDaemon(True)
@@ -69,22 +72,26 @@ class Collector:
             self.log.error(e)
 
     def start_server(self):
+        """Starts the web server. 
+        Available by default in http://localhost:8442.
+        """
         try:
-            self.web_server.start()
+            self.server.start()
             self.log.info('Web started.')
         except Exception, e:
             self.log.error("Cannot start server")
             self.log.error(e)
 
     def start(self):
+        """Starts the collector"""
         self.start_pairs()
-        if self.server:
+        if self.enable_server:
             self.start_server()
         self.log.info("Collector started.")
         while True: 
             self.log.debug("Threads alive: %s" % threading.enumerate())
-            if not self.web_server.is_alive():
-                self.log.debug("Restarting webserver...")
+            if not self.server.is_alive():
+                self.log.debug("Restarting web server...")
                 self.start_server()
             time.sleep(60) 
 
