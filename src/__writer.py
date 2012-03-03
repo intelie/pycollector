@@ -202,14 +202,11 @@ class Writer(threading.Thread):
             try:
                 #blocks if none
                 msg = self.queue.get()
-
                 wrote = False
-
-                if not self.write(msg.content):
+                if not self._write(msg.content):
                     if self.blockable:
                         self.blocked = True
                         self.log.warning("Writer blocked.")
-
                         time_passed = 0
                         while True:
                             self.log.info("Trying to rewrite message...")
@@ -227,7 +224,6 @@ class Writer(threading.Thread):
                             time_passed += self.retry_interval
                         self.blocked = False
                         self.log.info("Writer unblocked.")
-                        self.reschedule_tasks()
                     else:
                         self.discarded += 1
                         self.log.info("Since it's not blockable, discarding message: %s" % msg)
