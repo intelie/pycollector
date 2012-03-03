@@ -1,5 +1,40 @@
 # -*- coding: utf-8 -*-
 
+"""
+    File: __writer.py
+    Description: This module implements the logic of a Writer.
+
+    A Writer is responsible to collect messages from the interval
+    queue and deliver it to somewhere.
+
+    In order to implement your Writer, you must extend this class
+    and write 2 methods, like this:
+
+    ==========
+    from __writer import Writer
+
+    class MyWriter(Writer):
+        def setup(self):
+            ... # Provide here whatever initializations are necessary.
+            ... # Properties defined in a conf.yaml will be available
+            ... # here as instance variables (e.g., self.foo)
+
+        def write(self, msg):
+            ... # Your code goes here.
+            ... # You must return a boolean indicating whether the
+            ... # message was delivered correctly or not.
+    ==========
+
+    There are basically 2 flavors of Writer: asynchronous and synchronous.
+
+    Synchronous Writers are defined with a 'period' in conf.yaml
+    Asynchronous Writers are defined WITHOUT a 'period' in conf.yaml.
+
+    For synchronous Writers, write() is called after each 'period'.
+    For asynchronous Writers, write() is called as soon a message arrives in
+    the queue.
+"""
+
 import os
 import time
 import pickle
@@ -11,7 +46,7 @@ from __exceptions import ConfigurationError
 
 
 class Writer(threading.Thread):
-    def __init__(self, 
+    def __init__(self,
                  queue,                   # source of messages to be written
                  conf={},                 # additional configurations
                  blockable=True,          # stops if a message was not delivered
@@ -26,15 +61,15 @@ class Writer(threading.Thread):
         self.processed = 0
         self.discarded = 0
         self.queue = queue
-        self.blocked = False 
+        self.blocked = False
         self.interval = interval
         self.blockable = blockable
         self.retry_timeout = retry_timeout
-        self.retry_interval = retry_interval 
+        self.retry_interval = retry_interval
         self.checkpoint_enabled = checkpoint_enabled
         self.set_conf(conf)
 
-        if self.checkpoint_enabled: 
+        if self.checkpoint_enabled:
             self.last_checkpoint = self._read_checkpoint()
             if not hasattr(self, 'checkpoint_interval'):
                 self.checkpoint_interval = checkpoint_interval
@@ -84,7 +119,7 @@ class Writer(threading.Thread):
             read = pickle.load(f)
             f.close()
             if read:
-                return read 
+                return read
             else:
                 return ''
             self.log.info("Checkpoint read from %s" % self.checkpoint_path)
@@ -147,7 +182,7 @@ class Writer(threading.Thread):
                                        kronos.method.threaded,
                                        [],
                                        None)
-    
+
     def schedule_interval_task(self):
         self.scheduler.add_interval_task(self.process,
                                          "periodic task",
@@ -208,14 +243,14 @@ class Writer(threading.Thread):
                 self.log.error("Couldn't process message")
                 self.log.error(e)
 
-    def process(self): 
+    def process(self):
         """Method called to process (write) a message.
-            It is called in the end of each interval 
+            It is called in the end of each interval
             in the case of a periodic task.
             If it's an async writer it is called by a Reader as
             a callback.
             So, it may be called by subclasses."""
-        
+
         try:
             if self.queue.qsize() > 0:
                 msg = self.queue.get()
@@ -235,14 +270,14 @@ class Writer(threading.Thread):
                                 wrote = True
                                 self.log.debug("Message written: %s" % msg)
                                 self.log.info("Rewriting done with success.")
-                                break   
+                                break
                             elif self.retry_timeout and \
                                  time_passed > self.retry_timeout:
                                 self.discarded += 1
                                 self.log.info("Retry timeout reached. Discarding message...")
                                 break
                             time.sleep(self.retry_interval)
-                            time_passed += self.retry_interval 
+                            time_passed += self.retry_interval
                         self.blocked = False
                         self.log.info("Writer unblocked.")
                         self.reschedule_tasks()
@@ -283,7 +318,7 @@ class Writer(threading.Thread):
 
     def _set_checkpoint(self, checkpoint):
         try:
-            self.last_checkpoint = checkpoint 
+            self.last_checkpoint = checkpoint
             self.log.debug("Last checkpoint: %s" %checkpoint)
         except Exception, e:
             self.log.error('Error updating last_checkpoint')
