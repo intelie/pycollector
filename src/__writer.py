@@ -4,7 +4,7 @@
     File: __writer.py
     Description: This module implements the logic of a Writer.
 
-    A Writer is responsible to collect messages from the interval
+    A Writer is responsible to collect messages from the internal
     queue and deliver it to somewhere.
 
     In order to implement your Writer, you must extend this class
