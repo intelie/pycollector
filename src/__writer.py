@@ -206,7 +206,7 @@ class Writer(threading.Thread):
             elif self.retry_timeout and \
                  time_passed > self.retry_timeout:
                  self.discarded += 1
-                 self.log.debug("Message: %s discarded due to timeout")
+                 self.log.debug("Message: %s discarded due to timeout" % msg)
                  self.log.info("Retry timeout reached. Discarding message...")
                  break
             time.sleep(self.retry_interval)
