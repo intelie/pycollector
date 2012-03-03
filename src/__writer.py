@@ -192,7 +192,8 @@ class Writer(threading.Thread):
                                          [],
                                          None)
 
-    def retry_sending(self, msg):
+    def retry_writing(self, msg):
+        "Blocks writer till a message is written or a timeout is reached"
         wrote = False
         time_passed = 0
         while True:
@@ -227,7 +228,7 @@ class Writer(threading.Thread):
                     if self.blockable:
                         self.blocked = True
                         self.log.warning("Writer blocked.")
-                        wrote = self.retry_sending(msg)
+                        wrote = self.retry_writing(msg)
                         self.blocked = False
                         self.log.info("Writer unblocked.")
                     else:
