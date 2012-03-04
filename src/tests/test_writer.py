@@ -15,6 +15,22 @@ def get_queue(maxsize=1024):
 
 
 class TestWriter(unittest.TestCase):
+    def test_confs_are_loaded_before_setup_is_called(self):
+        class MyWriter(Writer):
+            def setup(self):
+                if self.foo != 42:
+                    raise Exception()
+
+        q = get_queue()
+
+        # without a conf, raises an exception,
+        # because no conf was provided with a foo
+        self.assertRaises(AttributeError, MyWriter, (q))
+
+        # now, no exception should be raised, =)
+        conf = {'foo': 42}
+        MyWriter(q, conf=conf)
+
     def test_periodic_scheduling_removing_from_queue(self):
         class MyWriter(Writer):
             def write(self, msg):
