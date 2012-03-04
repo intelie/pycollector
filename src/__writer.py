@@ -21,7 +21,7 @@
 
             ... # You may define a list of required confs, e.g.:
             ... self.required_confs = ['foo', 'bar']
-            ... # If they are not found in your conf, an exception should be raised
+            ... # If they are not found in your conf, an exception is raised
 
         def write(self, msg):
             ... # Your code goes here.
