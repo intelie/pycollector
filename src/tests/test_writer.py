@@ -23,8 +23,8 @@ class TestWriter(unittest.TestCase):
 
         q = get_queue()
 
-        # without a conf, raises an exception,
-        # because no conf was provided with a foo
+        # raises an exception due to a lack of 
+        # conf providing a foo
         self.assertRaises(AttributeError, MyWriter, (q))
 
         # now, no exception should be raised, =)

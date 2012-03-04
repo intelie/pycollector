@@ -22,13 +22,13 @@ class TestReader(unittest.TestCase):
 
         q = get_queue()
 
-        # without a conf, raises an exception,
-        # because no conf was provided with a foo
+        # raises an exception due to a lack of
+        # conf providing a foo 
         self.assertRaises(AttributeError, MyReader, (q))
 
         # now, no exception should be raised, =)
         conf = {'foo': 42}
-        myreader = MyReader(q, conf=conf)
+        MyReader(q, conf=conf)
 
     def test_periodic_scheduling_adding_to_queue(self):
         class MyReader(Reader):
