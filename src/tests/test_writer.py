@@ -74,27 +74,21 @@ class TestWriter(unittest.TestCase):
                 return True
 
         q = get_queue()
+
+        # populates the queue with some messages
         q.put(Message(content='foo', checkpoint='foo'))
         q.put(Message(content='bar', checkpoint='bar'))
 
         conf = {'checkpoint_enabled' : True,
                 'checkpoint_path' : checkpoint_path,
                 'checkpoint_interval' : 1}
+
         mywriter = MyWriter(q, conf=conf)
+
+        # after a start, the messages should be consumed
         mywriter.start()
 
-        #should process message 1
-        mywriter.process()
-
-        #waits for checkpoint_interval
-        time.sleep(2)
-
-        self.assertEqual('foo', mywriter.last_checkpoint)
-
-        #should process message 2
-        mywriter.process()
-
-        #waits for checkpoint_interval
+        # waits for checkpoint_interval
         time.sleep(2)
 
         self.assertEqual(2, mywriter.processed)

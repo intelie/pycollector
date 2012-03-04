@@ -92,7 +92,8 @@ class Writer(threading.Thread):
 
     def validate_conf(self):
         """Validate if required confs are present.
-           required_confs are supposed to be set in setup() method."""
+           required_confs are supposed to be set in setup() method.
+        """
         for item in self.required_confs:
             if not hasattr(self, item):
                 self.log.error('%s not defined in conf.yaml' % item)
@@ -140,8 +141,7 @@ class Writer(threading.Thread):
             self.log.error(e)
 
     def set_conf(self, conf):
-        """Turns configuration properties
-            into instance properties."""
+        """Turns configuration properties into instance properties."""
         try:
             for item in conf:
                 if isinstance(conf[item], str):
@@ -193,7 +193,7 @@ class Writer(threading.Thread):
                                          None)
 
     def retry_writing(self, msg):
-        "Blocks writer till a message is written or a timeout is reached"
+        """Blocks writer till a message is written or a timeout is reached"""
         wrote = False
         time_passed = 0
         while True:
@@ -217,8 +217,8 @@ class Writer(threading.Thread):
     def async_process(self):
         """Method that processes (write) a message.
            It waits for new messages from the queue,
-           and as soon as one arrives, it tries to deliver it."""
-
+           and as soon as one arrives, it tries to deliver it.
+        """
         while True:
             try:
                 #blocks if none
@@ -235,6 +235,7 @@ class Writer(threading.Thread):
                         self.discarded += 1
                         self.log.info("Since it's not blockable, discarding message: %s" % msg)
                 else:
+                    wrote = True
                     self.processed += 1
                     self.log.debug("Message written: %s" % msg)
 
@@ -250,9 +251,8 @@ class Writer(threading.Thread):
             It is called in the end of each interval
             in the case of a periodic task.
             If it's an async writer it is called by a Reader as
-            a callback.
-            So, it may be called by subclasses."""
-
+            a callback.  So, it may be called by subclasses.
+        """ 
         try:
             if self.queue.qsize() > 0:
                 msg = self.queue.get()
@@ -310,11 +310,9 @@ class Writer(threading.Thread):
 
     def setup(self):
         """Subclasses should implement."""
-        pass
 
     def write(self, msg):
         """Subclasses should implement."""
-        pass
 
     def _set_checkpoint(self, checkpoint):
         try:
