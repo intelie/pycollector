@@ -19,6 +19,10 @@
             ... # Properties defined in a conf.yaml will be available
             ... # here as instance variables (e.g., self.foo)
 
+            ... # You may define a list of required confs, e.g.:
+            ... self.required_confs = ['foo', 'bar']
+            ... # If they are not found in your conf, an exception should be raised
+
         def read(self):
             ... # Your code goes here.
             ... # You must call the store() method to put your message
