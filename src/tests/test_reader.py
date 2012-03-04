@@ -17,20 +17,20 @@ class TestReader(unittest.TestCase):
     def test_confs_are_loaded_before_setup_is_called(self):
         class MyReader(Reader):
             def setup(self):
-                self.foo
+                if self.foo != 42:
+                    raise Exception()
 
         q = get_queue()
 
-        # without a conf, raises an exception, when setup 
-        # tries to access foo
+        # without a conf, raises an exception,
+        # because no conf was provided with a foo
         self.assertRaises(AttributeError, MyReader, (q))
 
-        # now, no exception should be raised, =) 
+        # now, no exception should be raised, =)
         conf = {'foo': 42}
         myreader = MyReader(q, conf=conf)
 
-
-    def xtest_periodic_scheduling_adding_to_queue(self):
+    def test_periodic_scheduling_adding_to_queue(self):
         class MyReader(Reader):
             def read(self):
                 self.store(Message(content="life is beautiful"))
@@ -41,13 +41,13 @@ class TestReader(unittest.TestCase):
         conf = {'interval' : 1}
         myreader = MyReader(q, conf=conf)
         myreader.start()
- 
+
         # waits to process messages
         time.sleep(3.5)
 
         self.assertEqual(4, q.qsize())
 
-    def xtest_single_scheduling_adding_to_queue(self):
+    def test_single_scheduling_adding_to_queue(self):
         class MyReader(Reader):
             def read(self):
                 n = 0
@@ -59,7 +59,7 @@ class TestReader(unittest.TestCase):
                 return True
 
         q = get_queue()
-        
+
         myreader = MyReader(q)
         myreader.start()
 
@@ -69,7 +69,7 @@ class TestReader(unittest.TestCase):
         self.assertEqual(3, q.qsize())
         self.assertEqual(3, myreader.processed)
 
-    def xtest_checkpoint_saving(self):
+    def test_checkpoint_saving(self):
         checkpoint_path = '/tmp/rcheckpoint'
         class MyReader(Reader):
             def read(self):
@@ -99,7 +99,7 @@ class TestReader(unittest.TestCase):
 
         os.remove(checkpoint_path)
 
-    def xtest_store_number_of_discarded_messages_due_to_full_queue(self):
+    def test_store_number_of_discarded_messages_due_to_full_queue(self):
         class MyReader(Reader):
             def read(self):
                 while(True):
@@ -108,7 +108,7 @@ class TestReader(unittest.TestCase):
 
         q = get_queue(5)
 
-        conf = {'blockable' : False} 
+        conf = {'blockable' : False}
         myreader = MyReader(q, conf=conf)
         myreader.start()
 
@@ -117,7 +117,7 @@ class TestReader(unittest.TestCase):
 
         self.assertTrue(myreader.discarded > 0)
 
-    def xtest_blockable_reader(self):
+    def test_blockable_reader(self):
         result = []
         expected = range(1, 5)
 
@@ -151,7 +151,7 @@ class TestReader(unittest.TestCase):
 
         self.assertEqual(expected, result)
 
-    def xtest_when_required_confs_are_missing_get_exception(self):
+    def test_when_required_confs_are_missing_get_exception(self):
         class MyReader(Reader):
             def setup(self):
                 self.required_confs = ['a', 'b']
@@ -164,7 +164,7 @@ def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestReader))
     return suite
-             
+
 
 if __name__ == "__main__":
     unittest.main()
