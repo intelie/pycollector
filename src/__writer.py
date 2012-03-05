@@ -58,7 +58,8 @@ class Writer(threading.Thread):
                  retry_interval=1,        # retry interval (in seconds) to writing
                  retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# deafult is to not deal with checkpoints
-                 checkpoint_interval=60   # interval of checkpoint writing
+                 checkpoint_interval=60,  # interval of checkpoint writing
+                 health_check_period=300  # period to log status
                  ):
         self.log = logging.getLogger()
         self.conf = conf
@@ -71,6 +72,7 @@ class Writer(threading.Thread):
         self.retry_timeout = retry_timeout
         self.retry_interval = retry_interval
         self.checkpoint_enabled = checkpoint_enabled
+        self.health_check_period = health_check_period
         self.set_conf(conf)
 
         if self.checkpoint_enabled:
@@ -329,6 +331,9 @@ class Writer(threading.Thread):
     def run(self):
         """Starts the writer"""
         self.scheduler.start()
+        while True:
+            self.log.debug("running")
+            time.sleep(self.health_check_period)
 
     def __str__(self):
         return str(self.__dict__)
