@@ -1,13 +1,15 @@
 import os
-import pickle
-import unittest
 import time
 import Queue
+import pickle
+import unittest
+from mock import MagicMock
 
 import sys; sys.path.append('..')
 from __reader import Reader
 from __message import Message
 from __exceptions import ConfigurationError
+
 
 def get_queue(maxsize=1024):
     return Queue.Queue(maxsize=maxsize)
@@ -23,7 +25,7 @@ class TestReader(unittest.TestCase):
         q = get_queue()
 
         # raises an exception due to a lack of
-        # conf providing a foo 
+        # conf providing a foo
         self.assertRaises(AttributeError, MyReader, (q))
 
         # now, no exception should be raised, =)
@@ -46,6 +48,19 @@ class TestReader(unittest.TestCase):
         time.sleep(3.5)
 
         self.assertEqual(4, q.qsize())
+
+    def test_periodic_scheduling_calling_read_method(self):
+        q = get_queue()
+
+        conf = {'interval' : 1}
+        myreader = Reader(q, conf=conf)
+        myreader.read = MagicMock(return_value=True)
+        myreader.start()
+
+        # waits reader interval
+        time.sleep(1)
+
+        myreader.read.assert_called_with()
 
     def test_single_scheduling_adding_to_queue(self):
         class MyReader(Reader):
