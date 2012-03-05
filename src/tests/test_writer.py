@@ -1,8 +1,9 @@
 import os
 import time
+import Queue
 import pickle
 import unittest
-import Queue
+from mock import MagicMock
 
 import sys; sys.path.append('..')
 from __writer import Writer
@@ -48,6 +49,20 @@ class TestWriter(unittest.TestCase):
         time.sleep(2)
 
         self.assertEqual(0, q.qsize())
+
+    def test_periodic_scheduling_calling_write_method(self):
+        q = get_queue()
+        q.put(Message(content=1))
+        conf = {'period' : 1}
+
+        mywriter = Writer(q, conf=conf)
+        mywriter.write = MagicMock(return_value=True)
+        mywriter.start()
+
+        # waits writer period
+        time.sleep(1)
+
+        mywriter.write.assert_called_with(1)
 
     def test_processed_messages_counting(self):
         class MyWriter(Writer):

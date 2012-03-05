@@ -51,14 +51,15 @@ class TestReader(unittest.TestCase):
 
     def test_periodic_scheduling_calling_read_method(self):
         q = get_queue()
-
         conf = {'period' : 1}
+
         myreader = Reader(q, conf=conf)
         myreader.read = MagicMock(return_value=True)
         myreader.start()
 
         # waits reader period
         time.sleep(1)
+
         myreader.read.assert_called_with()
 
     def test_single_scheduling_adding_to_queue(self):
