@@ -16,7 +16,7 @@ def get_queue(maxsize=1024):
 
 
 class TestReader(unittest.TestCase):
-    def xtest_initialization_calls(self):
+    def test_initialization_calls(self):
         # mocking
         q = get_queue()
         myreader = Reader(q)
@@ -47,8 +47,7 @@ class TestReader(unittest.TestCase):
         # assert scheduling was called
         myreader.schedule_checkpoint_writing.assert_called_with()
         
-
-    def xtest_confs_are_loaded_before_setup_is_called(self):
+    def test_confs_are_loaded_before_setup_is_called(self):
         class MyReader(Reader):
             def setup(self):
                 if self.foo != 42:
@@ -64,7 +63,7 @@ class TestReader(unittest.TestCase):
         conf = {'foo': 42}
         MyReader(q, conf=conf)
 
-    def xtest_periodic_scheduling_adding_to_queue(self):
+    def test_periodic_scheduling_adding_to_queue(self):
         class MyReader(Reader):
             def read(self):
                 self.store(Message(content="life is beautiful"))
@@ -81,7 +80,7 @@ class TestReader(unittest.TestCase):
 
         self.assertEqual(4, q.qsize())
 
-    def xtest_periodic_scheduling_calling_read_method(self):
+    def test_periodic_scheduling_calling_read_method(self):
         q = get_queue()
         conf = {'period' : 1}
 
@@ -94,7 +93,7 @@ class TestReader(unittest.TestCase):
 
         myreader.read.assert_called_with()
 
-    def xtest_single_scheduling_adding_to_queue(self):
+    def test_single_scheduling_adding_to_queue(self):
         class MyReader(Reader):
             def read(self):
                 n = 0
@@ -116,7 +115,7 @@ class TestReader(unittest.TestCase):
         self.assertEqual(3, q.qsize())
         self.assertEqual(3, myreader.processed)
 
-    def xtest_checkpoint_saving(self):
+    def test_checkpoint_saving(self):
         checkpoint_path = '/tmp/rcheckpoint'
         class MyReader(Reader):
             def read(self):
@@ -146,7 +145,7 @@ class TestReader(unittest.TestCase):
 
         os.remove(checkpoint_path)
 
-    def xtest_store_number_of_discarded_messages_due_to_full_queue(self):
+    def test_store_number_of_discarded_messages_due_to_full_queue(self):
         class MyReader(Reader):
             def read(self):
                 while(True):
@@ -164,7 +163,7 @@ class TestReader(unittest.TestCase):
 
         self.assertTrue(myreader.discarded > 0)
 
-    def xtest_blockable_reader(self):
+    def test_blockable_reader(self):
         result = []
         expected = range(1, 5)
 
@@ -198,7 +197,7 @@ class TestReader(unittest.TestCase):
 
         self.assertEqual(expected, result)
 
-    def xtest_when_required_confs_are_missing_get_exception(self):
+    def test_when_required_confs_are_missing_get_exception(self):
         class MyReader(Reader):
             def setup(self):
                 self.required_confs = ['a', 'b']
