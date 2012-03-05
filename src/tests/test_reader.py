@@ -16,6 +16,24 @@ def get_queue(maxsize=1024):
 
 
 class TestReader(unittest.TestCase):
+    def test_initialization_calls(self):
+        q = get_queue()
+
+        # mocking
+        myreader = Reader(q)
+        myreader.set_conf = MagicMock()
+        myreader.setup = MagicMock()
+        myreader.schedule_tasks = MagicMock()
+
+        # calling __init__
+        conf = {'foo' : 'bar'}
+        myreader.__init__(q, conf=conf)
+
+        # asserting that methods are called
+        myreader.set_conf.assert_called_with(conf)
+        myreader.setup.assert_called_with()
+        myreader.schedule_tasks.assert_called_with()
+
     def test_confs_are_loaded_before_setup_is_called(self):
         class MyReader(Reader):
             def setup(self):
