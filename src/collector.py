@@ -7,15 +7,20 @@
 """
 
 import os
-import time
+import sys
 import Queue
 import logging
 import threading
 import logging, logging.config
 
+if __name__ == '__main__':
+    try:
+        import __meta__
+        sys.path = __meta__.PATHS.values() + sys.path
+    except ImportError, e:
+        print e
 
 import web
-import __meta__
 from rwtypes import rwtypes
 from __queue import CustomQueue
 
@@ -68,6 +73,7 @@ class Collector:
         except Exception, e:
             self.log.error("Cannot start pair.")
             self.log.error(e)
+            sys.exit(-1)
 
     def start_server(self):
         """Starts the web server. 
@@ -79,6 +85,7 @@ class Collector:
         except Exception, e:
             self.log.error("Cannot start server")
             self.log.error(e)
+            sys.exit(-1)
 
     def start(self):
         """Starts the collector"""
@@ -92,5 +99,9 @@ class Collector:
 
 
 if __name__ == '__main__':
-    c = Collector()
+    import conf_reader as cr
+    import daemon_util as du
+    du.set_logging()
+    c = Collector(conf=cr.read_yaml_conf(),
+                  daemon_conf=cr.read_daemon_conf())
     c.start()
