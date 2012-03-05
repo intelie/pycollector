@@ -16,6 +16,23 @@ def get_queue(maxsize=1024):
 
 
 class TestWriter(unittest.TestCase):
+    def test_initialization_calls(self):
+        # mocking
+        q = get_queue()
+        mywriter = Writer(q)
+        mywriter.set_conf = MagicMock()
+        mywriter.setup = MagicMock()
+        mywriter.schedule_tasks = MagicMock()
+
+        # calling __init__
+        conf = {'foo' : 'bar'}
+        mywriter.__init__(q, conf=conf)
+
+        # asserting that methods are called
+        mywriter.set_conf.assert_called_with(conf)
+        mywriter.setup.assert_called_with()
+        mywriter.schedule_tasks.assert_called_with()
+
     def test_confs_are_loaded_before_setup_is_called(self):
         class MyWriter(Writer):
             def setup(self):

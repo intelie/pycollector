@@ -17,9 +17,8 @@ def get_queue(maxsize=1024):
 
 class TestReader(unittest.TestCase):
     def test_initialization_calls(self):
-        q = get_queue()
-
         # mocking
+        q = get_queue()
         myreader = Reader(q)
         myreader.set_conf = MagicMock()
         myreader.setup = MagicMock()
