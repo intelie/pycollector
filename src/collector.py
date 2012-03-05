@@ -62,9 +62,7 @@ class Collector:
         """Starts readers and writers threads"""
         try:
             for (writer, reader) in self.pairs:
-                writer.setDaemon(True)
                 writer.start()
-                reader.setDaemon(True)
                 reader.start()
             self.log.info('Readers/writers started.')
         except Exception, e:
@@ -88,12 +86,6 @@ class Collector:
         if self.enable_server:
             self.start_server()
         self.log.info("Collector started.")
-        while True: 
-            self.log.debug("Threads alive: %s" % threading.enumerate())
-            if not self.server.is_alive():
-                self.log.debug("Restarting web server...")
-                self.start_server()
-            time.sleep(60) 
 
     def __str__(self):
         return str(self.__dict__)
