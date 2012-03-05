@@ -15,7 +15,7 @@
 #
 #        A reader/writer must have a type.
 #        A reader/writer may have a checkpoint path.
-#        A reader/writer may present an interval (in seconds) property.
+#        A reader/writer may present an period (in seconds) property.
 #
 #
 
@@ -82,16 +82,16 @@ conf:
 #      bytes_sent: 1 
 #    checkpoint_enabled: True
 #    checkpoint_path: /tmp/rAZ.0058b.log
-#    checkpoint_interval: 10
+#    checkpoint_period: 10
 #  writer:
 #    spec: activemq
 #    eventtype: nginx
 #    blockable: True
-#    retry_interval: 5
+#    retry_period: 5
 #    retry_timeout: 7200
 #    checkpoint_enabled: True
 #    checkpoint_path: /tmp/wAZ.0058b.log
-#    checkpoint_interval: 10
+#    checkpoint_period: 10
 
 #- reader:
 #    type: log_analytics
@@ -104,12 +104,12 @@ conf:
 #        sc-bytes : 1
 #    checkpoint_enabled: True
 #    checkpoint_path: /tmp/rAZ.0041b.log
-#    checkpoint_interval: 10
+#    checkpoint_period: 10
 #  writer:
 #    spec: activemq
 #    eventtype: wowza
 #    blockable: True
-#    retry_interval: 5
+#    retry_period: 5
 #    retry_timeout: 7200
 #    checkpoint_enabled: True
 #    checkpoint_path: /tmp/wAZ.0041b.log
@@ -127,7 +127,7 @@ conf:
 #- reader:
 #    type: cam
 #    cam_number: 2
-#    interval: 5
+#    period: 5
 #  writer:
 #    path: /tmp/data
 #    prefix: microsoftcam
@@ -136,7 +136,7 @@ conf:
 #- reader:
 #    type: cam
 #    cam_number: 1
-#    interval: 60
+#    period: 60
 #  writer:
 #    path: /tmp/data
 #    type: cam
@@ -151,7 +151,7 @@ conf:
 #    user: root
 #    passwd: ''
 #    connection: 'mysql+mysqldb://%s:%s@%s/%s'
-#    interval: 5
+#    period: 5
 #    query: select display_name, email from web_user
 #    columns: [display_name, email]
 #  writer: 

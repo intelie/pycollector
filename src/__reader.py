@@ -53,11 +53,11 @@ class Reader(threading.Thread):
     def __init__(self,
                  queue,                   # stores read messages
                  conf={},                 # additional configurations
-                 interval=None,           # interval of readings
+                 period=None,             # period of readings
                  blockable=True,          # stops if a message was not stored
                  retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# default is to not deal with checkpoint
-                 checkpoint_interval=60,  # interval between checkpoints
+                 checkpoint_period=60,    # period between checkpoints
                  health_check_period=300  # period to log status
                  ):
         self.log = logging.getLogger()
@@ -66,7 +66,7 @@ class Reader(threading.Thread):
         self.discarded = 0
         self.queue = queue
         self.blocked = False
-        self.interval = interval
+        self.period = period
         self.blockable = blockable
         self.retry_timeout = retry_timeout
         self.checkpoint_enabled = checkpoint_enabled
@@ -79,8 +79,8 @@ class Reader(threading.Thread):
         if self.checkpoint_enabled:
             if not hasattr(self, 'last_checkpoint'):
                 self.last_checkpoint = ''
-            if not hasattr(self, 'checkpoint_interval'):
-                self.checkpoint_interval = checkpoint_interval
+            if not hasattr(self, 'checkpoint_period'):
+                self.checkpoint_period = checkpoint_period
             if not hasattr(self, 'checkpoint_path'):
                 self.log.error('Please, configure a checkpoint_path.')
                 self.log.info('Aborting.')
@@ -111,7 +111,7 @@ class Reader(threading.Thread):
         self.scheduler.add_interval_task(self._write_checkpoint,
                                          "checkpoint writing",
                                          0,
-                                         self.checkpoint_interval,
+                                         self.checkpoint_period,
                                          kronos.method.threaded,
                                          [],
                                          None)
@@ -162,8 +162,8 @@ class Reader(threading.Thread):
 
     def schedule_tasks(self):
         try:
-            if self.interval:
-                self.schedule_interval_task()
+            if self.period:
+                self.schedule_periodic_task()
             else:
                 self.schedule_single_task()
             self.log.info("Tasks scheduled with success")
@@ -171,11 +171,11 @@ class Reader(threading.Thread):
             self.log.error("Error while scheduling task")
             selg.log.error(e)
 
-    def schedule_interval_task(self):
+    def schedule_periodic_task(self):
         self.scheduler.add_interval_task(self._process,
                                          "periodic, started at: %s " % time.time(),
                                          0,
-                                         self.interval,
+                                         self.period,
                                          kronos.method.threaded,
                                          [],
                                          None)
@@ -211,7 +211,7 @@ class Reader(threading.Thread):
 
     def _process(self):
         """Method called internally to process (read) a message.
-           It is called in the end of each interval
+           It is called in the end of each period
            in the case of a periodic task.
            Shouldn't be called by subclasses"""
         if not self._read():

@@ -54,11 +54,11 @@ class Writer(threading.Thread):
                  queue,                   # source of messages to be written
                  conf={},                 # additional configurations
                  blockable=True,          # stops if a message was not delivered
-                 interval=None,           # interval to read from queue
-                 retry_interval=1,        # retry interval (in seconds) to writing
+                 period=None,             # period to read from queue
+                 retry_period=1,          # retry period (in seconds) to writing
                  retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# deafult is to not deal with checkpoints
-                 checkpoint_interval=60,  # interval of checkpoint writing
+                 checkpoint_period=60,    # period of checkpoint writing
                  health_check_period=300  # period to log status
                  ):
         self.log = logging.getLogger()
@@ -67,18 +67,18 @@ class Writer(threading.Thread):
         self.discarded = 0
         self.queue = queue
         self.blocked = False
-        self.interval = interval
+        self.period = period
         self.blockable = blockable
         self.retry_timeout = retry_timeout
-        self.retry_interval = retry_interval
+        self.retry_period = retry_period
         self.checkpoint_enabled = checkpoint_enabled
         self.health_check_period = health_check_period
         self.set_conf(conf)
 
         if self.checkpoint_enabled:
             self.last_checkpoint = self._read_checkpoint()
-            if not hasattr(self, 'checkpoint_interval'):
-                self.checkpoint_interval = checkpoint_interval
+            if not hasattr(self, 'checkpoint_period'):
+                self.checkpoint_period = checkpoint_period
             if not hasattr(self, 'checkpoint_path'):
                 self.log.error('Error. Please, configure a checkpoint_path')
                 self.log.info('Aborting.')
@@ -111,7 +111,7 @@ class Writer(threading.Thread):
         self.scheduler.add_interval_task(self._write_checkpoint,
                                          "checkpoint writing",
                                          0,
-                                         self.checkpoint_interval,
+                                         self.checkpoint_period,
                                          kronos.method.threaded,
                                          [],
                                          None)
@@ -173,8 +173,8 @@ class Writer(threading.Thread):
 
     def schedule_tasks(self):
         try:
-            if self.interval:
-                self.schedule_interval_task()
+            if self.period:
+                self.schedule_periodic_task()
             else:
                 self.schedule_single_task()
         except Exception, e:
@@ -189,11 +189,11 @@ class Writer(threading.Thread):
                                        [],
                                        None)
 
-    def schedule_interval_task(self):
+    def schedule_periodic_task(self):
         self.scheduler.add_interval_task(self.process,
                                          "periodic task",
                                          0,
-                                         self.interval,
+                                         self.period,
                                          kronos.method.threaded,
                                          [],
                                          None)
@@ -216,8 +216,8 @@ class Writer(threading.Thread):
                  self.log.debug("Message: %s discarded due to timeout" % msg)
                  self.log.info("Retry timeout reached. Discarding message...")
                  break
-            time.sleep(self.retry_interval)
-            time_passed += self.retry_interval
+            time.sleep(self.retry_period)
+            time_passed += self.retry_period
         return wrote
 
     def async_process(self):
@@ -254,7 +254,7 @@ class Writer(threading.Thread):
 
     def process(self):
         """Method called to process (write) a message.
-            It is called in the end of each interval
+            It is called in the end of each period
             in the case of a periodic task.
             If it's an async writer it is called by a Reader as
             a callback.  So, it may be called by subclasses.
@@ -282,8 +282,8 @@ class Writer(threading.Thread):
                                 self.discarded += 1
                                 self.log.info("Retry timeout reached. Discarding message...")
                                 break
-                            time.sleep(self.retry_interval)
-                            time_passed += self.retry_interval
+                            time.sleep(self.retry_period)
+                            time_passed += self.retry_period
                         self.blocked = False
                         self.log.info("Writer unblocked.")
                         self.reschedule_tasks()

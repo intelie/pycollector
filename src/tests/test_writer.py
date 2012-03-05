@@ -23,7 +23,7 @@ class TestWriter(unittest.TestCase):
 
         q = get_queue()
 
-        # raises an exception due to a lack of 
+        # raises an exception due to a lack of
         # conf providing a foo
         self.assertRaises(AttributeError, MyWriter, (q))
 
@@ -40,11 +40,11 @@ class TestWriter(unittest.TestCase):
         q.put(Message(content=1))
         q.put(Message(content=2))
 
-        conf = {'interval' : 1}
+        conf = {'period' : 1}
         mywriter = MyWriter(q, conf=conf)
         mywriter.start()
 
-        #waits interval to write messages
+        #waits period to write messages
         time.sleep(2)
 
         self.assertEqual(0, q.qsize())
@@ -81,14 +81,14 @@ class TestWriter(unittest.TestCase):
 
         conf = {'checkpoint_enabled' : True,
                 'checkpoint_path' : checkpoint_path,
-                'checkpoint_interval' : 1}
+                'checkpoint_period' : 1}
 
         mywriter = MyWriter(q, conf=conf)
 
         # after a start, the messages should be consumed
         mywriter.start()
 
-        # waits for checkpoint_interval
+        # waits for checkpoint_period
         time.sleep(2)
 
         self.assertEqual(2, mywriter.processed)

@@ -17,15 +17,12 @@ class LogReader(Reader):
     def setup(self):
         self.log = logging.getLogger()
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
-
-        #TODO: implement checkpoints
-
-        #TODO: set with log line number
-        self.checkpoint = 0 
+        self.checkpoint = 0
 
     def process_line(self):
         try:
-            to_store = self.tail.nextline()
+            line = self.tail.nextline()
+            to_store = line
 
             if hasattr(self, 'delimiter'):
                 to_store = to_store.strip().split(self.delimiter)
@@ -35,17 +32,15 @@ class LogReader(Reader):
 
             if self.store(Message(content=to_store,
                                checkpoint=self.checkpoint)):
-
-                #TODO: update with log line number
                 self.checkpoint += 1
-            return True
 
+            return True
         except Exception, e:
-            self.log.error('error reading line: %s' % line)
+            self.log.error('error reading line, maybe it was rotated')
             return False
     
     def read(self):
-        if self.interval:
+        if self.period:
             return self.process_line()
         else:            
             while True:

@@ -13,7 +13,7 @@ from __message import Message
 
 class DBReader(Reader):
     """Conf: 
-        - interval (required): period of reads in seconds
+        - period (required): period of reads in seconds
         - user (required): database username,
         - passwd (required): database password
         - host (required): database hostname

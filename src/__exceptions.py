@@ -4,4 +4,4 @@
 #
 
 class ConfigurationError(Exception):
-    pass
+    """Raised when there is something missing or wrong in conf.yaml"""
