@@ -4,7 +4,7 @@
     File: __reader.py
     Description: This module implements the logic of a Reader.
 
-    A Reader is responsible to collect data from some source and 
+    A Reader is responsible to collect data from some source and
     store it as a message in the internal queue of the collector.
 
     In order to implement your Reader, you must extend this class
@@ -34,7 +34,7 @@
     Synchronous Readers are defined with a 'period' in conf.yaml
     Asynchronous Readers are defined WITHOUT a 'period' in conf.yaml.
 
-    For synchronous Readers, after each 'period', the read() method is called, 
+    For synchronous Readers, after each 'period', the read() method is called,
     For asynchronous Readers, read() is called just once.
 """
 
@@ -56,8 +56,9 @@ class Reader(threading.Thread):
                  interval=None,           # interval of readings
                  blockable=True,          # stops if a message was not stored
                  retry_timeout=None,      # if timeout is reached, discard message
-                 checkpoint_enabled=False,# default is to not deal with checkpoint 
-                 checkpoint_interval=60   # interval between checkpoints
+                 checkpoint_enabled=False,# default is to not deal with checkpoint
+                 checkpoint_interval=60,  # interval between checkpoints
+                 health_check_period=300  # period to log status
                  ):
         self.log = logging.getLogger()
         self.conf = conf
@@ -69,6 +70,7 @@ class Reader(threading.Thread):
         self.blockable = blockable
         self.retry_timeout = retry_timeout
         self.checkpoint_enabled = checkpoint_enabled
+        self.health_check_period = health_check_period
         self.set_conf(conf)
 
         if not self.blockable:
@@ -145,7 +147,7 @@ class Reader(threading.Thread):
             self.log.error(e)
 
     def set_conf(self, conf):
-        """Turns configuration properties 
+        """Turns configuration properties
            into instance properties."""
         try:
             for item in conf:
@@ -209,14 +211,14 @@ class Reader(threading.Thread):
 
     def _process(self):
         """Method called internally to process (read) a message.
-           It is called in the end of each interval 
+           It is called in the end of each interval
            in the case of a periodic task.
            Shouldn't be called by subclasses"""
         if not self._read():
             self.log.info("Message can't be read")
 
     def _read(self):
-        """Internal method that calls read() method. 
+        """Internal method that calls read() method.
            Shouldn't be called by subclasses."""
         try:
             return self.read()
@@ -234,21 +236,22 @@ class Reader(threading.Thread):
             self.log.error(e)
 
     def store(self, msg):
-        """Stores a read message. 
+        """Stores a read message.
            This should be called by subclasses."""
         return self._store(msg)
 
     def setup(self):
         """Subclasses should implement."""
-        pass
 
     def read(self):
         """Subclasses should implement."""
-        pass
 
     def run(self):
         """Starts the reader"""
         self.scheduler.start()
+        while True:
+            self.log.debug("running")
+            time.sleep(self.health_check_period)
 
     def __str__(self):
-        return str(self.__dict__) 
+        return str(self.__dict__)
