@@ -33,6 +33,20 @@ class TestWriter(unittest.TestCase):
         mywriter.setup.assert_called_with()
         mywriter.schedule_tasks.assert_called_with()
 
+    def test_scheduling_checkpoint_when_it_is_enabled(self):
+        # mocking
+        q = get_queue()
+        mywriter = Writer(q)
+        mywriter.schedule_checkpoint_writing = MagicMock()
+
+        # calling __init__
+        conf = {'checkpoint_enabled' : True,
+                'checkpoint_path' : '/tmp/checkpoint'}
+        mywriter.__init__(q, conf=conf)
+
+        # assert scheduling was called
+        mywriter.schedule_checkpoint_writing.assert_called_with()
+
     def test_confs_are_loaded_before_setup_is_called(self):
         class MyWriter(Writer):
             def setup(self):
