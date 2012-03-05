@@ -43,10 +43,10 @@ class TestReader(unittest.TestCase):
         conf = {'checkpoint_enabled' : True,
                 'checkpoint_path' : '/tmp/checkpoint'}
         myreader.__init__(q, conf=conf)
-        
+
         # assert scheduling was called
         myreader.schedule_checkpoint_writing.assert_called_with()
-        
+
     def test_confs_are_loaded_before_setup_is_called(self):
         class MyReader(Reader):
             def setup(self):
