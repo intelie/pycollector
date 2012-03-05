@@ -67,5 +67,7 @@ CHANGELOG
 - answering in localhost/queues and localhost/coll 
 - forked filetail (base for log readers) and added rotating file test
 - added healthcheck logging
+- changed properties from 'interval', 'checkpoint_interval' and 'retry_interval' to 'period', 'checkpoint_period' and 
+  'retry_period' respectively
 - + tests
 
