@@ -3,3 +3,4 @@ BACKLOG
 
 - Offset between collecting units (reader/writer)
 - Change from optparse to argparse
+- Maybe implement readers/writers with coroutines (think more about the consequences)
