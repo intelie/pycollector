@@ -66,4 +66,6 @@ CHANGELOG
 - loose coupled readers/writers, no more callbacks from reader to writer 
 - answering in localhost/queues and localhost/coll 
 - forked filetail (base for log readers) and added rotating file test
+- added healthcheck logging
 - + tests
+
