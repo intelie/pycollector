@@ -14,7 +14,7 @@ PID_FILE_PATH="/var/run/pycollector/pycollector.pid"
 #------------------------
 
 #LOG_FILE_PATH: sets where the logs will be located.
-LOG_FILE_PATH="/var/log/pycollector/pycollector.log"
+LOGS_PATH="/var/log/pycollector/"
 
 #LOG_SEVERITY: changes the level of severity for all application logs created.
 #Options: DEBUG, INFO, WARNING, ERROR, CRITICAL

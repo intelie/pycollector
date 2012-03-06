@@ -13,8 +13,8 @@ PID_FILE_PATH="/tmp/pycollector.pid"
 #APPLICATION LOG SETTINGS
 #------------------------
 
-#LOG_FILE_PATH: sets where the logs will be located.
-LOG_FILE_PATH="/tmp/pycollector.log"
+#LOGS_PATH: sets where the logs will be located.
+LOGS_PATH="/tmp"
 
 #LOG_SEVERITY: changes the level of severity for all application logs created.
 #Options: DEBUG, INFO, WARNING, ERROR, CRITICAL

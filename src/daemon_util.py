@@ -15,7 +15,7 @@ import conf_reader
 
 
 def log_tail():
-    file_path = conf_reader.read_daemon_conf()['LOG_FILE_PATH']
+    file_path = os.path.join(conf_reader.read_daemon_conf()['LOGS_PATH'], 'pycollector.log')
     try:
         os.system("tail -42f %s" % file_path)
     except KeyboardInterrupt:
@@ -84,7 +84,7 @@ def suggest_log_path_creation(path):
 def set_logging():
     try:
         daemon_conf = conf_reader.read_daemon_conf()
-        log_path = daemon_conf['LOG_FILE_PATH']
+        log_path = os.path.join(daemon_conf['LOGS_PATH'], 'pycollector.log')
         log_dir = os.path.split(log_path)[0]
         if not (log_dir_exists(log_dir) or suggest_log_path_creation(log_path)):
             exit(-1)
