@@ -11,21 +11,23 @@ except Exception, e:
 
 import daemon_conf
 from helpers import yaml
+from __exceptions import ConfigurationError
 
 
 log = logging.getLogger()
+default_yaml_filepath = os.path.join(__meta__.PATHS["CONF_PATH"], "conf.yaml")
 
 
-def read_yaml_conf():
-    f = open(os.path.join(__meta__.PATHS["CONF_PATH"], "conf.yaml"), 'r+')
-    file_conf = yaml.load(f.read())
-    
-    conf = file_conf['conf']
-    if not conf:
-        log.error("No configurations found, check your conf.yaml.")
-        log.info('Nothing to do. Aborting.')
-        exit(-1)
+def load_yaml_conf(file_path=default_yaml_filepath):
+    f = open(file_path, 'r+')
+    return yaml.load(f.read())
+
+
+def read_yaml_conf(file_conf=load_yaml_conf()):
+    if not 'conf' in file_conf:
+        raise ConfigurationError("No configuration found, check your conf.yaml.")
     specs = file_conf['specs']
+    conf = file_conf['conf']
 
     new_conf = []
 
@@ -38,29 +40,29 @@ def read_yaml_conf():
             spec = reader['spec']
             new_reader.pop('spec')
             if not specs or (not spec in specs):
-                log.error('Cannot find spec %s in specs session.' % spec)
-                log.info('Aborting.')
-                exit(-1)
+                raise ConfigurationError("Cannot find spec '%s' in specs session" % specs)
             new_reader.update(specs[spec])
 
         if not 'type' in new_reader:
-            log.error('Missing reader type in conf.yaml.')
-            log.info('Aborting.')
-            exit(-1)
+            raise ConfigurationError("Missing reader 'type' in conf.yaml")
 
-        if 'spec' in writer: 
+        if ('checkpoint_enabled' in new_reader and \
+            not ('checkpoint_path' in new_reader)):
+             raise(ConfigurationError("Missing checkpoint_path for reader %s" % new_reader['type']))
+
+        if 'spec' in writer:
             spec = writer['spec']
             new_writer.pop('spec')
             if not specs or (not spec in specs):
-                log.error("Cannot find spec '%s' in specs session." % spec)
-                log.info('Aborting.')
-                exit(-1)
+                raise ConfigurationError("Cannot find spec '%s' in specs session" % spec)
             new_writer.update(specs[spec])
 
         if not 'type' in new_writer:
-            log.error('Missing writer type in conf.yaml.')
-            log.info('Aborting.')
-            exit(-1)
+            raise ConfigurationError("Missing writer 'type' in conf.yaml paired with a %x reader" % reader['type'])
+
+        if ('checkpoint_enabled' in new_writer and \
+            not ('checkpoint_path' in new_writer)):
+             raise(ConfigurationError("Missing checkpoint_path for reader %s" % new_writer['type']))
 
         new_pair = {'reader': new_reader, 'writer' : new_writer}
         new_conf.append(new_pair)
@@ -75,7 +77,6 @@ def read_daemon_conf():
         except AttributeError:
             conf[key] = __meta__.DEFAULTS[key]
     return conf
-
 
 
 if __name__ == '__main__':

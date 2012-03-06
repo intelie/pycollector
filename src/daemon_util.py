@@ -10,6 +10,7 @@ from subprocess import call, Popen, PIPE
 from helpers import daemon
 
 import __meta__
+from __exceptions import ConfigurationError
 import conf_reader
 
 
@@ -54,10 +55,10 @@ def is_running(ps="""ps aux --cols=1000 |
     pids = map(lambda x: int(x), pids)
 
     cur_pid = os.getpid()
-    if cur_pid in pids: 
+    if cur_pid in pids:
         pids.remove(cur_pid)
 
-    if len(pids) > 0: 
+    if len(pids) > 0:
         return (True, pids)
     return (False, pids)
 
@@ -105,7 +106,7 @@ def set_logging():
 def start(collector_clazz, to_daemon=True, enable_server=True, server_port=8442):
     if is_running()[0]:
         print "Daemon already running."
-        sys.exit(-1)    
+        sys.exit(-1)
 
     #starts daemon context
     if to_daemon:
@@ -119,10 +120,14 @@ def start(collector_clazz, to_daemon=True, enable_server=True, server_port=8442)
         log = set_logging()
         log.info("Starting collector...")
 
-        collector = collector_clazz(conf_reader.read_yaml_conf(), 
-                                    conf_reader.read_daemon_conf(), 
-                                    enable_server=enable_server,
-                                    server_port=server_port)
+        try:
+            collector = collector_clazz(conf_reader.read_yaml_conf(),
+                                        conf_reader.read_daemon_conf(),
+                                        enable_server=enable_server,
+                                        server_port=server_port)
+        except ConfigurationError, e:
+            log.error(e.msg)
+            sys.exit(-1)
 
         log.info("daemon_conf.py settings (missing values are replaced by defaults):")
         log.info(collector.daemon_conf)
@@ -206,4 +211,4 @@ def stop():
         except Exception, e:
                 print "Daemon stopped, but can't remove pidfile.\nRemove manually the file %s." % pid_path
     sys.exit(0)
-    
+

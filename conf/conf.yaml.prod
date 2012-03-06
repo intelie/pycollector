@@ -15,7 +15,7 @@
 #
 #        A reader/writer must have a type.
 #        A reader/writer may have a checkpoint path.
-#        A reader/writer may present an period (in seconds) property.
+#        A reader/writer may present a period (in seconds) property.
 #
 #
 

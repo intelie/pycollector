@@ -27,7 +27,7 @@ from __queue import CustomQueue
 
 class Collector:
     def __init__(self,
-                 conf, 
+                 conf,
                  daemon_conf=None,
                  enable_server=True,
                  server_port=8442,
@@ -45,7 +45,7 @@ class Collector:
     def instantiate(self, queue, conf):
         """Instantiate a reader or writer"""
         rwtype = rwtypes.get_type(conf['type'])
-        exec('import %s' % rwtype['module']) 
+        exec('import %s' % rwtype['module'])
         exec('clazz = %s.%s' % (rwtype['module'], rwtype['class']))
         return clazz(queue, conf)
 
@@ -76,7 +76,7 @@ class Collector:
             sys.exit(-1)
 
     def start_server(self):
-        """Starts the web server. 
+        """Starts the web server.
         Available by default in http://localhost:8442.
         """
         try:
@@ -102,6 +102,11 @@ if __name__ == '__main__':
     import conf_reader as cr
     import daemon_util as du
     du.set_logging()
-    c = Collector(conf=cr.read_yaml_conf(),
-                  daemon_conf=cr.read_daemon_conf())
+    try:
+        c = Collector(conf=cr.read_yaml_conf(),
+                      daemon_conf=cr.read_daemon_conf())
+    except ConfigurationError, e:
+        print e.msg
+        sys.exit(-1)
+
     c.start()

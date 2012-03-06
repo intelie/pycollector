@@ -79,10 +79,6 @@ class Writer(threading.Thread):
             self.last_checkpoint = self._read_checkpoint()
             if not hasattr(self, 'checkpoint_period'):
                 self.checkpoint_period = checkpoint_period
-            if not hasattr(self, 'checkpoint_path'):
-                self.log.error('Error. Please, configure a checkpoint_path')
-                self.log.info('Aborting.')
-                exit(-1)
 
         self.setup()
 
@@ -102,9 +98,7 @@ class Writer(threading.Thread):
         """
         for item in self.required_confs:
             if not hasattr(self, item):
-                self.log.error('%s not defined in conf.yaml' % item)
-                self.log.info('Aborting')
-                raise ConfigurationError()
+                raise ConfigurationError("%s not defined in your conf.yaml" % item)
 
 
     def schedule_checkpoint_writing(self):
