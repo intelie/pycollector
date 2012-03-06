@@ -229,6 +229,10 @@ class TestReader(unittest.TestCase):
         self.assertEqual(None, myreader.period)
         self.assertEqual(True, myreader.blockable)
         self.assertEqual(False, myreader.checkpoint_enabled)
+        self.assertEqual(None, myreader.retry_timeout)
+        self.assertEqual(300, myreader.health_check_period)
+        self.assertEqual(0, myreader.processed)
+        self.assertEqual(0, myreader.discarded)
 
         # if checkpoint
         conf = {'checkpoint_enabled' : True,

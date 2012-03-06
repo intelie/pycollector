@@ -206,6 +206,25 @@ class TestWriter(unittest.TestCase):
         # after __init__, checkpoint file should be created
         self.assertTrue(os.path.exists(checkpoint_path))
 
+    def test_default_values_in_initialization(self):
+        q = get_queue()
+
+        mywriter  = Writer(q)
+        self.assertEqual(None, mywriter.period)
+        self.assertEqual(True, mywriter.blockable)
+        self.assertEqual(False, mywriter.checkpoint_enabled)
+        self.assertEqual(None, mywriter.retry_timeout)
+        self.assertEqual(1, mywriter.retry_period)
+        self.assertEqual(300, mywriter.health_check_period)
+        self.assertEqual(0, mywriter.processed)
+        self.assertEqual(0, mywriter.discarded)
+
+        # if checkpoint
+        conf = {'checkpoint_enabled' : True,
+                'checkpoint_path' : '/tmp/checkpoint'}
+        mywriter = Writer(q, conf=conf)
+        self.assertEqual(60, mywriter.checkpoint_period)
+
 
 def suite():
     suite = unittest.TestSuite()
