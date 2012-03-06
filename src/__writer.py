@@ -118,10 +118,12 @@ class Writer(threading.Thread):
 
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
+        if not os.path.exists(self.checkpoint_path):
+            self.log.info('No checkpoint found in %s.' % self.checkpoint_path)
+            open(self.checkpoint_path, 'w').close()
+            self.log.info('Created checkpoint file in %s.' % self.checkpoint_path)
+            return ''
         try:
-            if not os.path.exists(self.checkpoint_path):
-                self.log.info('No checkpoint found in %s.' % self.checkpoint_path)
-                return ''
             f = open(self.checkpoint_path, 'rb')
             read = pickle.load(f)
             f.close()

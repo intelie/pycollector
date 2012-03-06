@@ -24,11 +24,10 @@ class TestReader(unittest.TestCase):
         myreader.setup = MagicMock()
         myreader.schedule_tasks = MagicMock()
 
-        # calling __init__
         conf = {'foo' : 'bar'}
         myreader.__init__(q, conf=conf)
 
-        # asserting that methods are called
+        # after __init__, methods should be called
         myreader.set_conf.assert_called_with(conf)
         myreader.setup.assert_called_with()
         myreader.schedule_tasks.assert_called_with()
@@ -39,12 +38,11 @@ class TestReader(unittest.TestCase):
         myreader = Reader(q)
         myreader.schedule_checkpoint_writing = MagicMock()
 
-        # calling __init__
         conf = {'checkpoint_enabled' : True,
                 'checkpoint_path' : '/tmp/checkpoint'}
         myreader.__init__(q, conf=conf)
 
-        # assert scheduling was called
+        # after __init__, methods, should be called
         myreader.schedule_checkpoint_writing.assert_called_with()
 
     def test_confs_are_loaded_before_setup_is_called(self):
@@ -105,7 +103,6 @@ class TestReader(unittest.TestCase):
                 return True
 
         q = get_queue()
-
         myreader = MyReader(q)
         myreader.start()
 
@@ -139,6 +136,7 @@ class TestReader(unittest.TestCase):
         self.assertEqual(2, myreader.processed)
         self.assertEqual('bar', myreader.last_checkpoint)
 
+        # checkpoint has the right content?
         f = open(checkpoint_path, 'rb')
         self.assertEqual('bar', pickle.load(f))
         f.close()

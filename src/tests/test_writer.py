@@ -24,7 +24,6 @@ class TestWriter(unittest.TestCase):
         mywriter.setup = MagicMock()
         mywriter.schedule_tasks = MagicMock()
 
-        # calling __init__
         conf = {'foo' : 'bar'}
         mywriter.__init__(q, conf=conf)
 
@@ -39,12 +38,10 @@ class TestWriter(unittest.TestCase):
         mywriter = Writer(q)
         mywriter.schedule_checkpoint_writing = MagicMock()
 
-        # calling __init__
         conf = {'checkpoint_enabled' : True,
                 'checkpoint_path' : '/tmp/checkpoint'}
         mywriter.__init__(q, conf=conf)
 
-        # assert scheduling was called
         mywriter.schedule_checkpoint_writing.assert_called_with()
 
     def test_confs_are_loaded_before_setup_is_called(self):
@@ -194,6 +191,21 @@ class TestWriter(unittest.TestCase):
 
         q = get_queue()
         self.assertRaises(ConfigurationError, MyWriter, q, {'jack': 'bauer'})
+
+    def test_creating_file_if_checkpoint_does_not_exist(self):
+        checkpoint_path = '/tmp/checkpoint'
+        if os.path.exists(checkpoint_path):
+            os.remove(checkpoint_path)
+
+        q = get_queue()
+        conf = {'checkpoint_enabled' : True,
+                'checkpoint_path' : checkpoint_path}
+
+        mywriter = Writer(q, conf=conf)
+
+        # after __init__, checkpoint file should be created
+        self.assertTrue(os.path.exists(checkpoint_path))
+
 
 def suite():
     suite = unittest.TestSuite()
