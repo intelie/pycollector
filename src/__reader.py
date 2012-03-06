@@ -116,24 +116,6 @@ class Reader(threading.Thread):
                                          [],
                                          None)
 
-    def _read_checkpoint(self):
-        """Read checkpoint file from disk."""
-        try:
-            if not os.path.exists(self.checkpoint_path):
-                self.log.info('No checkpoint found in %s.' % self.checkpoint_path)
-                return ''
-            f = open(self.checkpoint_path, 'rb')
-            read = pickle.load(f)
-            f.close()
-            if read:
-                return read
-            else:
-                return ''
-            self.log.info("Checkpoint read from %s" % self.checkpoint_path)
-        except Exception, e:
-            self.log.error('Error reading checkpoint in %s' % self.checkpoint_path)
-            self.log.error(e)
-
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
         try:
