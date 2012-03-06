@@ -17,7 +17,15 @@ class TestConfReader(unittest.TestCase):
         self.base['conf'][0]['reader']['checkpoint_enabled'] = True
         self.base['conf'][0]['reader']['type'] = 'stdin'
         self.base['conf'][0]['writer']['type'] = 'stdout'
+        self.base['conf'][0]['writer']['checkpoint_enabled'] = True
         self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+
+
+def suite():
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestConfReader))
+    return suite
+
 
 if __name__ == '__main__':
     unittest.main()
