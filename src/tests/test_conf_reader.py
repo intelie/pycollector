@@ -13,11 +13,15 @@ class TestConfReader(unittest.TestCase):
         self.base['conf'] = [{'reader' : self.reader,
                              'writer' : self.writer}]
 
+    def tearDown(self):
+        # back with initial stage
+        self.setUp()
+
     def test_raise_exception_if_checkpoint_path_is_missing(self):
-        self.base['conf'][0]['reader']['checkpoint_enabled'] = True
-        self.base['conf'][0]['reader']['type'] = 'stdin'
-        self.base['conf'][0]['writer']['type'] = 'stdout'
-        self.base['conf'][0]['writer']['checkpoint_enabled'] = True
+        self.reader['checkpoint_enabled'] = True
+        self.reader['type'] = 'stdin'
+        self.writer['type'] = 'stdout'
+        self.writer['checkpoint_enabled'] = True
         self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
 
 
