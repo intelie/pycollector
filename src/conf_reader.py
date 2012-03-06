@@ -58,7 +58,7 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
             new_writer.update(specs[spec])
 
         if not 'type' in new_writer:
-            raise ConfigurationError("Missing writer 'type' in conf.yaml paired with a %x reader" % reader['type'])
+            raise ConfigurationError("Missing writer 'type' in conf.yaml paired with 'a' %s reader" % reader['type'])
 
         if ('checkpoint_enabled' in new_writer and \
             not ('checkpoint_path' in new_writer)):
