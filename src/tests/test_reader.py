@@ -222,6 +222,20 @@ class TestReader(unittest.TestCase):
 
         self.assertEqual(1, myreader.discarded)
 
+    def test_default_values_in_initialization(self):
+        q = get_queue()
+        
+        myreader = Reader(q)
+        self.assertEqual(None, myreader.period)
+        self.assertEqual(True, myreader.blockable)
+        self.assertEqual(False, myreader.checkpoint_enabled)
+
+        # if checkpoint
+        conf = {'checkpoint_enabled' : True,
+                'checkpoint_path' : '/tmp/checkpoint'}
+        myreader = Reader(q, conf=conf)
+        self.assertEqual(60, myreader.checkpoint_period)
+
 
 def suite():
     suite = unittest.TestSuite()
