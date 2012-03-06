@@ -203,6 +203,25 @@ class TestReader(unittest.TestCase):
         q = get_queue(3)
         self.assertRaises(ConfigurationError,  MyReader,  q, {'a' : 'foo'})
 
+    def test_reader_non_blockable_discards_message_when_queue_is_full(self):
+        class MyReader(Reader):
+            def read(self):
+                self.store(Message(content='all my loving'))
+
+        # fulling queue
+        q = get_queue(2)
+        q.put(Message(content=1))
+        q.put(Message(content=2))
+
+        conf = {'blockable' : False}
+        myreader = MyReader(q, conf=conf)
+        myreader.start()
+
+        # waits to call read
+        time.sleep(0.2)
+
+        self.assertEqual(1, myreader.discarded)
+
 
 def suite():
     suite = unittest.TestSuite()
