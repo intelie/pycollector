@@ -16,14 +16,15 @@ __email__ = "ronald at intelie dot com dot br"
 
 
 import sys
-try:
-    import __meta__
-    sys.path = __meta__.PATHS.values() + sys.path
-except Exception, e:
-    print e
-    sys.exit(-1)
 import logging
 import optparse
+
+try:
+    import __meta__
+    __meta__.load_paths()
+except ImportError, e:
+    print e
+    sys.exit(-1)
 
 import daemon_util
 import ascii

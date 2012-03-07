@@ -4,7 +4,7 @@ import logging
 
 try:
     import __meta__
-    sys.path = __meta__.PATHS.values() + sys.path
+    __meta__.load_paths() 
 except Exception, e:
     print e
     sys.exit(-1)

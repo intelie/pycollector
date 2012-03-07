@@ -29,6 +29,11 @@ except Exception, e:
     print e
 
 
+def load_paths():
+    import sys
+    sys.path = PATHS.values() + sys.path
+
+
 if __name__ == "__main__":
     pprint.pprint({'PATHS' : PATHS})
     pprint.pprint({'DEFAULTS' : DEFAULTS})

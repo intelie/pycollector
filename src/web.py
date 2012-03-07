@@ -6,15 +6,16 @@
 """
 
 import os
+import sys
 import threading
 
 if __name__ == "__main__":
     try:
-        import sys
         import __meta__
-        sys.path = __meta__.PATHS.values() + sys.path
+        __meta__.load_paths()
     except ImportError, e:
         print e
+        sys.exit(-1)
 
 import cherrypy
 
