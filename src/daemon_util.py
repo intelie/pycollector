@@ -11,6 +11,7 @@ from subprocess import call, Popen, PIPE
 from helpers import daemon
 
 import __meta__
+import ascii
 from __exceptions import ConfigurationError
 import conf_reader
 
@@ -124,6 +125,7 @@ def start(collector_clazz, to_daemon=True, enable_server=True, server_port=8442)
         sys.path.append(__meta__.PATHS.values())
 
         log = set_logging()
+        log.info(ascii.ascii)
         log.info("Starting collector...")
 
         try:
