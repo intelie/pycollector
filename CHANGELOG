@@ -70,5 +70,6 @@ CHANGELOG
 - changed properties from 'interval', 'checkpoint_interval' and 'retry_interval' to 'period', 'checkpoint_period' and 
   'retry_period' respectively
 - changed LOG_FILE_PATH conf to LOGS_PATH
+- web server logs are now detached from collector logs
 - + tests
 
