@@ -89,7 +89,7 @@ def set_logging():
         if not (log_dir_exists(log_dir) or suggest_log_path_creation(log_path)):
             exit(-1)
 
-        logger = logging.getLogger()
+        logger = logging.getLogger('pycollector')
         exec("logger.setLevel(logging.%s)" % daemon_conf['LOG_SEVERITY'])
         rotating = daemon_conf['LOG_ROTATING']
         handler = logging.handlers.TimedRotatingFileHandler(log_path, when=rotating)

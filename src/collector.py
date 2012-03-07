@@ -33,12 +33,12 @@ class Collector:
                  server_port=8442,
                  default_queue_maxsize=1000):
 
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         self.conf = conf
         self.daemon_conf = daemon_conf
         self.server_port = server_port
         self.enable_server = enable_server
-        self.server = web.Server(self, self.server_port)
+        self.server = web.Server(daemon_conf['LOGS_PATH'], self)
         self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
 

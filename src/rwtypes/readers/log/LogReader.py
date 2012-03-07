@@ -15,7 +15,7 @@ class LogReader(Reader):
             e.g. ['date', 'hour', 'message']"""
 
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
         self.checkpoint = 0
 

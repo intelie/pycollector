@@ -14,7 +14,7 @@ class ArduinoReader(Reader):
             e.g. 9600 (default)"""
 
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         if not hasattr(self, 'interface'):
             self.interface = '/dev/ttyUSB0'
         if not hasattr(self, 'bps'):

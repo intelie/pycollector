@@ -6,7 +6,7 @@ from __writer import Writer
 class StdoutWriter(Writer):
     """Conf: none"""
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
 
     def write(self, msg):
         try:

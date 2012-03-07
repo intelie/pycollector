@@ -60,7 +60,7 @@ class Reader(threading.Thread):
                  checkpoint_period=60,    # period between checkpoints
                  health_check_period=300  # period to log status
                  ):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         self.conf = conf
         self.processed = 0
         self.discarded = 0

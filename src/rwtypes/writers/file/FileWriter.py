@@ -9,7 +9,7 @@ class FileWriter(Writer):
             e.g. /home/user/myfile (default: /tmp/timestamp)"""
 
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         if hasattr(self, 'filepath'):
             self.f = open(self.filepath, 'a+')
         else:    

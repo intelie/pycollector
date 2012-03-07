@@ -12,7 +12,7 @@ class CameraReader(Reader):
         - cam_number (optional): id number of your cam"""
 
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         if hasattr(self, 'cam_number'):
             self.cam = SimpleCV.Camera(self.cam_number)
         else:

@@ -13,7 +13,7 @@ class GtalkWriter(Writer):
             e.g. myfriend@gmail.com"""
 
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         self.con = xmpp.Client('gmail.com')
         self.con.connect(server=('talk.google.com', 5222))
         if hasattr(self, 'login') and hasattr(self, 'passwd'):

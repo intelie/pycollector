@@ -14,7 +14,7 @@ from helpers import yaml
 from __exceptions import ConfigurationError
 
 
-log = logging.getLogger()
+log = logging.getLogger('pycollector')
 default_yaml_filepath = os.path.join(__meta__.PATHS["CONF_PATH"], "conf.yaml")
 
 

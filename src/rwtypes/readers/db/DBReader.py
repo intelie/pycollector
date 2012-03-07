@@ -28,7 +28,7 @@ class DBReader(Reader):
         Note: if checkpoint is used, query must guarantee sorted data"""
 
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         engine = create_engine(self.connection %(self.user, 
                                                  self.passwd, 
                                                  self.host, 

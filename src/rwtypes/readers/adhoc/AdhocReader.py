@@ -9,7 +9,7 @@ from __message import Message
 class AdhocReader(Reader):
     """Start writing your reader here"""
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
 
     def read(self):
         try:

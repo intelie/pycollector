@@ -11,7 +11,7 @@ class CameraWriter(Writer):
         - prefix (optional): prefix added to each image filename. 
     """
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         if not hasattr(self, 'path'):
             self.path = '/tmp'
         elif self.path[-1] == '/':

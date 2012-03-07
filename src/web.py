@@ -2,10 +2,20 @@
 
 """
     File: web.py
-    Description: going to be a simple web server with realtime data. 
+    Description: going to be a simple web server with realtime data.
 """
 
+import os
 import threading
+
+if __name__ == "__main__":
+    try:
+        import sys
+        import __meta__
+        sys.path = __meta__.PATHS.values() + sys.path
+    except ImportError, e:
+        print e
+
 import cherrypy
 
 
@@ -22,19 +32,19 @@ class Home:
                 if i == 1:
                     item_type = "writer"
                 html += """
-                  <table> 
+                  <table>
                   <tr><td>%s</td><td>%s</td></tr>
                   <tr><td>processed</td><td>%s</td></tr>
                   <tr><td>discarded</td><td>%s</td></tr>
                   <tr><td>conf</td><td>%s</td></tr>
                   </table>
                 """ % (item_type,
-                       item.__class__.__name__, 
-                       item.processed, 
+                       item.__class__.__name__,
+                       item.processed,
                        item.discarded,
                        item.conf)
             html += """
-                  <table> 
+                  <table>
                   <tr><td>queue maxsize</td><td>%s</td></tr>
                   <tr><td>messages in queue</td><td>%s</td></tr>
                   </table>
@@ -48,7 +58,7 @@ class Home:
             not hasattr(self.collector, 'pairs'):
             return "Unavailable"
         data = {}
-        data.update({'number_of_pairs': len(self.collector.pairs) or 'Unavailable'}) 
+        data.update({'number_of_pairs': len(self.collector.pairs) or 'Unavailable'})
         data.update({'pairs' : self.get_html_for_pairs(self.collector.pairs) or 'Unavailable'})
         html = """
         <html>
@@ -88,13 +98,21 @@ class Home:
 
 
 class Server(threading.Thread):
-    def __init__(self, collector=None, server_port=8442):
+    def __init__(self, logs_path='/tmp', collector=None, server_port=8442):
         threading.Thread.__init__(self)
         self.collector = collector
-        cherrypy.config.update({'server.socket_port' : server_port})
+        self.conf = {
+            'server.socket_port' : server_port,
+            'log.access_file' : os.path.join(logs_path, 'web-access.log'),
+            'log.error_file' : os.path.join(logs_path, 'web.log'),
+            'log.screen' : False,
+        }
+        cherrypy.config.update(self.conf)
 
     def run(self):
-        cherrypy.quickstart(Home(self.collector))
+        cherrypy.quickstart(Home(self.collector),
+                            config={'global' : self.conf})
 
-if __name__ == '__main__':  
+if __name__ == '__main__':
     Server().start()
+

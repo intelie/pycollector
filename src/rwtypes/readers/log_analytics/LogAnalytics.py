@@ -19,7 +19,7 @@ class LogAnalytics(Reader):
             e.g. ['date', 'hour', 'message']"""
 
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         self.required_confs = ['delimiter', 'columns', 'logpath']
         self.tail = filetail.Tail(self.logpath, max_sleep=1)
         self.client = self.logpath.split('.')[1]

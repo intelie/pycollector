@@ -9,7 +9,7 @@ class SocketWriter(Writer):
         - port (required): port destination"""
         
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         self.sock = socket.socket()
         if hasattr(self, 'host') and hasattr(self, 'port'):
             self.sock.connect((self.host, int(self.port)))

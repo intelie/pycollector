@@ -20,7 +20,7 @@ class ActivemqWriter(Writer):
         - additional_properties: dict with additional fields"""
 
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         self.check_conf(['host', 'port', 'destination', 'eventtype'])
 
     def check_conf(self, items):
