@@ -38,7 +38,7 @@ class Collector:
         self.daemon_conf = daemon_conf
         self.server_port = server_port
         self.enable_server = enable_server
-        self.server = web.Server(daemon_conf['LOGS_PATH'], self)
+        self.server = web.Server(daemon_conf['LOGS_PATH'], self, self.server_port)
         self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
 
