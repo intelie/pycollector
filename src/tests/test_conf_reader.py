@@ -24,6 +24,10 @@ class TestConfReader(unittest.TestCase):
         self.writer['checkpoint_enabled'] = True
         self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
 
+    def test_raise_exception_if_conf_is_empty(self):
+        self.base['conf'] = None
+        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+
 
 def suite():
     suite = unittest.TestSuite()

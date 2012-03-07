@@ -25,7 +25,10 @@ def load_yaml_conf(file_path=default_yaml_filepath):
 
 def read_yaml_conf(file_conf=load_yaml_conf()):
     if not 'conf' in file_conf:
-        raise ConfigurationError("No configuration found, check your conf.yaml.")
+        raise ConfigurationError("'conf' section missing in your conf.yaml.")
+
+    if not file_conf['conf']:
+        raise ConfigurationError("'conf' section is empty in your conf.yaml.")
     specs = file_conf['specs']
     conf = file_conf['conf']
 
