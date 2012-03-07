@@ -51,7 +51,7 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
 
         if ('checkpoint_enabled' in new_reader and \
             not ('checkpoint_path' in new_reader)):
-             raise(ConfigurationError("Missing checkpoint_path for reader %s" % new_reader['type']))
+             raise(ConfigurationError("Missing checkpoint_path for reader '%s'" % new_reader['type']))
 
         if 'spec' in writer:
             spec = writer['spec']
@@ -65,7 +65,7 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
 
         if ('checkpoint_enabled' in new_writer and \
             not ('checkpoint_path' in new_writer)):
-             raise(ConfigurationError("Missing checkpoint_path for reader %s" % new_writer['type']))
+             raise(ConfigurationError("Missing checkpoint_path for writer '%s'" % new_writer['type']))
 
         new_pair = {'reader': new_reader, 'writer' : new_writer}
         new_conf.append(new_pair)
