@@ -31,6 +31,9 @@
             ... # Your code goes here.
             ... # You must call the store() method to put your message
             ... # in the queue.
+
+            ... # You should return a boolean to indicate whether the reading
+            ... # was successfull or not.
     ==========
 
     There are basically 2 flavors of Readers: asynchronous and synchronous.
