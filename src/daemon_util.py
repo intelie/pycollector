@@ -93,11 +93,16 @@ def set_logging():
         logger = logging.getLogger('pycollector')
         exec("logger.setLevel(logging.%s)" % daemon_conf['LOG_SEVERITY'])
         rotating = daemon_conf['LOG_ROTATING']
-        handler = logging.handlers.TimedRotatingFileHandler(log_path, when=rotating)
         formatter = logging.Formatter(daemon_conf['LOG_FORMATTER'])
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.addHandler(logging.StreamHandler())
+
+        file_handler = logging.handlers.TimedRotatingFileHandler(log_path, when=rotating)
+        stream_handler = logging.StreamHandler()
+
+        file_handler.setFormatter(formatter)
+        stream_handler.setFormatter(formatter)
+
+        logger.addHandler(file_handler)
+        logger.addHandler(stream_handler)
         return logger
     except Exception, e:
         print "Cannot set logging."
