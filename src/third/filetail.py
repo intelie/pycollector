@@ -1,6 +1,14 @@
 # filetail.py
 # Copyright (C) 2005 by The Trustees of the University of Pennsylvania
-# Author: Jon Moore
+# Original author: Jon Moore
+#
+# Note: The whole idea of this code was from Jon Moore
+# I found it here -> (http://code.activestate.com/recipes/436477-filetailpy/)
+# Then, I took the code and made some changes to suit better my requirements and
+# added some tests.
+#
+# Last changes: March, 2012
+# Second author: Ronald Kaiser
 #
 
 """
@@ -38,7 +46,8 @@ class Tail(object):
                  min_sleep = 1,
                  sleep_interval = 1,
                  max_sleep = 60,
-                 cache_size=128):
+                 cache_size=128,
+                 store_pos=False):
         """Initialize a tail monitor.
              path: filename to open
              only_new: By default, the tail monitor will start reading from
@@ -63,6 +72,7 @@ class Tail(object):
 
         # remember path to file in case I need to reopen
         self.cache_size = cache_size
+        self.store_pos = store_pos
         self.path = abspath(path)
         self.f = open(self.path,"r")
         self.min_sleep = min_sleep * 1.0
@@ -115,17 +125,22 @@ class Tail(object):
             if self.sleep_interval < self.min_sleep:
                 self.sleep_interval = self.min_sleep
 
-    def read_real_line(self):
-        """Guarantees that only complete lines (with \n) or ""
-        are retrieved without advancing file cursor in incomplete
-        lines (preventing lines being written to be lost).
+    def _read_line(self):
+        """Internal method that guarantees that only complete lines
+        (with \n) are retrieved without advancing file cursor in incomplete
+        lines -- without \n -- (preventing lines being written to be lost).
         """
         self.last_pos = self.f.tell()
         line = self.f.readline()
-        if (not line == "" and not line.endswith("\n")):
+        if not line.endswith("\n"):
             self.f.seek(self.last_pos)
-            return ""
-        return line
+            if not self.store_pos:
+               return ""
+            return (self.f.tell(), "")
+
+        if not self.store_pos:
+            return line
+        return (self.f.tell(), line)
 
     def _fill_cache(self):
         """Internal method for grabbing as much data out of the file as is
@@ -133,12 +148,21 @@ class Tail(object):
         the number of lines just read.
         """
         old_len = len(self.queue)
-        line = self.read_real_line()
+        if not self.store_pos:
+            line = self._read_line()
+        else:
+            pos, line = self._read_line()
         to_seek = False
         while line != "" and len(self.queue) < self.cache_size:
-            self.queue.append(line)
-            line = self.read_real_line()
+            if not self.store_pos:
+                self.queue.append(line)
+                line = self._read_line()
+            else:
+                self.queue.append((pos, line))
+                pos, line = self._read_line()
             to_seek = True
+
+        # back cursor after exiting while, because of the last line
         if to_seek: self.f.seek(self.last_pos)
 
         # how many did we just get?
