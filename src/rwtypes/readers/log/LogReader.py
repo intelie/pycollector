@@ -16,12 +16,11 @@ class LogReader(Reader):
 
     def setup(self):
         self.log = logging.getLogger('pycollector')
-        self.tail = filetail.Tail(self.logpath, max_sleep=1)
-        self.checkpoint = 0
+        self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
 
     def process_line(self):
         try:
-            line = self.tail.nextline()
+            self.checkpoint, line = self.tail.nextline()
             to_store = line
 
             if hasattr(self, 'delimiter'):
@@ -32,11 +31,12 @@ class LogReader(Reader):
 
             if self.store(Message(content=to_store,
                                checkpoint=self.checkpoint)):
-                self.checkpoint += 1
+                return True
 
             return True
         except Exception, e:
             self.log.error('error reading line, maybe it was rotated')
+            self.log.error(e)
             return False
     
     def read(self):
