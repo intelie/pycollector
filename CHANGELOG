@@ -71,5 +71,6 @@ CHANGELOG
   'retry_period' respectively
 - changed LOG_FILE_PATH conf to LOGS_PATH
 - web server logs are now detached from collector logs
+- improved stdout logging format
 - + tests
 
