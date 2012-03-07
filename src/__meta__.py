@@ -8,6 +8,7 @@
 
 import os
 import sys
+import pprint
 
 try:
     BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,4 +30,5 @@ except Exception, e:
 
 
 if __name__ == "__main__":
-    print PATHS, DEFAULTS
+    pprint.pprint({'PATHS' : PATHS})
+    pprint.pprint({'DEFAULTS' : DEFAULTS})
