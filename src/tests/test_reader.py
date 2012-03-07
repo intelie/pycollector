@@ -199,6 +199,7 @@ class TestReader(unittest.TestCase):
         class MyReader(Reader):
             def setup(self):
                 self.required_confs = ['a', 'b']
+                self.validate_conf()
 
         q = get_queue(3)
         self.assertRaises(ConfigurationError,  MyReader,  q, {'a' : 'foo'})

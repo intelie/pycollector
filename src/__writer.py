@@ -21,6 +21,10 @@
 
             ... # You may define a list of required confs, e.g.:
             ... self.required_confs = ['foo', 'bar']
+
+            ... # and call validate_conf to check if it was loaded properly
+            ... self.validate_conf()
+
             ... # If they are not found in your conf, an exception is raised
 
         def write(self, msg):
@@ -83,9 +87,6 @@ class Writer(threading.Thread):
                 self.checkpoint_period = checkpoint_period
 
         self.setup()
-
-        if hasattr(self, 'required_confs'):
-            self.validate_conf()
 
         self.scheduler = kronos.ThreadedScheduler()
         self.schedule_tasks()
