@@ -44,6 +44,7 @@
 """
 
 import os
+import sys
 import time
 import pickle
 import logging
@@ -124,14 +125,17 @@ class Writer(threading.Thread):
             f = open(self.checkpoint_path, 'rb')
             read = pickle.load(f)
             f.close()
-            if read:
+            if read != None:
                 return read
             else:
                 return ''
             self.log.info("Checkpoint read from %s" % self.checkpoint_path)
         except Exception, e:
-            self.log.error('Error reading checkpoint in %s' % self.checkpoint_path)
+            self.log.error('Error reading checkpoint in %s.' % self.checkpoint_path)
+            self.log.error('It may be the case to remove it manually.')
             self.log.error(e)
+            sys.exit(-1)
+
 
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
