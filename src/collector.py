@@ -103,10 +103,10 @@ if __name__ == '__main__':
     import daemon_util as du
     du.set_logging()
     try:
-        c = Collector(conf=cr.read_yaml_conf(),
-                      daemon_conf=cr.read_daemon_conf())
+        conf = cr.read_yaml_conf()
+        daemon_conf = cr.read_daemon_conf()
     except ConfigurationError, e:
         print e.msg
         sys.exit(-1)
 
-    c.start()
+    Collector(conf=conf, daemon_conf=daemon_conf).start()
