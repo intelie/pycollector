@@ -42,22 +42,22 @@ class Collector:
         self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
 
-    def instantiate(self, queue, conf):
+    def instantiate(self, queue, pair_id, conf):
         """Instantiate a reader or writer"""
         rwtype = rwtypes.get_type(conf['type'])
         exec('import %s' % rwtype['module'])
         exec('clazz = %s.%s' % (rwtype['module'], rwtype['class']))
-        return clazz(queue, conf)
+        return clazz(queue, conf, thread_name='%s-%s' % (rwtype['class'], pair_id))
 
     def prepare_readers_writers(self):
         """Append reader/writer references in self.pairs"""
         self.pairs = []
-        for pair in self.conf:
+        for pair_id, pair in enumerate(self.conf):
             maxsize = pair['reader'].get('queue_maxsize', self.default_queue_maxsize)
             queue = CustomQueue(maxsize=maxsize)
 
-            writer = self.instantiate(queue, pair['writer'])
-            reader = self.instantiate(queue, pair['reader'])
+            writer = self.instantiate(queue, pair_id,  pair['writer'])
+            reader = self.instantiate(queue, pair_id, pair['reader'])
 
             if reader.checkpoint_enabled:
                 reader.last_checkpoint = writer.last_checkpoint

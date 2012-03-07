@@ -59,7 +59,8 @@ class Writer(threading.Thread):
                  retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# deafult is to not deal with checkpoints
                  checkpoint_period=60,    # period of checkpoint writing
-                 health_check_period=300  # period to log status
+                 health_check_period=300, # period to log status
+                 thread_name="Writer"     # thread name to easily recognize in log
                  ):
         self.log = logging.getLogger('pycollector')
         self.conf = conf
@@ -69,8 +70,9 @@ class Writer(threading.Thread):
         self.blocked = False
         self.period = period
         self.blockable = blockable
-        self.retry_timeout = retry_timeout
         self.retry_period = retry_period
+        self.retry_timeout = retry_timeout
+        self.thread_name = thread_name
         self.checkpoint_enabled = checkpoint_enabled
         self.health_check_period = health_check_period
         self.set_conf(conf)
@@ -90,7 +92,7 @@ class Writer(threading.Thread):
         if self.checkpoint_enabled:
             self.schedule_checkpoint_writing()
 
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self, name=self.thread_name)
 
     def validate_conf(self):
         """Validate if required confs are present.
@@ -173,6 +175,7 @@ class Writer(threading.Thread):
                 self.schedule_periodic_task()
             else:
                 self.schedule_single_task()
+            self.log.info("Tasks scheduled with success")
         except Exception, e:
             self.log.error("Error while scheduling tasks")
             self.log.error(e)

@@ -58,7 +58,8 @@ class Reader(threading.Thread):
                  retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# default is to not deal with checkpoint
                  checkpoint_period=60,    # period between checkpoints
-                 health_check_period=300  # period to log status
+                 health_check_period=300, # period to log status
+                 thread_name='Reader'     # thread name to easily recognize in log
                  ):
         self.log = logging.getLogger('pycollector')
         self.conf = conf
@@ -68,6 +69,7 @@ class Reader(threading.Thread):
         self.blocked = False
         self.period = period
         self.blockable = blockable
+        self.thread_name = thread_name
         self.retry_timeout = retry_timeout
         self.checkpoint_enabled = checkpoint_enabled
         self.health_check_period = health_check_period
@@ -92,7 +94,7 @@ class Reader(threading.Thread):
         if self.checkpoint_enabled:
             self.schedule_checkpoint_writing()
 
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self, name=self.thread_name)
 
     def validate_conf(self):
         """Validate if required confs are present.
