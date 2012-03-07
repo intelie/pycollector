@@ -4,6 +4,7 @@
 import os
 import sys
 import shlex
+import pprint
 import logging
 from subprocess import call, Popen, PIPE
 
@@ -130,10 +131,10 @@ def start(collector_clazz, to_daemon=True, enable_server=True, server_port=8442)
             sys.exit(-1)
 
         log.info("daemon_conf.py settings (missing values are replaced by defaults):")
-        log.info(collector.daemon_conf)
+        log.info(pprint.pformat(collector.daemon_conf))
 
         log.info("conf.yaml settings:")
-        log.info(collector.conf)
+        log.info(pprint.pformat(collector.conf))
 
         write_pid(collector.daemon_conf['PID_FILE_PATH'])
         collector.start()
