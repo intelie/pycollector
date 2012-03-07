@@ -239,8 +239,8 @@ class TestReader(unittest.TestCase):
         conf = {'checkpoint_enabled' : True,
                 'checkpoint_path' : '/tmp/checkpoint'}
         myreader = Reader(q, conf=conf)
-
         self.assertEqual(60, myreader.checkpoint_period)
+        self.assertEqual('', myreader.last_checkpoint)
 
 
 def suite():

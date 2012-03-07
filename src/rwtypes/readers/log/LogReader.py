@@ -41,6 +41,7 @@ class LogReader(Reader):
             raise ParsingError("Error parsing line: %s" % line)
 
     def process_line(self):
+        """Get next line from log file, parse and store in queue"""
         try:
             # get new line
             self.checkpoint, line = self.tail.nextline()

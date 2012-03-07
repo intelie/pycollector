@@ -221,10 +221,14 @@ class TestWriter(unittest.TestCase):
         self.assertEqual(0, mywriter.discarded)
 
         # if checkpoint
+        checkpoint_path = '/tmp/checkpoint'
+        if os.path.exists(checkpoint_path):
+            os.remove(checkpoint_path)
         conf = {'checkpoint_enabled' : True,
                 'checkpoint_path' : '/tmp/checkpoint'}
         mywriter = Writer(q, conf=conf)
         self.assertEqual(60, mywriter.checkpoint_period)
+        self.assertEqual('', mywriter.last_checkpoint)
 
 
 def suite():
