@@ -77,12 +77,14 @@ Moreover, readers and writers have properties in common, regardless of their typ
 * 'blockable' (should not be used with 'period')
     if 'blockable : True' is set to a reader, the message will wait for a slot in queue.
     if 'blockable : True' is set to a writer, it will try to rewrite the message.
+    default value: True
 
 * 'period' (should not be used with 'blockable : True')
     if 'period : N' is set to a reader, the method read() will be called periodically,
         with period N (in seconds)
     if 'period : N' is set to a writer, the method write(msg) will be called periodically,
         with period N (in seconds)
+    default value: None, default is to be async, read is called just once
 
 
 ----------------
