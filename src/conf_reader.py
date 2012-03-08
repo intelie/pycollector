@@ -4,7 +4,7 @@ import logging
 
 try:
     import __meta__
-    __meta__.load_paths() 
+    __meta__.load_paths()
 except Exception, e:
     print e
     sys.exit(-1)
@@ -23,7 +23,22 @@ def load_yaml_conf(file_path=default_yaml_filepath):
     return yaml.load(f.read())
 
 
+def validate_conf(conf):
+    """Receive a reader or writer conf and raise exception if there is
+    something wrong"""
+    if not 'type' in conf:
+        raise ConfigurationError("Missing 'type' in conf.yaml")
+
+    if ('checkpoint_enabled' in conf and \
+        not ('checkpoint_path' in conf)):
+         raise(ConfigurationError("Missing checkpoint_path for '%s' in conf.yaml" % conf['type']))
+
+    if 'blockable' in conf and 'period' in conf:
+        raise(ConfigurationError("'blockabe' and 'period' are incompatibles for same reader or writer. Check your conf.yaml"))
+
+
 def read_yaml_conf(file_conf=load_yaml_conf()):
+
     if not 'conf' in file_conf:
         raise ConfigurationError("'conf' section missing in your conf.yaml.")
 
@@ -46,12 +61,7 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
                 raise ConfigurationError("Cannot find spec '%s' in specs session" % specs)
             new_reader.update(specs[spec])
 
-        if not 'type' in new_reader:
-            raise ConfigurationError("Missing reader 'type' in conf.yaml")
-
-        if ('checkpoint_enabled' in new_reader and \
-            not ('checkpoint_path' in new_reader)):
-             raise(ConfigurationError("Missing checkpoint_path for reader '%s'" % new_reader['type']))
+        validate_conf(new_reader)
 
         if 'spec' in writer:
             spec = writer['spec']
@@ -60,12 +70,7 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
                 raise ConfigurationError("Cannot find spec '%s' in specs session" % spec)
             new_writer.update(specs[spec])
 
-        if not 'type' in new_writer:
-            raise ConfigurationError("Missing writer 'type' paired with a '%s' reader in conf.yaml" % reader['type'])
-
-        if ('checkpoint_enabled' in new_writer and \
-            not ('checkpoint_path' in new_writer)):
-             raise(ConfigurationError("Missing checkpoint_path for writer '%s'" % new_writer['type']))
+        validate_conf(new_writer)
 
         new_pair = {'reader': new_reader, 'writer' : new_writer}
         new_conf.append(new_pair)
