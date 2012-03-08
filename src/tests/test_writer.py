@@ -33,6 +33,10 @@ class TestWriter(unittest.TestCase):
         mywriter.schedule_tasks.assert_called_with()
 
     def test_scheduling_checkpoint_when_it_is_enabled(self):
+        checkpoint_path = '/tmp/checkpoint'
+        if os.path.exists(checkpoint_path):
+            os.remove(checkpoint_path)
+
         # mocking
         q = get_queue()
         mywriter = Writer(q)
