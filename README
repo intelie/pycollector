@@ -1,9 +1,9 @@
-                           _  _              _               
- _ __   _   _   ___  ___  | || |  ___   ___ | |_  ___   _ __ 
+                           _  _              _
+ _ __   _   _   ___  ___  | || |  ___   ___ | |_  ___   _ __
 | '_ \ | | | | / __|/ _ \ | || | / _ \ / __|| __|/ _ \ | '__|
-| |_) || |_| || (__| (_) || || ||  __/| (__ | |_| (_) || |   
-| .__/  \__, | \___|\___/ |_||_| \___| \___| \__|\___/ |_|   
-|_|     |___/                                   by Intelie   
+| |_) || |_| || (__| (_) || || ||  __/| (__ | |_| (_) || |
+| .__/  \__, | \___|\___/ |_||_| \___| \___| \__|\___/ |_|
+|_|     |___/                                   by Intelie
 
                            Collecting data should be simple.
 
@@ -12,13 +12,13 @@
 --------
 
 Moving data from A to B is a well known task in computing.
-Our aim here is to make it easier to 'develop' and 'configure' a piece of 
+Our aim here is to make it easier to 'develop' and 'configure' a piece of
 software to collect data.
 
 
-----------------
-| How it works |
-----------------
+-------------------
+| Main components |
+-------------------
 
 There are two main components of any collecting process:
 
@@ -36,7 +36,7 @@ Readers and writers may make any transformation to the original data.
 ----------------
 | Architecture |
 ----------------
- 
+
 Collecting unit architecture:
 
  1. ask source_______                           ________   5. write destination
@@ -54,7 +54,7 @@ It is possible to configure as many collecting units as needed.
 
 
 --------------
-| How to use | 
+| How to use |
 --------------
 
 There are two ways to use it.
@@ -65,9 +65,29 @@ There are two ways to use it.
    you may adapt an existing reader/writer or code a new one.
 
 
+---------------
+| Configuring |
+---------------
+
+A reader/writer always have a 'type' property.
+This 'type' will define how the data will be read by a reader or written by a writer.
+
+Moreover, readers and writers have properties in common, regardless of their types:
+
+* 'blockable' (should not be used with 'period')
+    if 'blockable : True' is set to a reader, the message will wait for a slot in queue.
+    if 'blockable : True' is set to a writer, it will try to rewrite the message.
+
+* 'period' (should not be used with 'blockable : True')
+    if 'period : N' is set to a reader, the method read() will be called periodically,
+        with period N (in seconds)
+    if 'period : N' is set to a writer, the method write(msg) will be called periodically,
+        with period N (in seconds)
+
+
 ----------------
 | Current step |
----------------- 
+----------------
 
 Improving core;
 Increasing test coverage.
