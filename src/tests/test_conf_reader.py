@@ -28,13 +28,18 @@ class TestConfReader(unittest.TestCase):
         self.base['conf'] = None
         self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
 
-    def test_raise_exception_if_blockable_and_periodic_at_the_same_time(self):
+    def test_raise_exception_if_blockable_and_periodic_at_the_same_time_for_reader(self):
         self.reader['blockable'] = True
         self.reader['period'] = 1
 
+        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+
+        self.reader['blockable'] = False
         self.writer['blockable'] = True
         self.writer['period'] = 1
-        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+
+        # should not raise exception
+        read_yaml_conf(self.base)
 
 
 def suite():

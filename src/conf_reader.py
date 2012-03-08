@@ -23,27 +23,30 @@ def load_yaml_conf(file_path=default_yaml_filepath):
     return yaml.load(f.read())
 
 
-def validate_conf(conf):
-    """Receive a reader or writer conf and raise exception if there is
-    something wrong"""
+def has_type(conf):
     if not 'type' in conf:
         raise ConfigurationError("Missing 'type' in conf.yaml")
 
+def has_checkpoint_path(conf):
     if ('checkpoint_enabled' in conf and \
         not ('checkpoint_path' in conf)):
          raise(ConfigurationError("Missing checkpoint_path for '%s' in conf.yaml" % conf['type']))
 
-    if 'blockable' in conf and 'period' in conf:
-        raise(ConfigurationError("'blockabe' and 'period' are incompatibles for same reader or writer. Check your conf.yaml"))
+
+def has_blockable_and_period(conf):
+    if 'blockable' in conf and \
+        conf['blockable'] == True \
+        and 'period' in conf:
+        raise(ConfigurationError("'blockable' and 'period' are incompatibles for reader. Check your conf.yaml"))
 
 
 def read_yaml_conf(file_conf=load_yaml_conf()):
-
     if not 'conf' in file_conf:
         raise ConfigurationError("'conf' section missing in your conf.yaml.")
 
     if not file_conf['conf']:
         raise ConfigurationError("'conf' section is empty in your conf.yaml.")
+
     specs = file_conf['specs']
     conf = file_conf['conf']
 
@@ -61,7 +64,9 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
                 raise ConfigurationError("Cannot find spec '%s' in specs session" % specs)
             new_reader.update(specs[spec])
 
-        validate_conf(new_reader)
+        has_type(new_reader)
+        has_checkpoint_path(new_reader)
+        has_blockable_and_period(new_reader)
 
         if 'spec' in writer:
             spec = writer['spec']
@@ -70,7 +75,8 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
                 raise ConfigurationError("Cannot find spec '%s' in specs session" % spec)
             new_writer.update(specs[spec])
 
-        validate_conf(new_writer)
+        has_type(new_writer)
+        has_checkpoint_path(new_writer)
 
         new_pair = {'reader': new_reader, 'writer' : new_writer}
         new_conf.append(new_pair)
