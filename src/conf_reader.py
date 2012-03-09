@@ -24,21 +24,44 @@ def load_yaml_conf(file_path=default_yaml_filepath):
 
 
 def has_type(conf):
+    """A reader/writer must have a type"""
     if not 'type' in conf:
         raise ConfigurationError("Missing 'type' in conf.yaml")
 
-def has_checkpoint_path(conf):
+
+def has_checkpoint_path_if_checkpoint_enabled(conf):
+    """If checkpoint_enabled is True, a checkpoint_path 
+    must be provided"""
     if ('checkpoint_enabled' in conf and \
+        conf['checkpoint_enabled'] and \
         not ('checkpoint_path' in conf)):
          raise(ConfigurationError("Missing checkpoint_path for '%s' in conf.yaml" % conf['type']))
 
 
 def has_blockable_and_period(conf):
+    """Blockable and period, for a while, doesn't make sense"""
     if 'blockable' in conf and \
-        conf['blockable'] == True \
-        and 'period' in conf:
+        conf['blockable'] and \
+        'period' in conf:
         raise(ConfigurationError("'blockable' and 'period' are incompatibles for reader. Check your conf.yaml"))
 
+
+def has_checkpoint_and_blockable(conf):
+    """If checkpoint is enabled, it must be blockable"""
+    if 'checkpoint_enabled' in conf and \
+        conf['checkpoint_enabled'] and \
+        (not 'blockable' in conf or not conf['blockable']):
+        raise(ConfigurationError("If 'checkpoint is enabled, it must be 'blockable'. Check your conf.yaml'"))
+
+
+def has_checkpoint(conf):
+    return 'checkpoint_enabled' in conf and conf['checkpoint_enabled']
+
+
+def has_checkpoint_in_reader_and_writer(reader, writer):
+    if has_checkpoint(reader) != has_checkpoint(writer):
+        raise(ConfigurationError("Checkpoint must be enabled in reader and writer. Check your conf.yaml"))
+            
 
 def read_yaml_conf(file_conf=load_yaml_conf()):
     if not 'conf' in file_conf:
@@ -64,9 +87,11 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
                 raise ConfigurationError("Cannot find spec '%s' in specs session" % specs)
             new_reader.update(specs[spec])
 
+        # reader checks
         has_type(new_reader)
-        has_checkpoint_path(new_reader)
+        has_checkpoint_path_if_checkpoint_enabled(new_reader)
         has_blockable_and_period(new_reader)
+        has_checkpoint_and_blockable(new_reader)
 
         if 'spec' in writer:
             spec = writer['spec']
@@ -75,8 +100,13 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
                 raise ConfigurationError("Cannot find spec '%s' in specs session" % spec)
             new_writer.update(specs[spec])
 
+        # writer checks
         has_type(new_writer)
-        has_checkpoint_path(new_writer)
+        has_checkpoint_path_if_checkpoint_enabled(new_writer)
+        has_checkpoint_and_blockable(new_writer)
+        
+        # reader/writer checks
+        has_checkpoint_in_reader_and_writer(new_reader, new_writer)
 
         new_pair = {'reader': new_reader, 'writer' : new_writer}
         new_conf.append(new_pair)

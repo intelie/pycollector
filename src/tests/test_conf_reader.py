@@ -41,6 +41,29 @@ class TestConfReader(unittest.TestCase):
         # should not raise exception
         read_yaml_conf(self.base)
 
+    def test_raise_exception_if_checkpoint_and_not_blockable(self):
+        # without blockable in reader
+        self.tearDown()
+        self.reader['checkpoint_enabled'] = True
+        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+
+        # without blockable in writer
+        self.tearDown()
+        self.writer['checkpoint_enabled'] = True
+        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+
+    def test_checkpoint_in_reader_and_writer(self):
+        self.reader['checkpoint_enabled'] = True
+        self.reader['checkpoint_path'] = '/var/log/42.log'
+        self.reader['blockable'] = True
+        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+
+        self.tearDown()
+        self.writer['checkpoint_enabled'] = True
+        self.writer['checkpoint_path'] = '/var/log/42.log'
+        self.writer['blockable'] = True
+        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+    
 
 def suite():
     suite = unittest.TestSuite()
@@ -49,4 +72,4 @@ def suite():
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.TextTestRunner(verbosity=2).run(suite())

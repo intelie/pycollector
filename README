@@ -84,7 +84,9 @@ Moreover, readers and writers have properties in common, regardless of their typ
         with period N (in seconds)
     if 'period : N' is set to a writer, the method write(msg) will be called periodically,
         with period N (in seconds)
-    default value: None, default is to be async, read()/write() are called just once
+    default value: None, default is to be async, read()/write() are called just once.
+
+... (TODO: complete list)
 
 
 ----------------
