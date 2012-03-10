@@ -66,7 +66,7 @@ class Writer(threading.Thread):
                  checkpoint_period=60,    # period of checkpoint writing
                  health_check_period=300, # period to log status
                  thread_name="Writer",    # thread name to easily recognize in log
-                 last_checkpoint=''
+                 last_checkpoint=''       # may have an initial checkpoint 
                  ):
         self.log = logging.getLogger('pycollector')
         self.conf = conf
@@ -76,25 +76,19 @@ class Writer(threading.Thread):
         self.blocked = False
         self.period = period
         self.blockable = blockable
+        self.thread_name = thread_name
         self.retry_period = retry_period
         self.retry_timeout = retry_timeout
-        self.thread_name = thread_name
+        self.checkpoint_period = checkpoint_period
         self.checkpoint_enabled = checkpoint_enabled
         self.health_check_period = health_check_period
         self.set_conf(conf)
 
         if self.checkpoint_enabled:
             self.last_checkpoint = self._read_checkpoint()
-            if not hasattr(self, 'checkpoint_period'):
-                self.checkpoint_period = checkpoint_period
 
-        self.setup()
-
-        self.scheduler = kronos.ThreadedScheduler()
         self.schedule_tasks()
-        if self.checkpoint_enabled:
-            self.schedule_checkpoint_writing()
-
+        self.setup()
         threading.Thread.__init__(self, name=self.thread_name)
 
     def validate_conf(self):
@@ -176,15 +170,14 @@ class Writer(threading.Thread):
             self.log.error(e)
 
     def schedule_tasks(self):
-        try:
-            if self.period:
-                self.schedule_periodic_task()
-            else:
-                self.schedule_single_task()
-            self.log.info("Tasks scheduled with success")
-        except Exception, e:
-            self.log.error("Error while scheduling tasks")
-            self.log.error(e)
+        self.scheduler = kronos.ThreadedScheduler()
+        if self.period:
+            self.schedule_periodic_task()
+        else:
+            self.schedule_single_task()
+        if self.checkpoint_enabled:
+            self.schedule_checkpoint_writing()
+        self.log.info("Tasks scheduled with success")
 
     def schedule_single_task(self):
         self.scheduler.add_single_task(self.async_process,
