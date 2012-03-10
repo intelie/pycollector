@@ -7,12 +7,6 @@ from __writer import *
 
 
 class GtalkWriter(Writer):
-    """Conf:
-        - login (required): gmail username
-        - passwd (required): gmail password
-        - destination (required): xmpp destination, 
-            e.g. myfriend@gmail.com"""
-
     def setup(self):
         self.log = logging.getLogger('pycollector')
         self.con = xmpp.Client('gmail.com')
