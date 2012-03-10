@@ -6,6 +6,7 @@ import sys
 import shlex
 import pprint
 import logging
+import traceback
 from subprocess import call, Popen, PIPE
 
 from helpers import daemon
@@ -107,7 +108,7 @@ def set_logging():
         return logger
     except Exception, e:
         print "Cannot set logging."
-        print e
+        traceback.print_exc()
 
 
 def start(collector_clazz, to_daemon=True, enable_server=True, server_port=8442):
@@ -146,7 +147,7 @@ def start(collector_clazz, to_daemon=True, enable_server=True, server_port=8442)
         write_pid(collector.daemon_conf['PID_FILE_PATH'])
         collector.start()
     except Exception, e:
-        log.error(e)
+        log.error(traceback.format_exc())
 
     #finishes daemon context
     if to_daemon:
@@ -179,7 +180,7 @@ def force_stop():
             print "Done."
             sys.exit(0)
     except Exception, e:
-        print e
+        traceback.print_exc()
         sys.exit(-1)
 
 def stop():
@@ -199,7 +200,7 @@ def stop():
         pid = get_pid(pid_path)
     except Exception, e:
         print "Can't read pidfile. Daemon not stopped."
-        print e
+        traceback.print_exc()
         sys.exit(-1)
 
     try:
@@ -208,7 +209,7 @@ def stop():
             sys.exit(-1)
     except Exception, e:
         print "Can't stop daemon. PID tried: %s" % pid
-        print e
+        traceback.print_exc()
         sys.exit(-1)
     else:
         try:
