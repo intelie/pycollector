@@ -24,7 +24,6 @@
 
             ... # and call validate_conf to check if it was loaded properly
             ... self.validate_conf()
-
             ... # If they are not found in your conf, an exception is raised
 
         def write(self, msg):
@@ -46,6 +45,7 @@
 import os
 import sys
 import time
+import Queue
 import pickle
 import logging
 import threading
@@ -91,15 +91,6 @@ class Writer(threading.Thread):
         self.setup()
         threading.Thread.__init__(self, name=self.thread_name)
 
-    def validate_conf(self):
-        """Validate if required confs are present.
-           required_confs are supposed to be set in setup() method.
-        """
-        for item in self.required_confs:
-            if not hasattr(self, item):
-                raise ConfigurationError("%s not defined in your conf.yaml" % item)
-
-
     def schedule_checkpoint_writing(self):
         self.scheduler.add_interval_task(self._write_checkpoint,
                                          "checkpoint writing",
@@ -108,6 +99,44 @@ class Writer(threading.Thread):
                                          kronos.method.threaded,
                                          [],
                                          None)
+
+    def schedule_single_task(self):
+        self.scheduler.add_single_task(self._async_process,
+                                       "single task",
+                                       0,
+                                       kronos.method.threaded,
+                                       [],
+                                       None)
+
+    def schedule_periodic_task(self):
+        self.scheduler.add_interval_task(self._sync_process,
+                                         "periodic task",
+                                         0,
+                                         self.period,
+                                         kronos.method.threaded,
+                                         [],
+                                         None)
+
+    def validate_conf(self):
+        """Validate if required confs are present.
+           required_confs are supposed to be set in setup() method."""
+        for item in self.required_confs:
+            if not hasattr(self, item):
+                raise ConfigurationError("%s not defined in your conf.yaml" % item)
+
+    def set_conf(self, conf):
+        """Turns configuration properties into instance properties."""
+        try:
+            for item in conf:
+                if isinstance(conf[item], str):
+                    exec("self.%s = '%s'" % (item, conf[item]))
+                else:
+                    exec("self.%s = %s" % (item, conf[item]))
+            self.log.info("Configuration settings added with success into writer.")
+        except Exception, e:
+            self.log.error("Invalid configuration item: %s" % item)
+            self.log.error(e)
+            sys.exit(-1)
 
     def _read_checkpoint(self):
         """Read checkpoint file from disk."""
@@ -131,7 +160,6 @@ class Writer(threading.Thread):
             self.log.error(e)
             sys.exit(-1)
 
-
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
         try:
@@ -144,31 +172,6 @@ class Writer(threading.Thread):
             self.log.error('Error writing checkpoint in %s' % self.checkpoint_path)
             self.log.error(e)
 
-    def set_conf(self, conf):
-        """Turns configuration properties into instance properties."""
-        try:
-            for item in conf:
-                if isinstance(conf[item], str):
-                    exec("self.%s = '%s'" % (item, conf[item]))
-                else:
-                    exec("self.%s = %s" % (item, conf[item]))
-            self.log.info("Configuration settings added with success into writer.")
-        except Exception, e:
-            self.log.error("Invalid configuration item: %s" % item)
-            self.log.error(e)
-
-    def reschedule_tasks(self):
-        try:
-            self.scheduler = kronos.ThreadedScheduler()
-            self.schedule_tasks()
-            if self.checkpoint_enabled:
-                self.schedule_checkpoint_writing()
-            self.scheduler.start()
-            self.log.info("Success in rescheduling")
-        except Exception, e:
-            self.log.error("Error while rescheduling tasks")
-            self.log.error(e)
-
     def schedule_tasks(self):
         self.scheduler = kronos.ThreadedScheduler()
         if self.period:
@@ -178,23 +181,6 @@ class Writer(threading.Thread):
         if self.checkpoint_enabled:
             self.schedule_checkpoint_writing()
         self.log.info("Tasks scheduled with success")
-
-    def schedule_single_task(self):
-        self.scheduler.add_single_task(self.async_process,
-                                       "single task",
-                                       0,
-                                       kronos.method.threaded,
-                                       [],
-                                       None)
-
-    def schedule_periodic_task(self):
-        self.scheduler.add_interval_task(self.process,
-                                         "periodic task",
-                                         0,
-                                         self.period,
-                                         kronos.method.threaded,
-                                         [],
-                                         None)
 
     def retry_writing(self, msg):
         """Blocks writer till a message is written or a timeout is reached"""
@@ -218,17 +204,19 @@ class Writer(threading.Thread):
             time_passed += self.retry_period
         return wrote
 
-    def async_process(self):
+    def _async_process(self):
         """Method that processes (write) a message.
            It waits for new messages from the queue,
-           and as soon as one arrives, it tries to deliver it.
-        """
+           and as soon as one arrives, it tries to deliver it."""
         while True:
             try:
-                #blocks if none
-                msg = self.queue.get()
+                msg = self.queue.get() # blocks
                 wrote = False
-                if not self._write(msg.content):
+                if self._write(msg.content):
+                    wrote = True
+                    self.processed += 1
+                    self.log.debug("Message written: %s" % msg)
+                else:
                     if self.blockable:
                         self.blocked = True
                         self.log.warning("Writer blocked.")
@@ -237,74 +225,52 @@ class Writer(threading.Thread):
                         self.log.info("Writer unblocked.")
                     else:
                         self.discarded += 1
-                        self.log.info("Since it's not blockable, discarding message: %s" % msg)
-                else:
-                    wrote = True
-                    self.processed += 1
-                    self.log.debug("Message written: %s" % msg)
-
+                        self.log.info("Discarding message: %s" % msg)
                 if wrote and self.checkpoint_enabled:
                     self._set_checkpoint(msg.checkpoint)
-
             except Exception, e:
                 self.log.error("Couldn't process message")
                 self.log.error(e)
 
-    def process(self):
-        """Method called to process (write) a message.
-            It is called in the end of each period
-            in the case of a periodic task.
-            If it's an async writer it is called by a Reader as
-            a callback.  So, it may be called by subclasses.
-        """ 
+    def _sync_process(self):
+        """Method that processes (write) a message.
+           It is intended to be called periodically."""
+
+        if self.blocked:
+            self.log.error("Writer is busy with other message. Skipping this scheduling.")
+            return
+
+        self.blocked = True
         try:
-            if self.queue.qsize() > 0:
-                msg = self.queue.get()
-                wrote = False
-                if not self._write(msg.content):
-                    if self.blockable:
-                        self.scheduler.stop()
-                        self.blocked = True
-                        self.log.warning("Writer blocked.")
-
-                        time_passed = 0
-                        while True:
-                            self.log.info("Trying to rewrite message...")
-                            if self._write(msg.content):
-                                wrote = True
-                                self.log.debug("Message written: %s" % msg)
-                                self.log.info("Rewriting done with success.")
-                                break
-                            elif self.retry_timeout and \
-                                 time_passed > self.retry_timeout:
-                                self.discarded += 1
-                                self.log.info("Retry timeout reached. Discarding message...")
-                                break
-                            time.sleep(self.retry_period)
-                            time_passed += self.retry_period
-                        self.blocked = False
-                        self.log.info("Writer unblocked.")
-                        self.reschedule_tasks()
-                    else:
-                        self.discarded += 1
-                        self.log.info("Since it's not blockable, discarding message: %s" % msg)
-                else:
-                    wrote = True
-                    self.log.debug("Message written: %s" % msg)
-
-                if wrote:
-                    self.processed += 1
-                    if self.checkpoint_enabled:
-                        self._set_checkpoint(msg.checkpoint)
+            msg = self.queue.get(block=False)
+        except Queue.Empty: 
+            self.log.error("No messages in the queue to write.")
+            self.blocked = False
+            return
+        try:
+            wrote = False
+            if self._write(msg.content):
+                wrote = True
+                self.processed += 1
+                self.log.debug("Message written: %s" % msg)
             else:
-                self.log.debug("No messages in the queue to write.")
+                if self.blockable:
+                     self.log.warning("Writer blocked.")
+                     wrote = self.retry_writing(msg)
+                     self.log.info("Writer unblocked.")
+                else:
+                    self.discarded += 1
+                    self.log.info("Discarding message: %s" % msg)
+            if wrote and self.checkpoint_enabled:
+                self._set_checkpoint(msg.checkpoint)
         except Exception, e:
             self.log.error("Couldn't process message")
             self.log.error(e)
+        self.blocked = False
 
     def _write(self, msg):
         """Method that calls write method defined by subclasses.
-        Shouldn't be called by subclasses."""
+           Shouldn't be called by subclasses."""
         try:
             return self.write(msg)
         except Exception, e:
@@ -321,7 +287,7 @@ class Writer(threading.Thread):
     def _set_checkpoint(self, checkpoint):
         try:
             self.last_checkpoint = checkpoint
-            self.log.debug("Last checkpoint: %s" %checkpoint)
+            self.log.debug("Last checkpoint: %s" % checkpoint)
         except Exception, e:
             self.log.error('Error updating last_checkpoint')
             self.log.error(e)
