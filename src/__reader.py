@@ -106,7 +106,7 @@ class Reader(threading.Thread):
 
     def schedule_checkpoint_writing(self):
         self.scheduler.add_interval_task(self._write_checkpoint,
-                                         "checkpoint writing",
+                                         "",
                                          0,
                                          self.checkpoint_period,
                                          kronos.method.threaded,
@@ -158,7 +158,7 @@ class Reader(threading.Thread):
 
     def schedule_periodic_task(self):
         self.scheduler.add_interval_task(self._read,
-                                         "periodic, started at: %s " % time.time(),
+                                         "",
                                          0,
                                          self.period,
                                          kronos.method.threaded,
@@ -167,7 +167,7 @@ class Reader(threading.Thread):
 
     def schedule_single_task(self):
         self.scheduler.add_single_task(self._read,
-                                       "single task, started at: %s" % time.time(),
+                                       "",
                                        0,
                                        kronos.method.threaded,
                                        [],
