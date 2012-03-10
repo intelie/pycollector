@@ -128,12 +128,8 @@ class Reader(threading.Thread):
     def _set_checkpoint(self, checkpoint):
         """Updates last_checkpoint.
            Shouldn't be called by subclasses."""
-        try:
-            self.last_checkpoint = checkpoint
-            self.log.debug("Last checkpoint: %s" % checkpoint)
-        except Exception, e:
-            self.log.error('Error setting checkpoint')
-            self.log.error(e)
+        self.last_checkpoint = checkpoint
+        self.log.debug("Last checkpoint: %s" % checkpoint)
 
     def set_conf(self, conf):
         """Turns configuration properties
