@@ -31,9 +31,6 @@
             ... # Your code goes here.
             ... # You must call the store() method to put your message
             ... # in the queue.
-
-            ... # You should return a boolean to indicate whether the reading
-            ... # was successfull or not.
     ==========
 
     There are basically 2 flavors of Readers: asynchronous and synchronous.
@@ -128,6 +125,16 @@ class Reader(threading.Thread):
             self.log.error('Error writing checkpoint in %s' % self.checkpoint_path)
             self.log.error(e)
 
+    def _set_checkpoint(self, checkpoint):
+        """Updates last_checkpoint.
+           Shouldn't be called by subclasses."""
+        try:
+            self.last_checkpoint = checkpoint
+            self.log.debug("Last checkpoint: %s" % checkpoint)
+        except Exception, e:
+            self.log.error('Error setting checkpoint')
+            self.log.error(e)
+
     def set_conf(self, conf):
         """Turns configuration properties
            into instance properties."""
@@ -188,7 +195,6 @@ class Reader(threading.Thread):
 
         if success and self.checkpoint_enabled:
             self._set_checkpoint(msg.checkpoint)
-
         return success
 
     def _read(self):
@@ -200,16 +206,6 @@ class Reader(threading.Thread):
             self.read()
         except Exception, e:
             self.log.error("Error running read() method.")
-            self.log.error(e)
-
-    def _set_checkpoint(self, checkpoint):
-        """Wrapper method to set_checkpoint (user defined)
-           to get exceptions"""
-        try:
-            self.last_checkpoint = checkpoint
-            self.log.debug("Last checkpoint: %s" % checkpoint)
-        except Exception, e:
-            self.log.error('Error setting checkpoint')
             self.log.error(e)
 
     def store(self, msg):
