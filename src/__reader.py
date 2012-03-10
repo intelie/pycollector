@@ -55,16 +55,18 @@ from __exceptions import ConfigurationError
 
 class Reader(threading.Thread):
     def __init__(self,
-                 queue,                   # stores read messages
+                 queue,                   # queue to store read messages
                  conf={},                 # additional configurations
                  period=None,             # period of readings
-                 blockable=True,          # stops if a message was not stored
+                 blockable=True,          # retry if a message was not stored
                  retry_timeout=None,      # if timeout is reached, discard message
                  checkpoint_enabled=False,# default is to not deal with checkpoint
                  checkpoint_period=60,    # period between checkpoints
                  health_check_period=300, # period to log status
-                 thread_name='Reader'     # thread name to easily recognize in log
+                 thread_name='Reader',    # thread name to easily recognize in log
+                 last_checkpoint=''       # may have a writer checkpoint
                  ):
+
         self.log = logging.getLogger('pycollector')
         self.conf = conf
         self.processed = 0
@@ -77,32 +79,16 @@ class Reader(threading.Thread):
         self.retry_timeout = retry_timeout
         self.checkpoint_enabled = checkpoint_enabled
         self.health_check_period = health_check_period
+        self.checkpoint_period = checkpoint_period
+        self.last_checkpoint = last_checkpoint
         self.set_conf(conf)
 
         if not self.blockable:
             self.retry_timeout = 0
 
-        if self.checkpoint_enabled:
-            if not hasattr(self, 'last_checkpoint'):
-                self.last_checkpoint = ''
-            if not hasattr(self, 'checkpoint_period'):
-                self.checkpoint_period = checkpoint_period
-
-        self.setup()
-
-        self.scheduler = kronos.ThreadedScheduler()
         self.schedule_tasks()
-        if self.checkpoint_enabled:
-            self.schedule_checkpoint_writing()
-
+        self.setup()
         threading.Thread.__init__(self, name=self.thread_name)
-
-    def validate_conf(self):
-        """Validate if required confs are present.
-           required_confs are supposed to be set in setup() method."""
-        for item in self.required_confs:
-            if not hasattr(self, item):
-                raise ConfigurationError("%s not defined in your conf.yaml" % item)
 
     def schedule_checkpoint_writing(self):
         self.scheduler.add_interval_task(self._write_checkpoint,
@@ -112,6 +98,43 @@ class Reader(threading.Thread):
                                          kronos.method.threaded,
                                          [],
                                          None)
+
+    def schedule_periodic_task(self):
+        self.scheduler.add_interval_task(self._read,
+                                         "",
+                                         0,
+                                         self.period,
+                                         kronos.method.threaded,
+                                         [],
+                                         None)
+
+    def schedule_single_task(self):
+        self.scheduler.add_single_task(self._read,
+                                       "",
+                                       0,
+                                       kronos.method.threaded,
+                                       [],
+                                       None)
+    def validate_conf(self):
+        """Validate if required confs are present.
+           required_confs are supposed to be set in setup() method."""
+        for item in self.required_confs:
+            if not hasattr(self, item):
+                raise ConfigurationError("%s not defined in your conf.yaml" % item)
+
+    def set_conf(self, conf):
+        """Turns configuration properties
+           into instance properties."""
+        try:
+            for item in conf:
+                if isinstance(conf[item], str):
+                    exec("self.%s = '%s'" % (item, conf[item]))
+                else:
+                    exec("self.%s = %s" % (item, conf[item]))
+            self.log.info("Configuration settings added with success into reader.")
+        except Exception, e:
+            self.log.error("Invalid configuration item: %s" % item)
+            self.log.error(e)
 
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
@@ -131,47 +154,16 @@ class Reader(threading.Thread):
         self.last_checkpoint = checkpoint
         self.log.debug("Last checkpoint: %s" % checkpoint)
 
-    def set_conf(self, conf):
-        """Turns configuration properties
-           into instance properties."""
-        try:
-            for item in conf:
-                if isinstance(conf[item], str):
-                    exec("self.%s = '%s'" % (item, conf[item]))
-                else:
-                    exec("self.%s = %s" % (item, conf[item]))
-            self.log.info("Configuration settings added with success into reader.")
-        except Exception, e:
-            self.log.error("Invalid configuration item: %s" % item)
-            self.log.error(e)
-
     def schedule_tasks(self):
-        try:
-            if self.period:
-                self.schedule_periodic_task()
-            else:
-                self.schedule_single_task()
-            self.log.info("Tasks scheduled with success")
-        except Exception, e:
-            self.log.error("Error while scheduling task")
-            selg.log.error(e)
-
-    def schedule_periodic_task(self):
-        self.scheduler.add_interval_task(self._read,
-                                         "",
-                                         0,
-                                         self.period,
-                                         kronos.method.threaded,
-                                         [],
-                                         None)
-
-    def schedule_single_task(self):
-        self.scheduler.add_single_task(self._read,
-                                       "",
-                                       0,
-                                       kronos.method.threaded,
-                                       [],
-                                       None)
+        """Schedule periodic or single tasks"""
+        self.scheduler = kronos.ThreadedScheduler()
+        if self.period:
+            self.schedule_periodic_task()
+        else:
+            self.schedule_single_task()
+        if self.checkpoint_enabled:
+            self.schedule_checkpoint_writing()
+        self.log.info("Tasks scheduled with success")
 
     def _store(self, msg):
         """Internal method to store read messages.
@@ -209,12 +201,6 @@ class Reader(threading.Thread):
            This should be called by subclasses."""
         return self._store(msg)
 
-    def setup(self):
-        """Subclasses should implement."""
-
-    def read(self):
-        """Subclasses should implement."""
-
     def run(self):
         """Starts the reader"""
         self.scheduler.start()
@@ -224,3 +210,11 @@ class Reader(threading.Thread):
 
     def __str__(self):
         return str(self.__dict__)
+
+    def setup(self):
+        """Subclasses should implement."""
+
+    def read(self):
+        """Subclasses should implement."""
+
+

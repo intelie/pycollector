@@ -200,6 +200,7 @@ class TestReader(unittest.TestCase):
                 self.validate_conf()
 
         q = get_queue(3)
+
         self.assertRaises(ConfigurationError,  MyReader,  q, {'a' : 'foo'})
 
     def test_reader_non_blockable_discards_message_when_queue_is_full(self):

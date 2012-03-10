@@ -43,12 +43,15 @@ class Collector:
         self.default_queue_maxsize = default_queue_maxsize
         self.prepare_readers_writers()
 
-    def instantiate(self, queue, pair_id, conf):
+    def instantiate(self, queue, pair_id, conf, last_checkpoint=''):
         """Instantiate a reader or writer"""
         rwtype = rwtypes.get_type(conf['type'])
         exec('import %s' % rwtype['module'])
         exec('clazz = %s.%s' % (rwtype['module'], rwtype['class']))
-        return clazz(queue, conf, thread_name='%s-%s' % (rwtype['class'], pair_id))
+        return clazz(queue,
+                     conf,
+                     last_checkpoint=last_checkpoint,
+                     thread_name='%s-%s' % (rwtype['class'], pair_id))
 
     def prepare_readers_writers(self):
         """Append reader/writer references in self.pairs"""
@@ -58,10 +61,12 @@ class Collector:
             queue = CustomQueue(maxsize=maxsize)
 
             writer = self.instantiate(queue, pair_id,  pair['writer'])
-            reader = self.instantiate(queue, pair_id, pair['reader'])
+            if pair['reader'].get('checkpoint_enabled'):
+                reader = self.instantiate(queue,
+                                          pair_id,
+                                          pair['reader'],
+                                          last_checkpoint=writer.last_checkpoint)
 
-            if reader.checkpoint_enabled:
-                reader.last_checkpoint = writer.last_checkpoint
             self.pairs.append((writer, reader))
 
     def start_pairs(self):

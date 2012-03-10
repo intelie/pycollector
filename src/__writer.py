@@ -65,7 +65,8 @@ class Writer(threading.Thread):
                  checkpoint_enabled=False,# deafult is to not deal with checkpoints
                  checkpoint_period=60,    # period of checkpoint writing
                  health_check_period=300, # period to log status
-                 thread_name="Writer"     # thread name to easily recognize in log
+                 thread_name="Writer",    # thread name to easily recognize in log
+                 last_checkpoint=''
                  ):
         self.log = logging.getLogger('pycollector')
         self.conf = conf
