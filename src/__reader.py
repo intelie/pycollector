@@ -24,7 +24,6 @@
 
             ... # and call validate_conf to check if it was loaded properly
             ... self.validate_conf()
-
             ... # If they are not found in your conf, an exception is raised
 
         def read(self):
@@ -46,6 +45,7 @@ import time
 import Queue
 import pickle
 import logging
+import traceback
 import threading
 
 import helpers.kronos as kronos
@@ -120,7 +120,7 @@ class Reader(threading.Thread):
            required_confs are supposed to be set in setup() method."""
         for item in self.required_confs:
             if not hasattr(self, item):
-                raise ConfigurationError("%s not defined in your conf.yaml" % item)
+                raise(ConfigurationError("%s not defined in your conf.yaml" % item))
 
     def set_conf(self, conf):
         """Turns configuration properties
@@ -133,8 +133,7 @@ class Reader(threading.Thread):
                     exec("self.%s = %s" % (item, conf[item]))
             self.log.info("Configuration settings added with success into reader.")
         except Exception, e:
-            self.log.error("Invalid configuration item: %s" % item)
-            self.log.error(e)
+            raise(ConfigurationError("Invalid configuration item: %s" % item))
 
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
@@ -146,7 +145,6 @@ class Reader(threading.Thread):
             self.log.info('Checkpoint written: %s' % lc)
         except Exception, e:
             self.log.error('Error writing checkpoint in %s' % self.checkpoint_path)
-            self.log.error(e)
 
     def _set_checkpoint(self, checkpoint):
         """Updates last_checkpoint.
@@ -179,7 +177,7 @@ class Reader(threading.Thread):
         except Exception, e:
             self.discarded += 1
             self.log.error("Can't store in queue message: %s" % msg)
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
 
         if success and self.checkpoint_enabled:
             self._set_checkpoint(msg.checkpoint)
@@ -194,7 +192,7 @@ class Reader(threading.Thread):
             self.read()
         except Exception, e:
             self.log.error("Error running read() method.")
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
 
     def store(self, msg):
         """Stores a read message.
