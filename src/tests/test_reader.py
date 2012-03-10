@@ -94,12 +94,10 @@ class TestReader(unittest.TestCase):
     def test_single_scheduling_adding_to_queue(self):
         class MyReader(Reader):
             def read(self):
-                n = 0
                 phrase = "love is all you need"
-                while n < 3:
+                for x in range(3):
                     m = Message(content=phrase)
                     self.store(m)
-                    n += 1
                 return True
 
         q = get_queue()

@@ -154,7 +154,7 @@ class Reader(threading.Thread):
             selg.log.error(e)
 
     def schedule_periodic_task(self):
-        self.scheduler.add_interval_task(self._process,
+        self.scheduler.add_interval_task(self._read,
                                          "periodic, started at: %s " % time.time(),
                                          0,
                                          self.period,
@@ -163,7 +163,7 @@ class Reader(threading.Thread):
                                          None)
 
     def schedule_single_task(self):
-        self.scheduler.add_single_task(self._process,
+        self.scheduler.add_single_task(self._read,
                                        "single task, started at: %s" % time.time(),
                                        0,
                                        kronos.method.threaded,
@@ -191,20 +191,15 @@ class Reader(threading.Thread):
 
         return success
 
-    def _process(self):
-        """Method called internally to process (read) a message.
+    def _read(self):
+        """Method called internally to read a message.
            It is called in the end of each period
            in the case of a periodic task.
-           Shouldn't be called by subclasses"""
-        if not self._read():
-            self.log.info("Message can't be read")
-
-    def _read(self):
-        """Internal method that calls read() method.
            Shouldn't be called by subclasses."""
         try:
-            return self.read()
+            self.read()
         except Exception, e:
+            self.log.error("Error running read() method.")
             self.log.error(e)
 
     def _set_checkpoint(self, checkpoint):
