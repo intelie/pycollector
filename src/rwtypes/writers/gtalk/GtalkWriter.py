@@ -1,6 +1,7 @@
 import sys
 import xmpp
 import logging
+import traceback
 
 from __writer import *
 
@@ -16,17 +17,12 @@ class GtalkWriter(Writer):
         self.log = logging.getLogger('pycollector')
         self.con = xmpp.Client('gmail.com')
         self.con.connect(server=('talk.google.com', 5222))
-        if hasattr(self, 'login') and hasattr(self, 'passwd'):
-            self.con.auth(self.login, self.passwd, "botty")
-            self.con.sendInitPresence()
-        else:
-            self.log.error('provide a user/pass in conf.yaml')
-            sys.exit(-1)
 
-        if not hasattr(self, 'destination'):
-            self.log.error('provide a destination in conf file')
-            sys.exit(-1)
+        self.required_confs = ['login', 'passwd', 'destination']
+        self.validate_conf()
 
+        self.con.auth(self.login, self.passwd, "botty")
+        self.con.sendInitPresence()
 
     def write(self, msg):
         try:
@@ -36,6 +32,6 @@ class GtalkWriter(Writer):
             return True
         except:
             self.log.error('error sending message')
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
             return False
 
