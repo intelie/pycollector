@@ -11,6 +11,7 @@ import sys
 import Queue
 import logging
 import threading
+import traceback
 import logging, logging.config
 
 if __name__ == '__main__':
@@ -78,7 +79,7 @@ class Collector:
             self.log.info('Readers/writers started.')
         except Exception, e:
             self.log.error("Cannot start pair.")
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
             sys.exit(-1)
 
     def start_server(self):
@@ -90,7 +91,7 @@ class Collector:
             self.log.info('Web started.')
         except Exception, e:
             self.log.error("Cannot start server")
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
             sys.exit(-1)
 
     def start(self):

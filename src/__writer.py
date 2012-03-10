@@ -48,6 +48,7 @@ import time
 import Queue
 import pickle
 import logging
+import traceback
 import threading
 
 import helpers.kronos as kronos
@@ -135,7 +136,7 @@ class Writer(threading.Thread):
             self.log.info("Configuration settings added with success into writer.")
         except Exception, e:
             self.log.error("Invalid configuration item: %s" % item)
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
             sys.exit(-1)
 
     def _read_checkpoint(self):
@@ -157,7 +158,7 @@ class Writer(threading.Thread):
         except Exception, e:
             self.log.error('Error reading checkpoint in %s.' % self.checkpoint_path)
             self.log.error('It may be the case to remove it manually.')
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
             sys.exit(-1)
 
     def _write_checkpoint(self):
@@ -170,7 +171,7 @@ class Writer(threading.Thread):
             self.log.info('Checkpoint written: %s' % lc)
         except Exception, e:
             self.log.error('Error writing checkpoint in %s' % self.checkpoint_path)
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
 
     def schedule_tasks(self):
         self.scheduler = kronos.ThreadedScheduler()
@@ -230,21 +231,21 @@ class Writer(threading.Thread):
                     self._set_checkpoint(msg.checkpoint)
             except Exception, e:
                 self.log.error("Couldn't process message")
-                self.log.error(e)
+                self.log.error(traceback.format_exc())
 
     def _sync_process(self):
         """Method that processes (write) a message.
            It is intended to be called periodically."""
 
         if self.blocked:
-            self.log.error("Writer is busy with other message. Skipping this scheduling.")
+            self.log.debug("Writer is busy with other message. Skipping this scheduling.")
             return
 
         self.blocked = True
         try:
             msg = self.queue.get(block=False)
         except Queue.Empty: 
-            self.log.error("No messages in the queue to write.")
+            self.log.debug("No messages in the queue to write.")
             self.blocked = False
             return
         try:
@@ -265,7 +266,7 @@ class Writer(threading.Thread):
                 self._set_checkpoint(msg.checkpoint)
         except Exception, e:
             self.log.error("Couldn't process message")
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
         self.blocked = False
 
     def _write(self, msg):
@@ -275,7 +276,7 @@ class Writer(threading.Thread):
             return self.write(msg)
         except Exception, e:
             self.log.error("Can't write message: %s" % msg)
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
             return False
 
     def setup(self):
@@ -290,7 +291,7 @@ class Writer(threading.Thread):
             self.log.debug("Last checkpoint: %s" % checkpoint)
         except Exception, e:
             self.log.error('Error updating last_checkpoint')
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
 
     def run(self):
         """Starts the writer"""
