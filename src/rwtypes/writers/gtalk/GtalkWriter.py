@@ -22,9 +22,9 @@ class GtalkWriter(Writer):
         try:
             m = xmpp.Message(self.destination, msg)
             m.setAttr('type', 'chat')
-            self.con.send(m) 
+            self.con.send(m)
             return True
-        except:
+        except Exception:
             self.log.error('error sending message')
             self.log.error(traceback.format_exc())
             return False

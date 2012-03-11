@@ -67,6 +67,10 @@ class Collector:
                                           pair_id,
                                           pair['reader'],
                                           last_checkpoint=writer.last_checkpoint)
+            else:
+                reader = self.instantiate(queue,
+                                          pair_id,
+                                          pair['reader'])
 
             self.pairs.append((writer, reader))
 

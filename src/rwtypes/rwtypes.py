@@ -14,7 +14,7 @@ reader_types = {
         'module' : 'readers.stdin.StdinReader',
         'class' : 'StdinReader'
         },
-    'cam' : {
+    'camr' : {
         'module' : 'readers.cam.CameraReader',
         'class' : 'CameraReader'
         },
@@ -29,7 +29,11 @@ reader_types = {
     'log_analytics' : {
         'module' : 'readers.log_analytics.LogAnalytics',
         'class' : 'LogAnalytics'
-    }
+        },
+    'gtalkr' : {
+        'module' : 'readers.gtalk.GtalkReader',
+        'class' : 'GtalkReader'
+        }
 }
 
 
@@ -38,7 +42,7 @@ writer_types = {
         'module' : 'writers.activemq.ActivemqWriter',
         'class' : 'ActivemqWriter'
         },
-    'gtalk' : {
+    'gtalkw' : {
         'module' : 'writers.gtalk.GtalkWriter',
         'class' : 'GtalkWriter'
         },
@@ -54,7 +58,7 @@ writer_types = {
         'module' : 'writers.socket.SocketWriter',
         'class' : 'SocketWriter'
     },
-    'cam' : {
+    'camw' : {
         'module' : 'writers.cam.CameraWriter',
         'class' : 'CameraWriter'
     }
