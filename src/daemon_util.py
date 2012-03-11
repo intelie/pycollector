@@ -26,7 +26,7 @@ def log_tail():
 
 
 def write_pid(pidfile):
-    f = open(pidfile, 'w+')
+    f = open(pidfile, 'w')
     f.write(str(os.getpid()))
     f.close()
     os.system("chmod 644 %s" % pidfile)

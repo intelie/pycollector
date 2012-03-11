@@ -59,7 +59,7 @@ def status(option, opt, value, parser):
 
 def start(option, opt, value, parser):
     daemon_util.start(Collector, DAEMON, SERVER, SERVER_PORT)
-    
+
 
 def stop(option, opt, value, parser):
     daemon_util.stop()
@@ -114,7 +114,7 @@ if __name__ == '__main__':
                       callback=disable_daemon,
                       nargs=0,
                       help="enable collector to start without detaching the process")
-    
+
     parser.add_option("--noserver",
                       action="callback",
                       callback=disable_server,
