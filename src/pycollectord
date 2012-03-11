@@ -5,7 +5,7 @@
 # 
 
 
-PYCOLLECTOR_BIN="df"
+PYCOLLECTOR_BIN="/opt/intelie/pycollector/bin/pycollector"
 USER="pycollector"
 
 
