@@ -50,7 +50,7 @@ def kill_pids(pids):
 
 
 def is_running(ps="""ps aux --cols=1000 |
-                     grep -E 'pycollector .*start' |
+                     grep -E 'python.*pycollector .*start' |
                      grep -v 'grep' | awk {'print $2'}"""):
     cmd = Popen(ps, stdout=PIPE, shell=True)
     pids = cmd.stdout.read().split('\n')
@@ -204,7 +204,7 @@ def stop():
         sys.exit(-1)
 
     try:
-        if kill_pids([pid]) != 0:
+        if kill_pids(pids) != 0:
             print "Can't stop daemon. PID tried: %s" % pid
             sys.exit(-1)
     except Exception, e:
