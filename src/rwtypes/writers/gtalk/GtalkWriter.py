@@ -1,5 +1,6 @@
 import sys
 import xmpp
+import time
 import logging
 import traceback
 
@@ -15,7 +16,7 @@ class GtalkWriter(Writer):
         self.required_confs = ['login', 'passwd', 'destination']
         self.validate_conf()
 
-        self.con.auth(self.login, self.passwd, "botty")
+        self.con.auth(self.login, self.passwd, "gtalkwriter")
         self.con.sendInitPresence()
 
     def write(self, msg):

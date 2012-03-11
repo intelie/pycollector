@@ -67,7 +67,7 @@ class Writer(threading.Thread):
                  checkpoint_period=60,    # period of checkpoint writing
                  health_check_period=300, # period to log status
                  thread_name="Writer",    # thread name to easily recognize in log
-                 last_checkpoint=''       # may have an initial checkpoint 
+                 last_checkpoint=''       # may have an initial checkpoint
                  ):
         self.log = logging.getLogger('pycollector')
         self.conf = conf
@@ -244,7 +244,7 @@ class Writer(threading.Thread):
         self.blocked = True
         try:
             msg = self.queue.get(block=False)
-        except Queue.Empty: 
+        except Queue.Empty:
             self.log.debug("No messages in the queue to write.")
             self.blocked = False
             return
