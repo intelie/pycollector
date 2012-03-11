@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# File: pycollectord
+# Description: pycollector wrapper service
+# 
+
+
+PYCOLLECTOR_BIN="df"
+USER="pycollector"
+
+
+case "$1" in 
+    start)
+        su -m $USER -c "python $PYCOLLECTOR_BIN --start"
+        ;;
+    stop)
+        su -m $USER -c "python $PYCOLLECTOR_BIN --stop"
+        ;;
+    forcestop)
+        su -m $USER -c "python $PYCOLLECTOR_BIN --forcestop"
+        ;;
+    restart)
+        $0 stop
+        $1 start
+        ;;
+    status)
+        su -m $USER -c "python $PYCOLLECTOR_BIN --status"
+        ;;
+    *)
+        echo "$0 {start|stop|forcestop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit 0

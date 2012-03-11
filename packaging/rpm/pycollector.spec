@@ -51,7 +51,7 @@ mkdir -p %{buildroot}/var/run/pycollector
 mkdir -p %{buildroot}/var/log/pycollector
 
 #bin files
-cp src/pycollector src/__meta__.py %{buildroot}%{prefix}/bin/
+cp src/pycollector* src/__meta__.py %{buildroot}%{prefix}/bin/
 
 #conf files
 mv conf/conf.yaml.prod conf/conf.yaml
@@ -66,16 +66,17 @@ rm -rf %{buildroot}%{prefix}/lib/pycollector
 
 #changing paths
 sed -i "s/src/lib/g" %{buildroot}%{prefix}/bin/__meta__.py
+sed -i "s/USER=\"\(.*\)\"/USER=\"%{pycollector_user}\"/g" %{buildroot}%{prefix}/bin/pycollectord
+sed -i "s#PYCOLLECTOR_BIN=\"\(.*\)\"#PYCOLLECTOR_BIN=\"%{prefix}\/bin\/pycollector\"#g" %{buildroot}%{prefix}/bin/pycollectord
 
-#services symlinks
-ln -s %{prefix}/bin/pycollector %{buildroot}/etc/init.d
-
+#service
+mv %{buildroot}%{prefix}/bin/pycollectord %{buildroot}/etc/init.d
 
 %post
 
 
 %preun
-sudo service pycollector --stop || :
+sudo service pycollectord stop || :
 
 
 %postun
@@ -101,4 +102,4 @@ rm -rf %{buildroot}
 %attr(644, %{pycollector_user}, %{pycollector_group}) %{prefix}/CHANGELOG
 %attr(644, %{pycollector_user}, %{pycollector_group}) %{prefix}/README
 %config %attr(666, %{pycollector_user}, %{pycollector_group}) %{prefix}/conf/**
-%attr(755, root, root) /etc/init.d/pycollector
+%attr(755, root, root) /etc/init.d/pycollectord

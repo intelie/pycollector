@@ -50,10 +50,12 @@ def kill_pids(pids):
 
 
 def is_running(ps="""ps aux --cols=1000 |
-                     grep -E 'python.*pycollector .*start' |
-                     grep -v 'grep' | awk {'print $2'}"""):
+                     grep -E '[0-9] python.*pycollector .*start' |
+                     grep -v 'grep' | awk '{print $2}'"""):
+
     cmd = Popen(ps, stdout=PIPE, shell=True)
-    pids = cmd.stdout.read().split('\n')
+    output = cmd.stdout.read()
+    pids = output.split('\n')
     pids = filter(lambda x: x.isdigit(), pids)
     pids = map(lambda x: int(x), pids)
 
