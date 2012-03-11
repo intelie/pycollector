@@ -73,5 +73,6 @@ CHANGELOG
 - web server logs are now detached from collector logs
 - improved stdout logging format
 - collector stops in initialization if writer checkpoint is corrupted
+- added a gtalk reader that executes shell commands
 - + tests
 
