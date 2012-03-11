@@ -1,4 +1,5 @@
 import logging
+import traceback
 from third import filetail
 
 from __reader import Reader
@@ -22,6 +23,8 @@ class LogReader(Reader):
         self.validate_conf()
 
         self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
+        if self.checkpoint_enabled:
+            self.tail.seek_bytes(self.last_checkpoint or 0)
 
     @classmethod
     def dictify_line(cls, line, delimiter, columns):
@@ -59,18 +62,14 @@ class LogReader(Reader):
 
             # store in queue
             self.store(Message(content=to_store, checkpoint=self.checkpoint))
-            return True
-
         except ParsingError, e:
             self.log.error(e.msg)
-            return False
         except Exception, e:
             self.log.error(e)
-            return False
 
     def read(self):
         if self.period:
-            return self.process_line()
+            self.process_line()
         else:
             while True:
                 self.process_line()
