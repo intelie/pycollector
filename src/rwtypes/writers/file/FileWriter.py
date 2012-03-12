@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from __writer import Writer
 
@@ -10,20 +11,18 @@ class FileWriter(Writer):
 
     def setup(self):
         self.log = logging.getLogger('pycollector')
-        if hasattr(self, 'filepath'):
-            self.f = open(self.filepath, 'a+')
-        else:    
-            self.f = open('/tmp/%s' % time.time(), 'a+')
+
+        self.required_confs = ['filepath']
+        self.validate_conf()
+        self.f = open(self.filepath, 'a+')
 
     def write(self, msg):
         try:
-           self.f.write(msg)
-
-           #force flush
+           self.f.write(str(msg))
            self.f.flush()
 
            return True
-        except Exception, e:
+        except Exception:
             self.log.error('error writing file')
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
             return False
