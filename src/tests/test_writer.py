@@ -108,9 +108,8 @@ class TestWriter(unittest.TestCase):
         mywriter = MyWriter(q)
         mywriter.start()
 
-        #force processing messages
-        mywriter.process()
-        mywriter.process()
+        # waits for processing
+        time.sleep(0.1)
 
         self.assertEqual(2, mywriter.processed)
 
@@ -181,10 +180,8 @@ class TestWriter(unittest.TestCase):
         mywriter = MyWriter(q, conf={'blockable': False})
         mywriter.start()
 
-        #force processing messages
-        mywriter.process()
-        mywriter.process()
-        mywriter.process()
+        # waits for processing
+        time.sleep(0.1)
 
         self.assertEqual(2, mywriter.discarded)
 
