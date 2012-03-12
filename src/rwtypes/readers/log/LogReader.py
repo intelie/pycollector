@@ -1,5 +1,6 @@
 import logging
 import traceback
+import copy
 from third import filetail
 
 from __reader import Reader
@@ -31,16 +32,23 @@ class LogReader(Reader):
 
         self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
         if self.checkpoint_enabled:
-            self.tail.seek_bytes(self.last_checkpoint or 0)
+            self.current_checkpoint = self.last_checkpoint or {}
+            if 'bytes_read' in self.last_checkpoint:
+                self.tail.seek_bytes(self.current_checkpoint['bytes_read'])
 
     @classmethod
     def dictify_line(cls, line, delimiter, columns):
         """Dictify a log line mapping columns with values separated
         by a delimiter"""
+        err = ''
         try:
-            return dict(zip(columns, cls.split_line(line, delimiter)))
+            splitted = cls.split_line(line, delimiter)
+            if len(splitted) != len(columns):
+                err += "Different number of columns."
+                raise Exception
+            return dict(zip(columns, splitted))
         except Exception, e:
-            raise ParsingError("Error parsing line: %s" % line)
+            raise ParsingError("Error parsing line: %s. %s" % (line, err))
 
     @classmethod
     def split_line(cls, line, delimiter):
@@ -51,9 +59,11 @@ class LogReader(Reader):
             raise ParsingError("Error parsing line: %s" % line)
 
     def get_line(self):
-        """Returns a boolean indicating whether the log line 
+        """Returns a boolean indicating whether the log line
            was successfully read or not"""
-        self.checkpoint, self.current_line = self.tail.nextline()
+        self.bytes_read, self.current_line = self.tail.nextline()
+        if self.checkpoint_enabled:
+            self.current_checkpoint['bytes_read'] = self.bytes_read
         try:
             if self.to_split and self.to_dictify:
                 self.current_line = self.dictify_line(self.current_line,
@@ -66,17 +76,22 @@ class LogReader(Reader):
             self.log.error(e.msg)
             return False
         except Exception, e:
-            self.log.error(e)
+            self.log.error(traceback.format_exc())
             return False
         return True
 
     def process_line(self):
-        # do any transformation to the log line
-        # ...
+        try:
+            # store it
+            if self.checkpoint_enabled:
+                self.store(Message(checkpoint=copy.deepcopy(self.current_checkpoint),
+                                   content=self.current_line))
+            else:
+                self.store(Message(content=self.current_line))
+        except Exception, e:
+            self.log.error("Error processing line.")
+            self.log.error(traceback.format_exc())
 
-        # store it
-        self.store(Message(checkpoint=self.checkpoint, 
-                           content=self.current_line))
 
     def read(self):
         if self.period and self.get_line():

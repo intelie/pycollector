@@ -16,6 +16,8 @@ def get_queue(maxsize=1024):
 class TestLogReader(unittest.TestCase):
     def setUp(self):
         # write log file
+        self.reader_checkpoint = '/tmp/rcheckpoint'
+        open(self.reader_checkpoint, 'w').close()
         self.logpath = '/tmp/a.log'
         self.f = open(self.logpath, 'w')
         self.f.write('a\tb\tc\n')
@@ -24,6 +26,7 @@ class TestLogReader(unittest.TestCase):
 
     def tearDown(self):
         os.remove(self.logpath)
+        os.remove(self.reader_checkpoint)
 
     def test_dictify_line(self):
         line = 'a\tb\tc'
@@ -55,7 +58,9 @@ class TestLogReader(unittest.TestCase):
     def test_reading_log_and_saving_into_queue(self):
         # starting reader
         q = get_queue()
-        conf = {'logpath' : self.logpath}
+        conf = {'logpath' : self.logpath,
+                'checkpoint_path' : self.reader_checkpoint,
+                'checkpoint_enabled' : True}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -63,11 +68,9 @@ class TestLogReader(unittest.TestCase):
         time.sleep(0.1)
 
         msg = q.get()
-        self.assertEqual(6, msg.checkpoint)
         self.assertEqual('a\tb\tc\n', msg.content)
 
         msg = q.get()
-        self.assertEqual(12, msg.checkpoint)
         self.assertEqual('x\ty\tz\n', msg.content)
 
     def test_reading_log_with_delimiters_and_saving_into_queue(self):
@@ -81,11 +84,9 @@ class TestLogReader(unittest.TestCase):
         time.sleep(0.1)
 
         msg = q.get()
-        self.assertEqual(6, msg.checkpoint)
         self.assertEqual(['a', 'b', 'c'], msg.content)
 
         msg = q.get()
-        self.assertEqual(12, msg.checkpoint)
         self.assertEqual(['x', 'y', 'z'], msg.content)
 
     def test_reading_log_with_delimiters_and_columns_and_saving_into_queue(self):
@@ -100,12 +101,29 @@ class TestLogReader(unittest.TestCase):
         time.sleep(0.1)
 
         msg = q.get()
-        self.assertEqual(6, msg.checkpoint)
         self.assertEqual({'col0' : 'a', 'col1': 'b', 'col2': 'c'}, msg.content)
 
         msg = q.get()
-        self.assertEqual(12, msg.checkpoint)
         self.assertEqual({'col0' : 'x', 'col1': 'y', 'col2': 'z'}, msg.content)
+
+    def test_saving_checkpoint_in_bytes_read(self):
+        # starting reader
+        f = open(self.reader_checkpoint, 'rb')
+        q = get_queue()
+        conf = {'logpath' : self.logpath,
+                'checkpoint_path' : self.reader_checkpoint,
+                'checkpoint_enabled' : True}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # time to process log lines
+        time.sleep(0.1)
+
+        msg = q.get()
+        self.assertEqual(6, msg.checkpoint['bytes_read'])
+
+        msg = q.get()
+        self.assertEqual(12, msg.checkpoint['bytes_read'])
 
 
 def suite():
