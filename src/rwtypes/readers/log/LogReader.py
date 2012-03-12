@@ -40,7 +40,6 @@ class LogReader(Reader):
         try:
             return dict(zip(columns, cls.split_line(line, delimiter)))
         except Exception, e:
-            print e
             raise ParsingError("Error parsing line: %s" % line)
 
     @classmethod
@@ -49,7 +48,6 @@ class LogReader(Reader):
         try:
             return line.strip().split(delimiter)
         except Exception, e:
-            print e
             raise ParsingError("Error parsing line: %s" % line)
 
     def get_line(self):
