@@ -1,7 +1,10 @@
-import unittest
+import os
+import time
 import Queue
+import unittest
 
 import sys; sys.path.append('..')
+from __message import Message
 from rwtypes.readers.log.LogReader import LogReader
 
 
@@ -25,6 +28,33 @@ class TestLogReader(unittest.TestCase):
         result = LogReader.split_line(line, delimiter)
         self.assertEqual(expected, result)
 
+    def test_reading_log_and_saving_into_queue(self):
+        # write log file
+        logpath = '/tmp/a.log'
+        f = open(logpath, 'w')
+        f.write('a\tb\tc\n')
+        f.write('x\ty\tz\n')
+        f.close()
+
+        # starting reader
+        q = get_queue()
+        conf = {'logpath' : '/tmp/a.log'}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # time to process log lines
+        time.sleep(0.1)
+
+        msg = q.get()
+        self.assertEqual(6, msg.checkpoint)
+        self.assertEqual('a\tb\tc\n', msg.content)
+
+        msg = q.get()
+        self.assertEqual(12, msg.checkpoint)
+        self.assertEqual('x\ty\tz\n', msg.content)
+
+        # remove file
+        os.remove(logpath)
 
 def suite():
     suite = unittest.TestSuite()
