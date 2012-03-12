@@ -13,6 +13,17 @@ def get_queue(maxsize=1024):
 
 
 class TestLogReader(unittest.TestCase):
+    def setUp(self):
+        # write log file
+        self.logpath = '/tmp/a.log'
+        self.f = open(self.logpath, 'w')
+        self.f.write('a\tb\tc\n')
+        self.f.write('x\ty\tz\n')
+        self.f.close()
+
+    def tearDown(self):
+        os.remove(self.logpath)
+
     def test_dictify_line(self):
         line = 'a\tb\tc'
         delimiter = '\t'
@@ -29,21 +40,14 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_reading_log_and_saving_into_queue(self):
-        # write log file
-        logpath = '/tmp/a.log'
-        f = open(logpath, 'w')
-        f.write('a\tb\tc\n')
-        f.write('x\ty\tz\n')
-        f.close()
-
         # starting reader
         q = get_queue()
-        conf = {'logpath' : '/tmp/a.log'}
+        conf = {'logpath' : self.logpath}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
         # time to process log lines
-        time.sleep(0.1)
+        time.sleep(0.2)
 
         msg = q.get()
         self.assertEqual(6, msg.checkpoint)
@@ -53,8 +57,24 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(12, msg.checkpoint)
         self.assertEqual('x\ty\tz\n', msg.content)
 
-        # remove file
-        os.remove(logpath)
+    def test_reading_log_with_delimiters_and_saving_into_queue(self):
+        # starting reader
+        q = get_queue()
+        conf = {'logpath' : self.logpath, 'delimiter': '\t'}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # time to process log lines
+        time.sleep(0.1)
+
+        msg = q.get()
+        self.assertEqual(6, msg.checkpoint)
+        self.assertEqual(['a', 'b', 'c'], msg.content)
+
+        msg = q.get()
+        self.assertEqual(12, msg.checkpoint)
+        self.assertEqual(['x', 'y', 'z'], msg.content)
+
 
 def suite():
     suite = unittest.TestSuite()
