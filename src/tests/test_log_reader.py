@@ -5,6 +5,7 @@ import unittest
 
 import sys; sys.path.append('..')
 from __message import Message
+from __exceptions import ParsingError
 from rwtypes.readers.log.LogReader import LogReader
 
 
@@ -31,6 +32,18 @@ class TestLogReader(unittest.TestCase):
         expected = {'c0' : 'a', 'c1' : 'b', 'c2' : 'c'}
         result = LogReader.dictify_line(line, delimiter, columns)
         self.assertEqual(expected, result)
+
+    def test_dictify_line_with_lower_number_of_columns_should_raise_exception(self):
+        line = 'foo:bar'
+        delimiter = ':'
+        columns = ['c0', 'c1', 'c2']
+        self.assertRaises(ParsingError, LogReader.dictify_line, line, delimiter, columns)
+
+    def test_dictify_line_with_greater_number_of_columns_should_raise_exception(self):
+        line = 'foo:bar:spam:spam'
+        delimiter = ':'
+        columns = ['c0', 'c1', 'c2']
+        self.assertRaises(ParsingError, LogReader.dictify_line, line, delimiter, columns)
 
     def test_split_line(self):
         line = 'a\tb\tc'
