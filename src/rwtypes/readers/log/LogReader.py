@@ -22,6 +22,13 @@ class LogReader(Reader):
         self.required_confs = ['logpath']
         self.validate_conf()
 
+        self.to_dictify = False
+        self.to_split = False
+        if hasattr(self, 'delimiter'):
+            self.to_split = True
+        if hasattr(self, 'columns'):
+            self.to_dictify = True
+
         self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
         if self.checkpoint_enabled:
             self.tail.seek_bytes(self.last_checkpoint or 0)
@@ -33,6 +40,7 @@ class LogReader(Reader):
         try:
             return dict(zip(columns, cls.split_line(line, delimiter)))
         except Exception, e:
+            print e
             raise ParsingError("Error parsing line: %s" % line)
 
     @classmethod
@@ -41,35 +49,41 @@ class LogReader(Reader):
         try:
             return line.strip().split(delimiter)
         except Exception, e:
+            print e
             raise ParsingError("Error parsing line: %s" % line)
 
-    def process_line(self):
-        """Get next line from log file, parse and store in queue"""
+    def get_line(self):
+        """Returns a boolean indicating whether the log line 
+           was successfully read or not"""
+        self.checkpoint, self.current_line = self.tail.nextline()
         try:
-            # get new line
-            self.checkpoint, line = self.tail.nextline()
-            to_store = line
-
-            # parse
-            if hasattr(self, 'delimiter') and \
-                hasattr(self, 'columns'):
-                to_store = self.dictify_line(to_store,
-                                             self.delimiter,
-                                             self.columns)
-            elif hasattr(self, 'delimiter'):
-                to_store = self.split_line(to_store,
-                                           self.delimiter)
-
-            # store in queue
-            self.store(Message(content=to_store, checkpoint=self.checkpoint))
+            if self.to_split and self.to_dictify:
+                self.current_line = self.dictify_line(self.current_line,
+                                                      self.delimiter,
+                                                      self.columns)
+            elif self.to_split:
+                self.current_line = self.split_line(self.current_line,
+                                                    self.delimiter)
         except ParsingError, e:
             self.log.error(e.msg)
+            return False
         except Exception, e:
             self.log.error(e)
+            return False
+        return True
+
+    def process_line(self):
+        # do any transformation to the log line
+        # ...
+
+        # store it
+        self.store(Message(checkpoint=self.checkpoint, 
+                           content=self.current_line))
 
     def read(self):
-        if self.period:
+        if self.period and self.get_line():
             self.process_line()
         else:
             while True:
-                self.process_line()
+                if self.get_line():
+                    self.process_line()
