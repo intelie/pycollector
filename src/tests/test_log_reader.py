@@ -47,7 +47,7 @@ class TestLogReader(unittest.TestCase):
         myreader.start()
 
         # time to process log lines
-        time.sleep(0.2)
+        time.sleep(0.1)
 
         msg = q.get()
         self.assertEqual(6, msg.checkpoint)
@@ -74,6 +74,25 @@ class TestLogReader(unittest.TestCase):
         msg = q.get()
         self.assertEqual(12, msg.checkpoint)
         self.assertEqual(['x', 'y', 'z'], msg.content)
+
+    def test_reading_log_with_delimiters_and_columns_and_saving_into_queue(self):
+        q = get_queue()
+        conf = {'logpath' : self.logpath,
+                'delimiter': '\t',
+                'columns' : ['col0', 'col1', 'col2']}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # time to process log lines
+        time.sleep(0.1)
+
+        msg = q.get()
+        self.assertEqual(6, msg.checkpoint)
+        self.assertEqual({'col0' : 'a', 'col1': 'b', 'col2': 'c'}, msg.content)
+
+        msg = q.get()
+        self.assertEqual(12, msg.checkpoint)
+        self.assertEqual({'col0' : 'x', 'col1': 'y', 'col2': 'z'}, msg.content)
 
 
 def suite():
