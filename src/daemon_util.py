@@ -140,11 +140,11 @@ def start(collector_clazz, to_daemon=True, enable_server=True, server_port=8442)
             log.error(e.msg)
             sys.exit(-1)
 
-        log.info("daemon_conf.py settings (missing values are replaced by defaults):")
-        log.info(pprint.pformat(collector.daemon_conf))
+        log.info("daemon_conf.py settings (missing values are replaced by defaults):\n %s" %
+                 pprint.pformat(collector.daemon_conf))
 
-        log.info("conf.yaml settings:")
-        log.info(pprint.pformat(collector.conf))
+        log.info("conf.yaml settings:\n %s" %
+                 pprint.pformat(collector.conf))
 
         write_pid(collector.daemon_conf['PID_FILE_PATH'])
         collector.start()
