@@ -81,8 +81,10 @@ class LogReader(Reader):
         return True
 
     def process_line(self):
+        # TODO: transform the data
+
+        # store it
         try:
-            # store it
             if self.checkpoint_enabled:
                 self.store(Message(checkpoint=copy.deepcopy(self.current_checkpoint),
                                    content=self.current_line))
