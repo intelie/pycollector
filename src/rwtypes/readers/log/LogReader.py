@@ -1,7 +1,10 @@
+import copy
+import pprint
 import logging
 import traceback
-import copy
+
 from third import filetail
+from helpers.dateutil import parser
 
 from __reader import Reader
 from __message import Message
@@ -17,24 +20,12 @@ class LogReader(Reader):
         - columns (optional): list of columns for each log line,
             e.g. ['date', 'hour', 'message']"""
 
-    def setup(self):
-        self.log = logging.getLogger('pycollector')
-
-        self.required_confs = ['logpath']
-        self.validate_conf()
-
-        self.to_dictify = False
-        self.to_split = False
-        if hasattr(self, 'delimiter'):
-            self.to_split = True
-        if hasattr(self, 'columns'):
-            self.to_dictify = True
-
-        self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
-        if self.checkpoint_enabled:
-            self.current_checkpoint = self.last_checkpoint or {}
-            if 'bytes_read' in self.last_checkpoint:
-                self.tail.seek_bytes(self.current_checkpoint['bytes_read'])
+    @classmethod
+    def get_datetime(cls, datetime_string):
+        try:
+            return parser.parse(datetime_string, fuzzy=True)
+        except Exception, e:
+            raise ParsingError("Error parsing datetime for %s" % datetime_string)
 
     @classmethod
     def dictify_line(cls, line, delimiter, columns):
@@ -61,10 +52,10 @@ class LogReader(Reader):
     def get_line(self):
         """Returns a boolean indicating whether the log line
            was successfully read or not"""
-        self.bytes_read, self.current_line = self.tail.nextline()
-        if self.checkpoint_enabled:
-            self.current_checkpoint['bytes_read'] = self.bytes_read
         try:
+            self.bytes_read, self.current_line = self.tail.nextline()
+            if self.checkpoint_enabled:
+                self.current_checkpoint['bytes_read'] = self.bytes_read
             if self.to_split and self.to_dictify:
                 self.current_line = self.dictify_line(self.current_line,
                                                       self.delimiter,
@@ -80,8 +71,31 @@ class LogReader(Reader):
             return False
         return True
 
+    def setup(self):
+        self.log = logging.getLogger('pycollector')
+
+        self.required_confs = ['logpath']
+        self.validate_conf()
+
+        self.to_dictify = False
+        self.to_split = False
+        if hasattr(self, 'delimiter'):
+            self.to_split = True
+        if hasattr(self, 'columns'):
+            self.to_dictify = True
+
+        self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
+        if self.checkpoint_enabled:
+            self.current_checkpoint = self.last_checkpoint or {}
+            if 'bytes_read' in self.last_checkpoint:
+                self.log.info("Detected checkpoint, seeking file: %s to %s position" %
+                              (self.logpath,
+                               self.last_checkpoint['bytes_read']))
+                self.tail.seek_bytes(self.current_checkpoint['bytes_read'])
+
     def process_line(self):
         # TODO: transform the data
+
 
         # store it
         try:
@@ -93,7 +107,6 @@ class LogReader(Reader):
         except Exception, e:
             self.log.error("Error processing line.")
             self.log.error(traceback.format_exc())
-
 
     def read(self):
         if self.period and self.get_line():
