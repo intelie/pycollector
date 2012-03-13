@@ -111,6 +111,11 @@ class LogReader(Reader):
             (start, end) = self.get_interval()
             # to be continued...
 
+    @classmethod
+    def initialize_sums(self, conf):
+        return [{'interval_started_at': 0,
+                 'interval_duration_sec': s['period']*60,
+                 'column_name': s['column']} for s in conf]
 
     def process_line(self):
         try:
@@ -151,6 +156,9 @@ class LogReader(Reader):
                               (self.logpath,
                                self.last_checkpoint['bytes_read']))
                 self.tail.seek_bytes(self.current_checkpoint['bytes_read'])
+
+        if hasattr(self, 'sums'):
+            self.initialize_sums()
 
     def read(self):
         if self.period and self.get_line():
