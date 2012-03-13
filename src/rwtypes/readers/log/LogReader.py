@@ -99,7 +99,6 @@ class LogReader(Reader):
             return
 
         for s in self.sums:
-            period = s['period']*60
             if hasattr(self, 'datetime_column'):
                 dt = self.get_datetime(self.current_line,
                                        self.datetime_column)
@@ -108,7 +107,7 @@ class LogReader(Reader):
                                        self.date_column,
                                        self.time_column)
 
-            (start, end) = self.get_interval()
+            print dt 
             # to be continued...
 
     @classmethod
@@ -135,6 +134,15 @@ class LogReader(Reader):
             self.log.error("Error storing line in queue.")
             self.log.error(traceback.format_exc())
 
+    def set_checkpoint(self):
+        if self.checkpoint_enabled:
+            self.current_checkpoint = self.last_checkpoint or {}
+            if 'bytes_read' in self.last_checkpoint:
+                self.log.info("Detected checkpoint, seeking file: %s to %s position" %
+                              (self.logpath,
+                               self.last_checkpoint['bytes_read']))
+                self.tail.seek_bytes(self.current_checkpoint['bytes_read'])
+
     def setup(self):
         self.log = logging.getLogger('pycollector')
 
@@ -149,16 +157,10 @@ class LogReader(Reader):
             self.to_dictify = True
 
         self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
-        if self.checkpoint_enabled:
-            self.current_checkpoint = self.last_checkpoint or {}
-            if 'bytes_read' in self.last_checkpoint:
-                self.log.info("Detected checkpoint, seeking file: %s to %s position" %
-                              (self.logpath,
-                               self.last_checkpoint['bytes_read']))
-                self.tail.seek_bytes(self.current_checkpoint['bytes_read'])
+        self.set_checkpoint()
 
         if hasattr(self, 'sums'):
-            self.initialize_sums()
+            self.current_sums = self.initialize_sums(self.sums)
 
     def read(self):
         if self.period and self.get_line():
