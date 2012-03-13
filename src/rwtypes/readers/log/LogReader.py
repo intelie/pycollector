@@ -23,7 +23,6 @@ class LogReader(Reader):
 
     @classmethod
     def get_datetime(cls, dictified_line, datetime_column):
-        """Get a datetime string formatted and returns a datetime object"""
         try:
             return parser.parse(dictified_line[datetime_column], fuzzy=True)
         except Exception, e:
