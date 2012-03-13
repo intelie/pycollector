@@ -74,7 +74,6 @@ class TestConfReader(unittest.TestCase):
 
     def test_raise_exception_if_type_is_unknown(self):
         self.reader['type'] = 'sbrubles'
-        print self.base
         self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
 
         self.tearDown()
