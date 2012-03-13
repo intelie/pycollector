@@ -61,13 +61,45 @@ specs:
 
 
 conf:
-#Reading from stdin and writing to stdout
+# Reading from nginx with new reader (new conf)
 - reader:
-    type: stdin
+    type: log
+    logpath: /var/log/nginx/azion/sa/AZ.0058b.log
+    delimiter: \t
+    columns: [request_time, host, remote_addr, time_local, request, status, request_method, bytes_sent, request_uri, http_user_agent, http_referer, upstream_cache_status]
+    datetime_column: time_local
+    counts:
+        - column: status
+          match: '200'
+          period: 1 
+          groupby: 
+            - column: host 
+              regexp: .*
+    sums:
+        - column: bytes_sent
+          period: 1
+          groupby:
+            - column: host
+              regexp: .*
+    checkpoint_enabled: True
+    checkpoint_path: /tmp/rcheckpoint
+    checkpoint_period: 20
+    blockable: True
   writer:
     type: stdout
+    checkpoint_enabled: True
+    checkpoint_path: /tmp/wcheckpoint
+    checkpoint_period: 20
+    blockable: True
 
-##Reading from an nginx/wowza log and writing to activemq
+
+#Reading from stdin and writing to stdout
+#- reader:
+#    type: stdin
+#  writer:
+#    type: stdout
+
+#Reading from an nginx/wowza log and writing to activemq
 #- reader:
 #    type: log_analytics
 #    logpath: /var/log/nginx/sa/AZ.0058b.log
