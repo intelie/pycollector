@@ -126,7 +126,7 @@ class TestLogReader(unittest.TestCase):
         msg = q.get()
         self.assertEqual(12, msg.checkpoint['bytes_read'])
 
-    def test_time_format_with_datetime_defined(self):
+    def test_getting_datetime_from_formatted_string(self):
         result = LogReader.get_datetime('[30/Jan/2012:18:01:03 +0000]')
         expected = datetime.datetime(2012, 1, 30, 18, 1, 3)
         self.assertEqual(expected.year, result.year)
@@ -135,8 +135,6 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(expected.hour, result.hour)
         self.assertEqual(expected.minute, result.minute)
         self.assertEqual(expected.second, result.second)
-
-
 
 
 def suite():
