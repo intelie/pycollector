@@ -176,9 +176,9 @@ class TestLogReader(unittest.TestCase):
         result = LogReader.initialize_sums(sums_conf)
         expected = [{'interval_started_at': 0,
                     'column_name': 'bytes_sent',
-                    'interval_duration_sec': 60}]
+                    'interval_duration_sec': 60,
+                    'value' : 0}]
         self.assertEqual(expected, result)
-
 
 
 def suite():

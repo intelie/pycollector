@@ -71,6 +71,13 @@ class LogReader(Reader):
         except Exception, e:
             raise ParsingError("Error parsing line: %s" % line)
 
+    @classmethod
+    def initialize_sums(self, conf):
+        return [{'interval_started_at': 0,
+                 'interval_duration_sec': s['period']*60,
+                 'column_name': s['column'],
+                 'value' : 0} for s in conf]
+
     def get_line(self):
         """Returns a boolean indicating whether the log line
            was successfully read or not"""
@@ -107,14 +114,9 @@ class LogReader(Reader):
                                        self.date_column,
                                        self.time_column)
 
-            print dt 
-            # to be continued...
 
-    @classmethod
-    def initialize_sums(self, conf):
-        return [{'interval_started_at': 0,
-                 'interval_duration_sec': s['period']*60,
-                 'column_name': s['column']} for s in conf]
+
+            # to be continued...
 
     def process_line(self):
         try:
