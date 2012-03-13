@@ -22,13 +22,21 @@ class LogReader(Reader):
             e.g. ['date', 'hour', 'message']"""
 
     @classmethod
+    def get_interval(cls, dt, period):
+        try:
+            start = cls.get_starting_minute(dt)
+            end = start + datetime.timedelta(0, period)
+            return (start, end)
+        except Exception, e:
+            raise ParsingError("Can't get period from datetime: %s and period: %s" % (dt, period))
+
+    @classmethod
     def get_starting_minute(cls, dt):
         """Removes seconds from datetime object"""
         try:
             return dt - datetime.timedelta(0, dt.second)
         except Exception, e:
             raise ParsingError("Can't get starting minute from %s" % dt)
-
 
     @classmethod
     def get_datetime(cls, dictified_line, column1, column2=None):
@@ -86,6 +94,42 @@ class LogReader(Reader):
             return False
         return True
 
+    def do_sums(self):
+        if not hasattr(self, 'sums'):
+            return
+
+        for s in self.sums:
+            period = s['period']*60
+            if hasattr(self, 'datetime_column'):
+                dt = self.get_datetime(self.current_line,
+                                       self.datetime_column)
+            else:
+                dt = self.get_datetime(self.current_line,
+                                       self.date_column,
+                                       self.time_column)
+
+            (start, end) = self.get_interval()
+            # to be continued...
+
+
+    def process_line(self):
+        try:
+            self.do_sums()
+        except Exception, e:
+            self.log.error("Error processing sums")
+            self.log.error(traceback.format_exc())
+
+        # store it
+        try:
+            if self.checkpoint_enabled:
+                self.store(Message(checkpoint=copy.deepcopy(self.current_checkpoint),
+                                   content=self.current_line))
+            else:
+                self.store(Message(content=self.current_line))
+        except Exception, e:
+            self.log.error("Error storing line in queue.")
+            self.log.error(traceback.format_exc())
+
     def setup(self):
         self.log = logging.getLogger('pycollector')
 
@@ -107,19 +151,6 @@ class LogReader(Reader):
                               (self.logpath,
                                self.last_checkpoint['bytes_read']))
                 self.tail.seek_bytes(self.current_checkpoint['bytes_read'])
-
-    def process_line(self):
-        # TODO: transform the data
-        # store it
-        try:
-            if self.checkpoint_enabled:
-                self.store(Message(checkpoint=copy.deepcopy(self.current_checkpoint),
-                                   content=self.current_line))
-            else:
-                self.store(Message(content=self.current_line))
-        except Exception, e:
-            self.log.error("Error processing line.")
-            self.log.error(traceback.format_exc())
 
     def read(self):
         if self.period and self.get_line():

@@ -127,8 +127,8 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(12, msg.checkpoint['bytes_read'])
 
     def test_getting_datetime_from_dictified_line_and_datetime_column(self):
-        dictified_line = {'a':1, 
-                          'b': 2, 
+        dictified_line = {'a':1,
+                          'b': 2,
                           'c': '[30/Jan/2012:18:01:03 +0000]'}
         column = 'c'
         result = LogReader.get_datetime(dictified_line, column)
@@ -160,6 +160,15 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(13, result.hour)
         self.assertEqual(37, result.minute)
         self.assertEqual(0, result.second)
+
+    def test_get_interval_from_datetime_and_period(self):
+        dt = datetime.datetime(2012, 12, 1, 13, 42, 3)
+        period = 5*60 # 5 minutes
+        result = LogReader.get_interval(dt, period)
+        start = datetime.datetime(2012, 12, 1, 13, 42, 0)
+        end = datetime.datetime(2012, 12, 1, 13, 47, 0)
+        expected = (start, end)
+        self.assertEqual(expected, result)
 
 
 def suite():
