@@ -22,11 +22,14 @@ class LogReader(Reader):
             e.g. ['date', 'hour', 'message']"""
 
     @classmethod
-    def get_datetime(cls, dictified_line, datetime_column):
+    def get_datetime(cls, dictified_line, column1, column2=None):
         try:
-            return parser.parse(dictified_line[datetime_column], fuzzy=True)
+            dt = dictified_line[column1]
+            if column2 != None:
+                dt += ' %s' % dictified_line[column2]
+            return parser.parse(dt, fuzzy=True)
         except Exception, e:
-            raise ParsingError("Error parsing datetime for %s" % datetime_string)
+            raise ParsingError("Error parsing datetime for %s" % dictified_line)
 
     @classmethod
     def dictify_line(cls, line, delimiter, columns):
