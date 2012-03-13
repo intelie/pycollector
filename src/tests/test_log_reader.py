@@ -151,6 +151,16 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(0, result.minute)
         self.assertEqual(9, result.second)
 
+    def test_getting_starting_minute_from_datetime(self):
+        dt = datetime.datetime(2012, 12, 1, 13, 37, 7)
+        result = LogReader.get_starting_minute(dt)
+        self.assertEqual(2012, result.year)
+        self.assertEqual(12, result.month)
+        self.assertEqual(1, result.day)
+        self.assertEqual(13, result.hour)
+        self.assertEqual(37, result.minute)
+        self.assertEqual(0, result.second)
+
 
 def suite():
     suite = unittest.TestSuite()

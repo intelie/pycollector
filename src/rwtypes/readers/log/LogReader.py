@@ -22,7 +22,17 @@ class LogReader(Reader):
             e.g. ['date', 'hour', 'message']"""
 
     @classmethod
+    def get_starting_minute(cls, dt):
+        """Removes seconds from datetime object"""
+        try:
+            return dt - datetime.timedelta(0, dt.second)
+        except Exception, e:
+            raise ParsingError("Can't get starting minute from %s" % dt)
+
+
+    @classmethod
     def get_datetime(cls, dictified_line, column1, column2=None):
+        """Get datetime object from dictionary and date time columns"""
         try:
             dt = dictified_line[column1]
             if column2 != None:
@@ -60,6 +70,7 @@ class LogReader(Reader):
             self.bytes_read, self.current_line = self.tail.nextline()
             if self.checkpoint_enabled:
                 self.current_checkpoint['bytes_read'] = self.bytes_read
+
             if self.to_split and self.to_dictify:
                 self.current_line = self.dictify_line(self.current_line,
                                                       self.delimiter,
@@ -99,8 +110,6 @@ class LogReader(Reader):
 
     def process_line(self):
         # TODO: transform the data
-
-
         # store it
         try:
             if self.checkpoint_enabled:
