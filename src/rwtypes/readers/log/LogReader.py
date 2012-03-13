@@ -22,9 +22,10 @@ class LogReader(Reader):
             e.g. ['date', 'hour', 'message']"""
 
     @classmethod
-    def get_datetime(cls, datetime_string):
+    def get_datetime(cls, dictified_line, datetime_column):
+        """Get a datetime string formatted and returns a datetime object"""
         try:
-            return parser.parse(datetime_string, fuzzy=True)
+            return parser.parse(dictified_line[datetime_column], fuzzy=True)
         except Exception, e:
             raise ParsingError("Error parsing datetime for %s" % datetime_string)
 

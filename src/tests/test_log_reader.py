@@ -126,15 +126,18 @@ class TestLogReader(unittest.TestCase):
         msg = q.get()
         self.assertEqual(12, msg.checkpoint['bytes_read'])
 
-    def test_getting_datetime_from_formatted_string(self):
-        result = LogReader.get_datetime('[30/Jan/2012:18:01:03 +0000]')
-        expected = datetime.datetime(2012, 1, 30, 18, 1, 3)
-        self.assertEqual(expected.year, result.year)
-        self.assertEqual(expected.month, result.month)
-        self.assertEqual(expected.day, result.day)
-        self.assertEqual(expected.hour, result.hour)
-        self.assertEqual(expected.minute, result.minute)
-        self.assertEqual(expected.second, result.second)
+    def test_getting_datetime_from_dictified_line(self):
+        dictified_line = {'a':1, 
+                          'b': 2, 
+                          'c': '[30/Jan/2012:18:01:03 +0000]'}
+        column = 'c'
+        result = LogReader.get_datetime(dictified_line, column)
+        self.assertEqual(2012, result.year)
+        self.assertEqual(1, result.month)
+        self.assertEqual(30, result.day)
+        self.assertEqual(18, result.hour)
+        self.assertEqual(1, result.minute)
+        self.assertEqual(3, result.second)
 
 
 def suite():
