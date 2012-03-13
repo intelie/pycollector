@@ -2,6 +2,7 @@ import os
 import time
 import Queue
 import unittest
+import datetime
 
 import sys; sys.path.append('..')
 from __message import Message
@@ -126,9 +127,16 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(12, msg.checkpoint['bytes_read'])
 
     def test_time_format_with_datetime_defined(self):
-        #result = LogReader.get_datetime('[30/Jan/2012:18:01:03 +000]')
-        #expected = datetime.datetime(2012, 1, 30, 18, 1, 4)
-        #self.assertEqual(expected, result)
+        result = LogReader.get_datetime('[30/Jan/2012:18:01:03 +0000]')
+        expected = datetime.datetime(2012, 1, 30, 18, 1, 3)
+        self.assertEqual(expected.year, result.year)
+        self.assertEqual(expected.month, result.month)
+        self.assertEqual(expected.day, result.day)
+        self.assertEqual(expected.hour, result.hour)
+        self.assertEqual(expected.minute, result.minute)
+        self.assertEqual(expected.second, result.second)
+
+
 
 
 def suite():
