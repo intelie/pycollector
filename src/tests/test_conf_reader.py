@@ -63,8 +63,25 @@ class TestConfReader(unittest.TestCase):
         self.writer['checkpoint_path'] = '/var/log/42.log'
         self.writer['blockable'] = True
         self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
-    
 
+    def test_raise_exception_if_type_is_missing(self):
+        self.reader.pop('type')
+        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+
+        self.tearDown()
+        self.writer.pop('type')
+        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+
+    def test_raise_exception_if_type_is_unknown(self):
+        self.reader['type'] = 'sbrubles'
+        print self.base
+        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+
+        self.tearDown()
+        self.writer['type'] = 'nietzsche'
+        self.assertRaises(ConfigurationError, read_yaml_conf, (self.base))
+        
+    
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestConfReader))

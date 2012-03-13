@@ -11,6 +11,7 @@ except Exception, e:
 
 import daemon_conf
 from helpers import yaml
+from rwtypes.rwtypes import get_type
 from __exceptions import ConfigurationError
 
 
@@ -28,9 +29,13 @@ def has_type(conf):
     if not 'type' in conf:
         raise ConfigurationError("Missing 'type' in conf.yaml")
 
+def has_known_type(conf):
+    if get_type(conf['type']) == None:
+        raise ConfigurationError("Type '%s' is unknown. Check your conf.yaml." % conf['type'])
+
 
 def has_checkpoint_path_if_checkpoint_enabled(conf):
-    """If checkpoint_enabled is True, a checkpoint_path 
+    """If checkpoint_enabled is True, a checkpoint_path
     must be provided"""
     if ('checkpoint_enabled' in conf and \
         conf['checkpoint_enabled'] and \
@@ -61,7 +66,7 @@ def has_checkpoint(conf):
 def has_checkpoint_in_reader_and_writer(reader, writer):
     if has_checkpoint(reader) != has_checkpoint(writer):
         raise(ConfigurationError("Checkpoint must be enabled in reader and writer. Check your conf.yaml"))
-            
+
 
 def read_yaml_conf(file_conf=load_yaml_conf()):
     if not 'conf' in file_conf:
@@ -89,6 +94,7 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
 
         # reader checks
         has_type(new_reader)
+        has_known_type(new_reader)
         has_checkpoint_path_if_checkpoint_enabled(new_reader)
         has_blockable_and_period(new_reader)
         has_checkpoint_and_blockable(new_reader)
@@ -102,9 +108,10 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
 
         # writer checks
         has_type(new_writer)
+        has_known_type(new_writer)
         has_checkpoint_path_if_checkpoint_enabled(new_writer)
         has_checkpoint_and_blockable(new_writer)
-        
+
         # reader/writer checks
         has_checkpoint_in_reader_and_writer(new_reader, new_writer)
 
