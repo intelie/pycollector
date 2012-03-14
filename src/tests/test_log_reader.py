@@ -310,32 +310,22 @@ class TestLogReader(unittest.TestCase):
         myreader.start()
 
         content = q.get().content
-        print '1'.center(78, '=')
-        print content
         self.assertEqual(7, content['interval_started_at'].minute)
         self.assertEqual(1, content['value'])
 
         content = q.get().content
-        print '2'.center(78, '=')
-        print content
         self.assertEqual(8, content['interval_started_at'].minute)
         self.assertEqual(2, content['value'])
 
         content = q.get().content
-        print '3'.center(78, '=')
-        print content
         self.assertEqual(9, content['interval_started_at'].minute)
         self.assertEqual(0, content['value'])
 
         content = q.get().content
-        print '4'.center(78, '=')
-        print content
         self.assertEqual(10, content['interval_started_at'].minute)
         self.assertEqual(0, content['value'])
 
         content = q.get().content
-        print '5'.center(78, '=')
-        print content
         self.assertEqual(11, content['interval_started_at'].minute)
         self.assertEqual(1, content['value'])
 
