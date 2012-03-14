@@ -115,38 +115,94 @@ class LogReader(Reader):
             return False
         return True
 
+    def set_current_datetime(self):
+        """Set datetime from the current line"""
+        try:
+            if hasattr(self, 'datetime_column'):
+                self.current_datetime = self.get_datetime(self.current_line,
+                                                          self.datetime_column)
+            else:
+                self.current_datetime = self.get_datetime(self.current_line,
+                                                          self.date_column,
+                                                          self.time_column)
+        except Exception, e:
+            print e
+            raise ParsingError("Can't set datetime from line %s" % self.current_line)
+
     def do_sums(self):
         if not hasattr(self, 'sums'):
             return
 
-        for s in self.sums:
-            if hasattr(self, 'datetime_column'):
-                dt = self.get_datetime(self.current_line,
-                                       self.datetime_column)
+        for i, s in enumerate(self.current_sums):
+            current_value_to_sum = int(self.current_line[s['column_name']])
+            last_start_time = s['interval_started_at']
+            sum_period = s['interval_duration_sec']
+
+            # starting interval
+            if last_start_time == 0:
+                start = self.get_starting_minute(self.current_datetime)
+                s['interval_started_at'] = start
+                self.current_sums[i]['value'] += current_value_to_sum
             else:
-                dt = self.get_datetime(self.current_line,
-                                       self.date_column,
-                                       self.time_column)
+                (start, end) = self.get_interval(last_start_time, sum_period)
+                # not in interval
+                if not (start <= self.current_datetime < end):
+                    s['remaining']['interval_started_at'] = s['interval_started_at']
+                    s['remaining']['value'] = s['value']
+                    s['zeros'] = self.get_missing_intervals(end, sum_period, self.current_datetime)
+                    new_start, new_end = self.get_interval(self.current_datetime, sum_period)
+                    s['interval_started_at'] = new_start
+                    s['value'] = current_value_to_sum
 
-
-
-            # to be continued...
+                # in interval
+                else:
+                    s['remaining'] = {}
+                    s['zeros'] = []
+                    self.current_sums[i]['value'] += current_value_to_sum
 
     def process_line(self):
         try:
-            self.do_sums()
+            if hasattr(self, 'sums'):
+                self.set_current_datetime()
+                self.do_sums()
         except Exception, e:
             self.log.error("Error processing sums")
             self.log.error(traceback.format_exc())
 
         # store it
         try:
-            if self.checkpoint_enabled:
-                self.store(Message(checkpoint=copy.deepcopy(self.current_checkpoint),
-                                   content=self.current_line))
+            if hasattr(self, 'sums'):
+                to_send = []
+                for s in self.current_sums:
+                    if len(s['remaining']) > 0:
+                        event = s['remaining']
+                        event['interval_duration_sec'] = s['interval_duration_sec']
+                        event['column_name'] = s['column_name']
+                        to_send.append(copy.deepcopy(event))
+                    for z in s['zeros']:
+                        event = {}
+                        event['interval_started_at'] = z
+                        event['interval_duration_sec'] = s['interval_duration_sec']
+                        event['column_name'] = s['column_name']
+                        event['value'] = 0
+                        to_send.append(copy.deepcopy(event))
+                contents = to_send
+                if self.checkpoint_enabled:
+                    self.current_checkpoint['sums'] = self.current_sums
+                    for content in contents:
+                        self.store(Message(content=content,
+                                           checkpoint=self.current_checkpoint))
+                else:
+                    for content in contents:
+                        self.store(Message(content=content))
             else:
-                self.store(Message(content=self.current_line))
+                if self.checkpoint_enabled:
+                    self.store(Message(checkpoint=copy.deepcopy(self.current_checkpoint),
+                                       content=self.current_line))
+                else:
+                    self.store(Message(content=self.current_line))
         except Exception, e:
+            print e
             self.log.error("Error storing line in queue.")
             self.log.error(traceback.format_exc())
 

@@ -233,6 +233,48 @@ class TestLogReader(unittest.TestCase):
         result = LogReader.get_missing_intervals(start, period, event)
         self.assertEqual(expected, result)
 
+    def test_summing_without_groupby(self):
+        # writing some log lines
+        logpath = '/tmp/sum.log'
+        f = open(logpath, 'w')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t7\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t11\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\t13\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\t13\n')
+        f.close()
+
+        q = get_queue()
+        conf = {'logpath' : logpath,
+                'columns' : ['c0', 'c1', 'datetime', 'primes'],
+                'delimiter' : '\t',
+                'datetime_column': 'datetime',
+                'sums' : [{'column' : 'primes', 'period': 1}]}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        content = q.get().content
+        self.assertEqual(7, content['interval_started_at'].minute)
+        self.assertEqual(5, content['value'])
+
+        content = q.get().content
+        self.assertEqual(8, content['interval_started_at'].minute)
+        self.assertEqual(18, content['value'])
+
+        content = q.get().content
+        self.assertEqual(9, content['interval_started_at'].minute)
+        self.assertEqual(0, content['value'])
+
+        content = q.get().content
+        self.assertEqual(10, content['interval_started_at'].minute)
+        self.assertEqual(0, content['value'])
+
+        content = q.get().content
+        self.assertEqual(11, content['interval_started_at'].minute)
+        self.assertEqual(13, content['value'])
+
+        os.remove(logpath)
+
 
 def suite():
     suite = unittest.TestSuite()
