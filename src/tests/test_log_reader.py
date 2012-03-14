@@ -182,6 +182,20 @@ class TestLogReader(unittest.TestCase):
                     'zeros': []}] # intervals without values
         self.assertEqual(expected, result)
 
+    def test_initialize_counts_without_groupby(self):
+        sums_conf = [{'column': 'bytes_sent',
+                      'match' : 'GET',
+                      'period':  1,}]
+        result = LogReader.initialize_counts(sums_conf)
+        expected = [{'interval_started_at': 0,
+                    'column_name': 'bytes_sent',
+                    'column_value': 'GET',
+                    'interval_duration_sec': 60,
+                    'value' : 0,
+                    'remaining': {}, # if last interval was not delivered
+                    'zeros': []}] # intervals without values
+        self.assertEqual(expected, result)
+
     def test_get_missing_intervals(self):
         expected = [datetime.datetime(2012, 1, 1, 1, 1, 0),
                     datetime.datetime(2012, 1, 1, 1, 2, 0),

@@ -92,6 +92,16 @@ class LogReader(Reader):
                  'zeros': [],
                  'value' : 0} for s in conf]
 
+    @classmethod
+    def initialize_counts(self, conf):
+        return [{'interval_started_at': 0,
+                 'interval_duration_sec': s['period']*60,
+                 'column_name': s['column'],
+                 'column_value': s['match'],
+                 'remaining': {},
+                 'zeros': [],
+                 'value' : 0} for s in conf]
+
     def get_line(self):
         """Returns a boolean indicating whether the log line
            was successfully read or not"""
@@ -245,6 +255,9 @@ class LogReader(Reader):
 
         if hasattr(self, 'sums'):
             self.current_sums = self.initialize_sums(self.sums)
+
+        if hasattr(self, 'counts'):
+            self.current_counts = self.initialize_counts(self.counts)
 
     def read(self):
         if self.period and self.get_line():
