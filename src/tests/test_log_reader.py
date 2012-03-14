@@ -178,7 +178,7 @@ class TestLogReader(unittest.TestCase):
                     'column_name': 'bytes_sent',
                     'interval_duration_sec': 60,
                     'value' : 0,
-                    'remaining': {}, # if last interval was not delivered
+                    'remaining': {}, # interval finished
                     'zeros': []}] # intervals without values
         self.assertEqual(expected, result)
 
@@ -192,7 +192,7 @@ class TestLogReader(unittest.TestCase):
                     'column_value': 'GET',
                     'interval_duration_sec': 60,
                     'value' : 0,
-                    'remaining': {}, # if last interval was not delivered
+                    'remaining': {}, # interval finished
                     'zeros': []}] # intervals without values
         self.assertEqual(expected, result)
 
