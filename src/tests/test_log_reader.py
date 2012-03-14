@@ -384,6 +384,7 @@ class TestLogReader(unittest.TestCase):
                 self.assertEqual(2, content['value'])
                 checks += 1
 
+        self.assertEqual(5, checks)
         os.remove(logpath)
 
     def test_counting_without_groupby(self):
