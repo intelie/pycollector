@@ -366,7 +366,6 @@ class TestLogReader(unittest.TestCase):
         messages = []
         while q.qsize() > 0:
             m = q.get()
-            print m
             messages.append(m)
 
         # it should generate messages for the
