@@ -332,7 +332,7 @@ class TestLogReader(unittest.TestCase):
             else:
                 even_messages.append(m)
 
-        # assert that all minutes were delivered for each count
+        # assert that all minutes were delivered for each sum
         self.assertEqual(5, len(prime_messages))
         self.assertEqual(5, len(even_messages))
 
