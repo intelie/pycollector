@@ -194,6 +194,45 @@ class TestLogReader(unittest.TestCase):
         result = LogReader.get_missing_intervals(start, period, event)
         self.assertEqual(expected, result)
 
+    def test_get_missing_intervals_with_seconds(self):
+        expected = [datetime.datetime(2012, 1, 1, 1, 1, 0),
+                    datetime.datetime(2012, 1, 1, 1, 2, 0),
+                    datetime.datetime(2012, 1, 1, 1, 3, 0)]
+
+        start = datetime.datetime(2012, 1, 1, 1, 1, 0)
+        period = 60 # seconds
+        event = datetime.datetime(2012, 1, 1, 1, 4, 34)
+        result = LogReader.get_missing_intervals(start, period, event)
+        self.assertEqual(expected, result)
+
+    def test_get_missing_intervals_should_return_empty_list(self):
+        expected = []
+
+        start = datetime.datetime(2012, 1, 1, 1, 1, 0)
+        period = 60 # seconds
+        event = datetime.datetime(2012, 1, 1, 1, 1, 34)
+        result = LogReader.get_missing_intervals(start, period, event)
+        self.assertEqual(expected, result)
+
+    def test_get_missing_intervals_with_2_minutes_period(self):
+        expected = [datetime.datetime(2012, 1, 1, 1, 1, 0),
+                    datetime.datetime(2012, 1, 1, 1, 3, 0)]
+
+        start = datetime.datetime(2012, 1, 1, 1, 1, 0)
+        period = 120 # seconds
+        event = datetime.datetime(2012, 1, 1, 1, 5, 34)
+        result = LogReader.get_missing_intervals(start, period, event)
+        self.assertEqual(expected, result)
+
+    def test_get_missing_intervals_with_2_minutes_period_should_return_empty_list(self):
+        expected = []
+
+        start = datetime.datetime(2012, 1, 1, 1, 1, 0)
+        period = 120 # seconds
+        event = datetime.datetime(2012, 1, 1, 1, 2, 42)
+        result = LogReader.get_missing_intervals(start, period, event)
+        self.assertEqual(expected, result)
+
 
 def suite():
     suite = unittest.TestSuite()
