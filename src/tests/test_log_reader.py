@@ -177,7 +177,21 @@ class TestLogReader(unittest.TestCase):
         expected = [{'interval_started_at': 0,
                     'column_name': 'bytes_sent',
                     'interval_duration_sec': 60,
-                    'value' : 0}]
+                    'value' : 0,
+                    'remaining': {}, # if last interval was not delivered
+                    'zeros': []}] # intervals without values
+        self.assertEqual(expected, result)
+
+    def test_get_missing_intervals(self):
+        expected = [datetime.datetime(2012, 1, 1, 1, 1, 0),
+                    datetime.datetime(2012, 1, 1, 1, 2, 0),
+                    datetime.datetime(2012, 1, 1, 1, 3, 0),
+                    datetime.datetime(2012, 1, 1, 1, 4, 0)]
+
+        start = datetime.datetime(2012, 1, 1, 1, 1, 0)
+        period = 60 # seconds
+        event = datetime.datetime(2012, 1, 1, 1, 5, 0)
+        result = LogReader.get_missing_intervals(start, period, event)
         self.assertEqual(expected, result)
 
 

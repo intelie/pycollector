@@ -22,6 +22,18 @@ class LogReader(Reader):
             e.g. ['date', 'hour', 'message']"""
 
     @classmethod
+    def get_missing_intervals(cls, start_datetime, period, event_datetime):
+        try:
+            intervals = []
+            (start, end) = cls.get_interval(start_datetime, period)
+            while event_datetime >= end:
+                intervals.append(start)
+                (start, end) = cls.get_interval(end, period)
+            return intervals
+        except Exception, e:
+            raise ParsingError("Error calculating missing intervals.")
+
+    @classmethod
     def get_interval(cls, dt, period):
         try:
             start = cls.get_starting_minute(dt)
@@ -76,6 +88,8 @@ class LogReader(Reader):
         return [{'interval_started_at': 0,
                  'interval_duration_sec': s['period']*60,
                  'column_name': s['column'],
+                 'remaining': {},
+                 'zeros': [],
                  'value' : 0} for s in conf]
 
     def get_line(self):
