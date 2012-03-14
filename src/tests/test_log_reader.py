@@ -266,6 +266,9 @@ class TestLogReader(unittest.TestCase):
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
+        # time to process
+        time.sleep(0.1)
+
         content = q.get().content
         self.assertEqual(7, content['interval_started_at'].minute)
         self.assertEqual(5, content['value'])
@@ -303,7 +306,7 @@ class TestLogReader(unittest.TestCase):
                 'columns' : ['c0', 'c1', 'datetime', 'method'],
                 'delimiter' : '\t',
                 'datetime_column': 'datetime',
-                'counts' : [{'column' : 'method', 
+                'counts' : [{'column' : 'method',
                              'match': 'GET',
                              'period': 1}]}
         myreader = LogReader(q, conf=conf)
@@ -327,7 +330,109 @@ class TestLogReader(unittest.TestCase):
 
         content = q.get().content
         self.assertEqual(11, content['interval_started_at'].minute)
-        self.assertEqual(1, content['value'])
+        self.assertEqual(0, content['value'])
+
+        os.remove(logpath)
+
+    def test_counting_2_columns_groupby(self):
+        logpath = '/tmp/count.log'
+        f = open(logpath, 'w')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\tGET\t200\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\tGET\t200\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\tGET\t404\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\tPUT\t404\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\tDELETE\t200\n')
+        f.close()
+
+        q = get_queue()
+        conf = {'logpath' : logpath,
+                'columns' : ['c0', 'c1', 'datetime', 'method', 'status'],
+                'delimiter' : '\t',
+                'datetime_column': 'datetime',
+                'counts' : [{'column': 'method',
+                             'match': 'GET',
+                             'period': 1,},
+                            {'column': 'status',
+                             'match' : '200',
+                             'period' : 1,
+                             }
+                             ]}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # give time to process messages
+        time.sleep(0.1)
+
+        messages = []
+        while q.qsize() > 0:
+            m = q.get()
+            print m
+            messages.append(m)
+
+        # it should generate messages for the
+        # minutes: 7, 8, 9, 10, 11 (x 2, since there are 2 counts)
+        self.assertEqual(10, len(messages))
+
+        status_messages = []
+        method_messages = []
+        for m in messages:
+            if m.content['column_name'] == 'status':
+                status_messages.append(m)
+            else:
+                method_messages.append(m)
+
+        # assert that all minutes were delivered for each count
+        self.assertEqual(5, len(status_messages))
+        self.assertEqual(5, len(method_messages))
+
+        checks = 0
+        for message in method_messages:
+            content = message.content
+            if content['interval_started_at'].minute == 7:
+                self.assertEqual(1, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 8:
+                self.assertEqual(2, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 9:
+                self.assertEqual(0, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 10:
+                self.assertEqual(0, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 11:
+                self.assertEqual(0, content['value'])
+                checks += 1
+
+        self.assertEqual(5, checks)
+
+        checks = 0
+        for message in status_messages:
+            content = message.content
+            if content['interval_started_at'].minute == 7:
+                self.assertEqual(1, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 8:
+                self.assertEqual(1, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 9:
+                self.assertEqual(0, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 10:
+                self.assertEqual(0, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 11:
+                self.assertEqual(0, content['value'])
+                checks += 1
+        self.assertEqual(5, checks)
 
         os.remove(logpath)
 

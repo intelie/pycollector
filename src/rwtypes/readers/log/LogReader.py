@@ -1,5 +1,4 @@
 import copy
-import pprint
 import logging
 import datetime
 import traceback
@@ -166,8 +165,8 @@ class LogReader(Reader):
                     self.current_sums[i]['value'] += current_value_to_sum
 
     def store_sums(self):
-        to_send = []
         for s in self.current_sums:
+            to_send = []
             if len(s['remaining']) > 0:
                 event = s['remaining']
                 event['interval_duration_sec'] = s['interval_duration_sec']
@@ -203,7 +202,7 @@ class LogReader(Reader):
                 s['interval_started_at'] = start
                 # TODO: apply regexp
                 if current_value == s['column_value']:
-                    self.current_counts[i]['value'] += 1
+                    s['value'] += 1
             else:
                 (start, end) = self.get_interval(last_start_time, count_period)
                 # not in interval
@@ -213,19 +212,22 @@ class LogReader(Reader):
                     s['zeros'] = self.get_missing_intervals(end, count_period, self.current_datetime)
                     new_start, new_end = self.get_interval(self.current_datetime, count_period)
                     s['interval_started_at'] = new_start
-                    s['value'] = 1
+                    if current_value == s['column_value']:
+                        s['value'] = 1
+                    else:
+                        s['value'] = 0
                 # in interval
                 else:
                     s['remaining'] = {}
                     s['zeros'] = []
                     # TODO: apply regexp
                     if current_value == s['column_value']:
-                        self.current_counts[i]['value'] += 1
+                        s['value'] += 1
 
     def store_counts(self):
         # TODO: merge with store_sums in one function
-        to_send = []
         for s in self.current_counts:
+            to_send = []
             if len(s['remaining']) > 0:
                 event = s['remaining']
                 event['interval_duration_sec'] = s['interval_duration_sec']
