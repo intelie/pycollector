@@ -334,7 +334,7 @@ class TestLogReader(unittest.TestCase):
 
         os.remove(logpath)
 
-    def test_counting_2_columns_groupby(self):
+    def test_counting_2_columns_without_groupby(self):
         logpath = '/tmp/count.log'
         f = open(logpath, 'w')
         f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\tGET\t200\n')
