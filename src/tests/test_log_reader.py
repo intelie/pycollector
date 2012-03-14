@@ -291,6 +291,101 @@ class TestLogReader(unittest.TestCase):
 
         os.remove(logpath)
 
+    def test_summing_2_columns_without_groupby(self):
+        logpath = '/tmp/sum.log'
+        f = open(logpath, 'w')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\t4\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t7\t2\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t11\t4\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\t13\t2\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\t13\t4\n')
+        f.close()
+
+        q = get_queue()
+        conf = {'logpath' : logpath,
+                'columns' : ['c0', 'c1', 'datetime', 'primes', 'evens'],
+                'delimiter' : '\t',
+                'datetime_column': 'datetime',
+                'sums' : [{'column': 'primes',
+                           'period': 1},
+                          {'column': 'evens',
+                           'period': 1}]}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # time to process
+        time.sleep(0.1)
+
+        messages = []
+        while q.qsize() > 0:
+            messages.append(q.get())
+
+        # it should generate messages for the
+        # minutes: 7, 8, 9, 10, 11 (x 2, since there are 2 sums)
+        self.assertEqual(10, len(messages))
+
+        even_messages = []
+        prime_messages = []
+        for m in messages:
+            if m.content['column_name'] == 'primes':
+                prime_messages.append(m)
+            else:
+                even_messages.append(m)
+
+        # assert that all minutes were delivered for each count
+        self.assertEqual(5, len(prime_messages))
+        self.assertEqual(5, len(even_messages))
+
+        checks = 0
+        for message in prime_messages:
+            content = message.content
+            if content['interval_started_at'].minute == 7:
+                self.assertEqual(5, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 8:
+                self.assertEqual(18, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 9:
+                self.assertEqual(0, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 10:
+                self.assertEqual(0, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 11:
+                self.assertEqual(13, content['value'])
+                checks += 1
+
+        self.assertEqual(5, checks)
+
+        checks = 0
+        for message in even_messages:
+            content = message.content
+            if content['interval_started_at'].minute == 7:
+                self.assertEqual(4, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 8:
+                self.assertEqual(6, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 9:
+                self.assertEqual(0, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 10:
+                self.assertEqual(0, content['value'])
+                checks += 1
+
+            if content['interval_started_at'].minute == 11:
+                self.assertEqual(2, content['value'])
+                checks += 1
+
+        os.remove(logpath)
+
     def test_counting_without_groupby(self):
         logpath = '/tmp/count.log'
         f = open(logpath, 'w')
@@ -354,9 +449,7 @@ class TestLogReader(unittest.TestCase):
                              'period': 1,},
                             {'column': 'status',
                              'match' : '200',
-                             'period' : 1,
-                             }
-                             ]}
+                             'period' : 1,}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -365,8 +458,7 @@ class TestLogReader(unittest.TestCase):
 
         messages = []
         while q.qsize() > 0:
-            m = q.get()
-            messages.append(m)
+            messages.append(q.get())
 
         # it should generate messages for the
         # minutes: 7, 8, 9, 10, 11 (x 2, since there are 2 counts)
