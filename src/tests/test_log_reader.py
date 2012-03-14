@@ -288,6 +288,59 @@ class TestLogReader(unittest.TestCase):
 
         os.remove(logpath)
 
+    def test_counting_without_groupby(self):
+        logpath = '/tmp/count.log'
+        f = open(logpath, 'w')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\tGET\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\tGET\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\tGET\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\tPUT\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\tDELETE\n')
+        f.close()
+
+        q = get_queue()
+        conf = {'logpath' : logpath,
+                'columns' : ['c0', 'c1', 'datetime', 'method'],
+                'delimiter' : '\t',
+                'datetime_column': 'datetime',
+                'counts' : [{'column' : 'method', 
+                             'match': 'GET',
+                             'period': 1}]}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        content = q.get().content
+        print '1'.center(78, '=')
+        print content
+        self.assertEqual(7, content['interval_started_at'].minute)
+        self.assertEqual(1, content['value'])
+
+        content = q.get().content
+        print '2'.center(78, '=')
+        print content
+        self.assertEqual(8, content['interval_started_at'].minute)
+        self.assertEqual(2, content['value'])
+
+        content = q.get().content
+        print '3'.center(78, '=')
+        print content
+        self.assertEqual(9, content['interval_started_at'].minute)
+        self.assertEqual(0, content['value'])
+
+        content = q.get().content
+        print '4'.center(78, '=')
+        print content
+        self.assertEqual(10, content['interval_started_at'].minute)
+        self.assertEqual(0, content['value'])
+
+        content = q.get().content
+        print '5'.center(78, '=')
+        print content
+        self.assertEqual(11, content['interval_started_at'].minute)
+        self.assertEqual(1, content['value'])
+
+        os.remove(logpath)
+
 
 def suite():
     suite = unittest.TestSuite()

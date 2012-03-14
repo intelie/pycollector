@@ -136,13 +136,9 @@ class LogReader(Reader):
                                                           self.date_column,
                                                           self.time_column)
         except Exception, e:
-            print e
             raise ParsingError("Can't set datetime from line %s" % self.current_line)
 
     def do_sums(self):
-        if not hasattr(self, 'sums'):
-            return
-
         for i, s in enumerate(self.current_sums):
             current_value_to_sum = int(self.current_line[s['column_name']])
             last_start_time = s['interval_started_at']
@@ -163,7 +159,6 @@ class LogReader(Reader):
                     new_start, new_end = self.get_interval(self.current_datetime, sum_period)
                     s['interval_started_at'] = new_start
                     s['value'] = current_value_to_sum
-
                 # in interval
                 else:
                     s['remaining'] = {}
@@ -196,10 +191,64 @@ class LogReader(Reader):
                     self.store(Message(content=content))
 
     def do_counts(self):
-        pass
+        # TODO: merge with do_sums in one function
+        for i, s in enumerate(self.current_counts):
+            current_value = self.current_line[s['column_name']]
+            last_start_time = s['interval_started_at']
+            count_period = s['interval_duration_sec']
+
+            # starting interval
+            if last_start_time == 0:
+                start = self.get_starting_minute(self.current_datetime)
+                s['interval_started_at'] = start
+                # TODO: apply regexp
+                if current_value == s['column_value']:
+                    self.current_counts[i]['value'] += 1
+            else:
+                (start, end) = self.get_interval(last_start_time, count_period)
+                # not in interval
+                if not (start <= self.current_datetime < end):
+                    s['remaining']['interval_started_at'] = s['interval_started_at']
+                    s['remaining']['value'] = s['value']
+                    s['zeros'] = self.get_missing_intervals(end, count_period, self.current_datetime)
+                    new_start, new_end = self.get_interval(self.current_datetime, count_period)
+                    s['interval_started_at'] = new_start
+                    s['value'] = 1
+                # in interval
+                else:
+                    s['remaining'] = {}
+                    s['zeros'] = []
+                    # TODO: apply regexp
+                    if current_value == s['column_value']:
+                        self.current_counts[i]['value'] += 1
 
     def store_counts(self):
-        pass
+        # TODO: merge with store_sums in one function
+        to_send = []
+        for s in self.current_counts:
+            if len(s['remaining']) > 0:
+                event = s['remaining']
+                event['interval_duration_sec'] = s['interval_duration_sec']
+                event['column_name'] = s['column_name']
+                event['column_value'] = s['column_value']
+                to_send.append(copy.deepcopy(event))
+            for z in s['zeros']:
+                event = {}
+                event['interval_started_at'] = z
+                event['interval_duration_sec'] = s['interval_duration_sec']
+                event['column_name'] = s['column_name']
+                event['column_value'] = s['column_value']
+                event['value'] = 0
+                to_send.append(copy.deepcopy(event))
+            contents = to_send
+            if self.checkpoint_enabled:
+                self.current_checkpoint['counts'] = self.current_counts
+                for content in contents:
+                    self.store(Message(content=content,
+                                       checkpoint=self.current_checkpoint))
+            else:
+                for content in contents:
+                    self.store(Message(content=content))
 
     def process_line(self):
         try:
