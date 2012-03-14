@@ -160,50 +160,56 @@ class LogReader(Reader):
                     s['zeros'] = []
                     self.current_sums[i]['value'] += current_value_to_sum
 
+    def store_sums(self):
+        to_send = []
+        for s in self.current_sums:
+            if len(s['remaining']) > 0:
+                event = s['remaining']
+                event['interval_duration_sec'] = s['interval_duration_sec']
+                event['column_name'] = s['column_name']
+                to_send.append(copy.deepcopy(event))
+            for z in s['zeros']:
+                event = {}
+                event['interval_started_at'] = z
+                event['interval_duration_sec'] = s['interval_duration_sec']
+                event['column_name'] = s['column_name']
+                event['value'] = 0
+                to_send.append(copy.deepcopy(event))
+            contents = to_send
+            if self.checkpoint_enabled:
+                self.current_checkpoint['sums'] = self.current_sums
+                for content in contents:
+                    self.store(Message(content=content,
+                                       checkpoint=self.current_checkpoint))
+            else:
+                for content in contents:
+                    self.store(Message(content=content))
+
+    def do_counts(self):
+        pass
+
+    def store_counts(self):
+        pass
+
     def process_line(self):
         try:
-            if hasattr(self, 'sums'):
+            if self.to_sum:
                 self.set_current_datetime()
                 self.do_sums()
-        except Exception, e:
-            self.log.error("Error processing sums")
-            self.log.error(traceback.format_exc())
-
-        # store it
-        try:
-            if hasattr(self, 'sums'):
-                to_send = []
-                for s in self.current_sums:
-                    if len(s['remaining']) > 0:
-                        event = s['remaining']
-                        event['interval_duration_sec'] = s['interval_duration_sec']
-                        event['column_name'] = s['column_name']
-                        to_send.append(copy.deepcopy(event))
-                    for z in s['zeros']:
-                        event = {}
-                        event['interval_started_at'] = z
-                        event['interval_duration_sec'] = s['interval_duration_sec']
-                        event['column_name'] = s['column_name']
-                        event['value'] = 0
-                        to_send.append(copy.deepcopy(event))
-                contents = to_send
+                self.store_sums()
+            if self.to_count:
+                self.set_current_datetime()
+                self.do_counts()
+                self.store_counts()
+            if not self.to_sum and not self.to_count:
                 if self.checkpoint_enabled:
-                    self.current_checkpoint['sums'] = self.current_sums
-                    for content in contents:
-                        self.store(Message(content=content,
-                                           checkpoint=self.current_checkpoint))
-                else:
-                    for content in contents:
-                        self.store(Message(content=content))
-            else:
-                if self.checkpoint_enabled:
-                    self.store(Message(checkpoint=copy.deepcopy(self.current_checkpoint),
+                    checkpoint = copy.deepcopy(self.current_checkpoint)
+                    self.store(Message(checkpoint=checkpoint,
                                        content=self.current_line))
                 else:
                     self.store(Message(content=self.current_line))
         except Exception, e:
-            print e
-            self.log.error("Error storing line in queue.")
+            self.log.error("Error processing line")
             self.log.error(traceback.format_exc())
 
     def set_checkpoint(self):
@@ -223,10 +229,16 @@ class LogReader(Reader):
 
         self.to_dictify = False
         self.to_split = False
+        self.to_sum = False
+        self.to_count = False
         if hasattr(self, 'delimiter'):
             self.to_split = True
         if hasattr(self, 'columns'):
             self.to_dictify = True
+        if hasattr(self, 'sums'):
+            self.to_sum = True
+        if hasattr(self, 'counts'):
+            self.to_count = True
 
         self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
         self.set_checkpoint()

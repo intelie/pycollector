@@ -234,7 +234,6 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_summing_without_groupby(self):
-        # writing some log lines
         logpath = '/tmp/sum.log'
         f = open(logpath, 'w')
         f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\n')
