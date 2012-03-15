@@ -90,7 +90,10 @@ class LogReader(Reader):
                       'interval_duration_sec' : s['period']*60,
                       'column_name' : s['column'],}
             if 'group_by' in s:
-                to_add = {'group_by': s['group_by'],
+                to_add = {'group_by': {
+                            'column_name': s['group_by']['column'],
+                            'match' : s['group_by']['match']
+                            },
                           'grouped_values': {},
                           'grouped_remaining': {},
                           'grouped_zeros': {}}
@@ -100,9 +103,7 @@ class LogReader(Reader):
                           'zeros' : []}
             common.update(to_add)
             sums.append(common)
-        print sums
         return sums
-
 
     @classmethod
     def initialize_counts(self, conf):
@@ -155,6 +156,7 @@ class LogReader(Reader):
             current_value_to_sum = int(self.current_line[s['column_name']])
             last_start_time = s['interval_started_at']
             sum_period = s['interval_duration_sec']
+
 
             # starting interval
             if last_start_time == 0:

@@ -185,11 +185,17 @@ class TestLogReader(unittest.TestCase):
     def test_initialize_sums_with_groupby(self):
         sums_conf = [{'column' : 'bytes_sent',
                       'period' : 1,
-                      'group_by': 'test'}]
+                      'group_by': {
+                          'column' : 'host',
+                          'match' : '(?P<host_name>.*)',
+                          }}]
         result = LogReader.initialize_sums(sums_conf)
         expected = [{'interval_started_at': 0,
                      'column_name': 'bytes_sent',
-                     'group_by': 'test',
+                     'group_by': {
+                         'column_name' : 'host',
+                         'match' : '(?P<host_name>.*)'
+                         },
                      'interval_duration_sec' : 60,
                      'grouped_values': {},
                      'grouped_remaining': {},
