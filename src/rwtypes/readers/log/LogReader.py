@@ -34,6 +34,8 @@ class LogReader(Reader):
 
     @classmethod
     def get_interval(cls, dt, period):
+        """Input: datetime object and an int (representing the period in seconds)
+           Output: tuple with 2 datetime objects: (start, end)"""
         try:
             start = cls.get_starting_minute(dt)
             end = start + datetime.timedelta(0, period)
@@ -43,7 +45,8 @@ class LogReader(Reader):
 
     @classmethod
     def get_starting_minute(cls, dt):
-        """Removes seconds from datetime object"""
+        """Input: datetime object
+           Ouput: datetime object with seconds set to zero"""
         try:
             return dt - datetime.timedelta(0, dt.second)
         except Exception, e:
