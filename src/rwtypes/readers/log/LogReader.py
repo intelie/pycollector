@@ -83,6 +83,7 @@ class LogReader(Reader):
                     s['remaining'] = {}
                     s['zeros'] = []
                     self.current_sums[i]['value'] += current_value_to_sum
+        self.store_sums()
 
     def store_sums(self):
         for s in self.current_sums:
@@ -143,6 +144,7 @@ class LogReader(Reader):
                     # TODO: apply regexp
                     if current_value == s['column_value']:
                         s['value'] += 1
+        self.store_counts()
 
     def store_counts(self):
         # TODO: merge with store_sums in one function
@@ -174,15 +176,11 @@ class LogReader(Reader):
 
     def process_line(self):
         try:
-            if self.to_sum:
+            if self.to_sum or self.to_count:
                 self.set_current_datetime()
-                self.do_sums()
-                self.store_sums()
-            if self.to_count:
-                self.set_current_datetime()
-                self.do_counts()
-                self.store_counts()
-            if not self.to_sum and not self.to_count:
+                if self.to_sum: self.do_sums()
+                if self.to_count: self.do_counts()
+            else:
                 if self.checkpoint_enabled:
                     checkpoint = copy.deepcopy(self.current_checkpoint)
                     self.store(Message(checkpoint=checkpoint,
