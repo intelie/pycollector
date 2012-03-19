@@ -8,6 +8,7 @@ from third import filetail
 from __reader import Reader
 from __message import Message
 from __exceptions import ParsingError
+from LogUtils import LogUtils
 
 
 class LogReader(Reader):
@@ -28,11 +29,11 @@ class LogReader(Reader):
                 self.current_checkpoint['bytes_read'] = self.bytes_read
 
             if self.to_split and self.to_dictify:
-                self.current_line = self.dictify_line(self.current_line,
+                self.current_line = LogUtils.dictify_line(self.current_line,
                                                       self.delimiter,
                                                       self.columns)
             elif self.to_split:
-                self.current_line = self.split_line(self.current_line,
+                self.current_line = LogUtils.split_line(self.current_line,
                                                     self.delimiter)
         except ParsingError, e:
             self.log.error(e.msg)
@@ -46,10 +47,10 @@ class LogReader(Reader):
         """Set datetime from the current line"""
         try:
             if hasattr(self, 'datetime_column'):
-                self.current_datetime = self.get_datetime(self.current_line,
+                self.current_datetime = LogUtils.get_datetime(self.current_line,
                                                           self.datetime_column)
             else:
-                self.current_datetime = self.get_datetime(self.current_line,
+                self.current_datetime = LogUtils.get_datetime(self.current_line,
                                                           self.date_column,
                                                           self.time_column)
         except Exception, e:
@@ -219,10 +220,10 @@ class LogReader(Reader):
         self.to_count = True if hasattr(self, 'counts') else False
 
         if hasattr(self, 'sums'):
-            self.current_sums = self.initialize_sums(self.sums)
+            self.current_sums = LogUtils.initialize_sums(self.sums)
 
         if hasattr(self, 'counts'):
-            self.current_counts = self.initialize_counts(self.counts)
+            self.current_counts = LogUtils.initialize_counts(self.counts)
 
         # starts tail
         self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
