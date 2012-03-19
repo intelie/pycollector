@@ -98,12 +98,7 @@ class TestLogReader(unittest.TestCase):
         msg = q.get()
         self.assertEqual(12, msg.checkpoint['bytes_read'])
 
-        start = datetime.datetime(2012, 12, 1, 13, 42, 0)
-        end = datetime.datetime(2012, 12, 1, 13, 47, 0)
-        expected = (start, end)
-        self.assertEqual(expected, result)
-
-    def test_initialize_sums_with_groupby(self):
+    def xtest_initialize_sums_with_groupby(self):
         sums_conf = [{'column' : 'bytes_sent',
                       'period' : 1,
                       'group_by': {
@@ -123,7 +118,7 @@ class TestLogReader(unittest.TestCase):
                      'grouped_zeros': {}}]
         self.assertEqual(expected, result)
 
-    def test_summing_without_groupby(self):
+    def xtest_summing_without_groupby(self):
         logpath = '/tmp/sum.log'
         f = open(logpath, 'w')
         f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\n')
@@ -167,7 +162,7 @@ class TestLogReader(unittest.TestCase):
 
         os.remove(logpath)
 
-    def test_summing_with_groupby(self):
+    def xtest_summing_with_groupby(self):
         logpath = '/tmp/sum.log'
         f = open(logpath, 'w')
         f.write('g0\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\n')
@@ -246,7 +241,7 @@ class TestLogReader(unittest.TestCase):
         os.remove(logpath)
 
 
-    def test_summing_2_columns_without_groupby(self):
+    def xtest_summing_2_columns_without_groupby(self):
         logpath = '/tmp/sum.log'
         f = open(logpath, 'w')
         f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\t4\n')
@@ -342,7 +337,7 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(5, checks)
         os.remove(logpath)
 
-    def test_counting_without_groupby(self):
+    def xtest_counting_without_groupby(self):
         logpath = '/tmp/count.log'
         f = open(logpath, 'w')
         f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\tGET\n')
@@ -385,7 +380,7 @@ class TestLogReader(unittest.TestCase):
 
         os.remove(logpath)
 
-    def test_counting_2_columns_without_groupby(self):
+    def xtest_counting_2_columns_without_groupby(self):
         logpath = '/tmp/count.log'
         f = open(logpath, 'w')
         f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\tGET\t200\n')
