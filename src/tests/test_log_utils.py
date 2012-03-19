@@ -100,7 +100,7 @@ class TestLogUtils(unittest.TestCase):
                      'interval_duration_sec' : 60,
                      'current' : {'interval_started_at' : 0,
                                   'value' : 0},
-                     'previous' : {}}]
+                     'previous' : []}]
         result = LogUtils.initialize_sums(sums_conf)
         self.assertEqual(expected, result)
 
@@ -113,7 +113,7 @@ class TestLogUtils(unittest.TestCase):
                      'interval_duration_sec' : 60,
                      'current' : {'interval_started_at' : 0,
                                   'value' : 0},
-                     'previous' : {}}]
+                     'previous' : []}]
         result = LogUtils.initialize_counts(counts_conf)
         self.assertEqual(expected, result)
 

@@ -92,7 +92,7 @@ class LogUtils:
                  'interval_duration_sec' : c['period']*60,
                  'current' : {'interval_started_at' : 0,
                               'value' : 0},
-                 'previous' : {}} for c in conf]
+                 'previous' : []} for c in conf]
 
     @classmethod
     def initialize_counts(cls, conf):
@@ -103,5 +103,5 @@ class LogUtils:
                  'interval_duration_sec' : c['period']*60,
                  'current' : {'interval_started_at' : 0,
                               'value' : 0},
-                 'previous' : {}} for c in conf]
+                 'previous' : []} for c in conf]
 
