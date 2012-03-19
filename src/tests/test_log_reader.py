@@ -6,7 +6,6 @@ import datetime
 
 import sys; sys.path.append('..')
 from __message import Message
-from __exceptions import ParsingError
 from rwtypes.readers.log.LogReader import LogReader
 
 
@@ -28,33 +27,6 @@ class TestLogReader(unittest.TestCase):
     def tearDown(self):
         os.remove(self.logpath)
         os.remove(self.reader_checkpoint)
-
-    def test_dictify_line(self):
-        line = 'a\tb\tc'
-        delimiter = '\t'
-        columns = ['c0', 'c1', 'c2']
-        expected = {'c0' : 'a', 'c1' : 'b', 'c2' : 'c'}
-        result = LogReader.dictify_line(line, delimiter, columns)
-        self.assertEqual(expected, result)
-
-    def test_dictify_line_with_lower_number_of_columns_should_raise_exception(self):
-        line = 'foo:bar'
-        delimiter = ':'
-        columns = ['c0', 'c1', 'c2']
-        self.assertRaises(ParsingError, LogReader.dictify_line, line, delimiter, columns)
-
-    def test_dictify_line_with_greater_number_of_columns_should_raise_exception(self):
-        line = 'foo:bar:spam:spam'
-        delimiter = ':'
-        columns = ['c0', 'c1', 'c2']
-        self.assertRaises(ParsingError, LogReader.dictify_line, line, delimiter, columns)
-
-    def test_split_line(self):
-        line = 'a\tb\tc'
-        delimiter = '\t'
-        expected = ['a', 'b', 'c']
-        result = LogReader.split_line(line, delimiter)
-        self.assertEqual(expected, result)
 
     def test_reading_log_and_saving_into_queue(self):
         # starting reader
@@ -126,59 +98,9 @@ class TestLogReader(unittest.TestCase):
         msg = q.get()
         self.assertEqual(12, msg.checkpoint['bytes_read'])
 
-    def test_getting_datetime_from_dictified_line_and_datetime_column(self):
-        dictified_line = {'a':1,
-                          'b': 2,
-                          'c': '[30/Jan/2012:18:01:03 +0000]'}
-        column = 'c'
-        result = LogReader.get_datetime(dictified_line, column)
-        self.assertEqual(2012, result.year)
-        self.assertEqual(1, result.month)
-        self.assertEqual(30, result.day)
-        self.assertEqual(18, result.hour)
-        self.assertEqual(1, result.minute)
-        self.assertEqual(3, result.second)
-
-    def test_getting_datetime_from_dictified_line_with_date_and_time_columns(self):
-        dictified_line = {'a' : 234,
-                          'date' : '2012-01-30',
-                          'time' : '18:00:09'}
-        result = LogReader.get_datetime(dictified_line, 'date', 'time')
-        self.assertEqual(2012, result.year)
-        self.assertEqual(1, result.month)
-        self.assertEqual(30, result.day)
-        self.assertEqual(18, result.hour)
-        self.assertEqual(0, result.minute)
-        self.assertEqual(9, result.second)
-
-    def test_getting_starting_minute_from_datetime(self):
-        dt = datetime.datetime(2012, 12, 1, 13, 37, 7)
-        result = LogReader.get_starting_minute(dt)
-        self.assertEqual(2012, result.year)
-        self.assertEqual(12, result.month)
-        self.assertEqual(1, result.day)
-        self.assertEqual(13, result.hour)
-        self.assertEqual(37, result.minute)
-        self.assertEqual(0, result.second)
-
-    def test_get_interval_from_datetime_and_period(self):
-        dt = datetime.datetime(2012, 12, 1, 13, 42, 3)
-        period = 5*60 # 5 minutes
-        result = LogReader.get_interval(dt, period)
         start = datetime.datetime(2012, 12, 1, 13, 42, 0)
         end = datetime.datetime(2012, 12, 1, 13, 47, 0)
         expected = (start, end)
-        self.assertEqual(expected, result)
-
-    def test_initialize_sums_without_groupby(self):
-        sums_conf = [{'column': 'bytes_sent',
-                      'period':  1,}]
-        expected = [{'column_name' : 'bytes_sent',
-                     'interval_duration_sec' : 60,
-                     'current' : {'interval_started_at' : 0,
-                                  'value' : 0},
-                     'previous' : {}}]
-        result = LogReader.initialize_sums(sums_conf)
         self.assertEqual(expected, result)
 
     def test_initialize_sums_with_groupby(self):
@@ -187,7 +109,7 @@ class TestLogReader(unittest.TestCase):
                       'group_by': {
                           'column' : 'host',
                           'match' : '(?P<host_name>.*)',
-                          }}]
+                         }}]
         result = LogReader.initialize_sums(sums_conf)
         expected = [{'interval_started_at': 0,
                      'column_name': 'bytes_sent',
@@ -199,70 +121,6 @@ class TestLogReader(unittest.TestCase):
                      'grouped_values': {},
                      'grouped_remaining': {},
                      'grouped_zeros': {}}]
-        self.assertEqual(expected, result)
-
-    def test_initialize_counts_without_groupby(self):
-        counts_conf = [{'column': 'method',
-                      'match' : 'GET',
-                      'period':  1,}]
-        expected = [{'column_name' : 'method',
-                     'column_value' : 'GET',
-                     'interval_duration_sec' : 60,
-                     'current' : {'interval_started_at' : 0,
-                                  'value' : 0},
-                     'previous' : {}}]
-        result = LogReader.initialize_counts(counts_conf)
-        self.assertEqual(expected, result)
-
-    def test_get_missing_intervals(self):
-        expected = [datetime.datetime(2012, 1, 1, 1, 1, 0),
-                    datetime.datetime(2012, 1, 1, 1, 2, 0),
-                    datetime.datetime(2012, 1, 1, 1, 3, 0),
-                    datetime.datetime(2012, 1, 1, 1, 4, 0)]
-
-        start = datetime.datetime(2012, 1, 1, 1, 1, 0)
-        period = 60 # seconds
-        event = datetime.datetime(2012, 1, 1, 1, 5, 0)
-        result = LogReader.get_missing_intervals(start, period, event)
-        self.assertEqual(expected, result)
-
-    def test_get_missing_intervals_with_seconds(self):
-        expected = [datetime.datetime(2012, 1, 1, 1, 1, 0),
-                    datetime.datetime(2012, 1, 1, 1, 2, 0),
-                    datetime.datetime(2012, 1, 1, 1, 3, 0)]
-
-        start = datetime.datetime(2012, 1, 1, 1, 1, 0)
-        period = 60 # seconds
-        event = datetime.datetime(2012, 1, 1, 1, 4, 34)
-        result = LogReader.get_missing_intervals(start, period, event)
-        self.assertEqual(expected, result)
-
-    def test_get_missing_intervals_should_return_empty_list(self):
-        expected = []
-
-        start = datetime.datetime(2012, 1, 1, 1, 1, 0)
-        period = 60 # seconds
-        event = datetime.datetime(2012, 1, 1, 1, 1, 34)
-        result = LogReader.get_missing_intervals(start, period, event)
-        self.assertEqual(expected, result)
-
-    def test_get_missing_intervals_with_2_minutes_period(self):
-        expected = [datetime.datetime(2012, 1, 1, 1, 1, 0),
-                    datetime.datetime(2012, 1, 1, 1, 3, 0)]
-
-        start = datetime.datetime(2012, 1, 1, 1, 1, 0)
-        period = 120 # seconds
-        event = datetime.datetime(2012, 1, 1, 1, 5, 34)
-        result = LogReader.get_missing_intervals(start, period, event)
-        self.assertEqual(expected, result)
-
-    def test_get_missing_intervals_with_2_minutes_period_should_return_empty_list(self):
-        expected = []
-
-        start = datetime.datetime(2012, 1, 1, 1, 1, 0)
-        period = 120 # seconds
-        event = datetime.datetime(2012, 1, 1, 1, 2, 42)
-        result = LogReader.get_missing_intervals(start, period, event)
         self.assertEqual(expected, result)
 
     def test_summing_without_groupby(self):
