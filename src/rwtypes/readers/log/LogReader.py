@@ -282,14 +282,20 @@ class LogReader(Reader):
                 self.tail.seek_bytes(self.current_checkpoint['bytes_read'])
 
     def setup(self):
+        # starts the logger
         self.log = logging.getLogger('pycollector')
 
+        # check for required confs
         self.required_confs = ['logpath']
         self.validate_conf()
-        self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
 
+        # failure recovering from checkpoint
         self.set_checkpoint()
 
+        # starts tail
+        self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
+
+        # initializations
         self.to_split = True if hasattr(self, 'delimiter') else False
         self.to_dictify = True if hasattr(self, 'columns') else False
         self.to_sum = True if hasattr(self, 'sums') else False
@@ -302,8 +308,10 @@ class LogReader(Reader):
             self.current_counts = self.initialize_counts(self.counts)
 
     def read(self):
+        # sync reader
         if self.period:
             self.get_line() and self.process_line()
+        # async reader
         else:
             while True:
                 self.get_line() and self.process_line()
