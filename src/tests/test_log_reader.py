@@ -173,12 +173,12 @@ class TestLogReader(unittest.TestCase):
     def test_initialize_sums_without_groupby(self):
         sums_conf = [{'column': 'bytes_sent',
                       'period':  1,}]
-        result = LogReader.initialize_sums(sums_conf)
         expected = [{'column_name' : 'bytes_sent',
                      'interval_duration_sec' : 60,
                      'current' : {'interval_started_at' : 0,
                                   'value' : 0},
                      'previous' : {}}]
+        result = LogReader.initialize_sums(sums_conf)
         self.assertEqual(expected, result)
 
     def test_initialize_sums_with_groupby(self):
@@ -205,14 +205,13 @@ class TestLogReader(unittest.TestCase):
         counts_conf = [{'column': 'method',
                       'match' : 'GET',
                       'period':  1,}]
+        expected = [{'column_name' : 'method',
+                     'column_value' : 'GET',
+                     'interval_duration_sec' : 60,
+                     'current' : {'interval_started_at' : 0,
+                                  'value' : 0},
+                     'previous' : {}}]
         result = LogReader.initialize_counts(counts_conf)
-        expected = [{'interval_started_at': 0,
-                    'column_name': 'method',
-                    'column_value': 'GET',
-                    'interval_duration_sec': 60,
-                    'value' : 0,
-                    'remaining': {}, # interval finished
-                    'zeros': []}] # intervals without values
         self.assertEqual(expected, result)
 
     def test_get_missing_intervals(self):
