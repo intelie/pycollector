@@ -22,6 +22,10 @@ class LogReader(Reader):
 
     @classmethod
     def get_missing_intervals(cls, start_datetime, period, event_datetime):
+        """Input: datetime object (starting datetime),
+                  int (period in seconds),
+                  datetime object (event datetime)
+           Output: tuple with datetime objects"""
         try:
             intervals = []
             (start, end) = cls.get_interval(start_datetime, period)
@@ -34,7 +38,8 @@ class LogReader(Reader):
 
     @classmethod
     def get_interval(cls, dt, period):
-        """Input: datetime object and an int (representing the period in seconds)
+        """Input: datetime object (starting datetime),
+                  int (period in seconds)
            Output: tuple with 2 datetime objects: (start, end)"""
         try:
             start = cls.get_starting_minute(dt)
@@ -54,7 +59,11 @@ class LogReader(Reader):
 
     @classmethod
     def get_datetime(cls, dictified_line, column1, column2=None):
-        """Get datetime object from dictionary and date time columns"""
+        """Input: dict (log line mapped to its column names),
+                  string (log column name with date/time data),
+                  string (if log contains date and time data in
+                          different columns, use this parameter)
+           Output: datetime object"""
         try:
             dt = dictified_line[column1]
             if column2 != None:
@@ -65,8 +74,10 @@ class LogReader(Reader):
 
     @classmethod
     def dictify_line(cls, line, delimiter, columns):
-        """Dictify a log line mapping columns with values separated
-        by a delimiter"""
+        """Input: string (raw log line)
+                  string (usually, a delimiter character)
+                  list (column names)
+           Output: dict"""
         err = ''
         try:
             splitted = cls.split_line(line, delimiter)
@@ -79,7 +90,9 @@ class LogReader(Reader):
 
     @classmethod
     def split_line(cls, line, delimiter):
-        """Return a list of values splited by a delimiter"""
+        """Input: string (raw log line)
+                  string (usually, a delimiter character)
+           Output: list"""
         try:
             return line.strip().split(delimiter)
         except Exception, e:
@@ -87,6 +100,8 @@ class LogReader(Reader):
 
     @classmethod
     def initialize_sums(cls, conf):
+        """Input: dict (sums configuration)
+           Output: dict"""
         return [{'column_name' : c['column'],
                  'interval_duration_sec' : c['period']*60,
                  'current' : {'interval_started_at' : 0,
@@ -95,6 +110,8 @@ class LogReader(Reader):
 
     @classmethod
     def initialize_counts(cls, conf):
+        """Input: dict (counts configuration)
+           Output: dict"""
         return [{'column_name': c['column'],
                  'column_value': c['match'],
                  'interval_duration_sec' : c['period']*60,
