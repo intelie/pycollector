@@ -48,9 +48,8 @@ class LogReader(Reader):
                 (start, end) = self.get_interval(current_start_time, sum_period)
                 # not in interval
                 if not (start <= self.current_datetime < end):
-                    previous = []
-                    previous.append({'interval_started_at' : s['interval_started_at'],
-                                     'value' : s['value']})
+                    previous = [{'interval_started_at' : s['interval_started_at'],
+                                 'value' : s['value']}]
                     zeros = LogUtils.get_missing_intervals(end, sum_period, self.current_datetime)
                     previous.extend([{'interval_started_at' : z, 'value' : 0} for z in zeros])
                     new_start, new_end = LogUtils.get_interval(self.current_datetime, sum_period)
