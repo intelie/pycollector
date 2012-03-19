@@ -286,22 +286,14 @@ class LogReader(Reader):
 
         self.required_confs = ['logpath']
         self.validate_conf()
-
-        self.to_dictify = False
-        self.to_split = False
-        self.to_sum = False
-        self.to_count = False
-        if hasattr(self, 'delimiter'):
-            self.to_split = True
-        if hasattr(self, 'columns'):
-            self.to_dictify = True
-        if hasattr(self, 'sums'):
-            self.to_sum = True
-        if hasattr(self, 'counts'):
-            self.to_count = True
-
         self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
+
         self.set_checkpoint()
+
+        self.to_split = True if hasattr(self, 'delimiter') else False
+        self.to_dictify = True if hasattr(self, 'columns') else False
+        self.to_sum = True if hasattr(self, 'sums') else False
+        self.to_count = True if hasattr(self, 'counts') else False
 
         if hasattr(self, 'sums'):
             self.current_sums = self.initialize_sums(self.sums)
