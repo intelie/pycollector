@@ -28,6 +28,21 @@ def log_to_sum(g):
     return wrapper
 
 
+def log_to_sum_2_columns(g):
+    def wrapper(self):
+        logpath = '/tmp/sum.log'
+        f = open(logpath, 'w')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\t4\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t7\t2\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t11\t4\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\t13\t2\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\t13\t4\n')
+        f.close()
+        g(self)
+        os.remove(logpath)
+    return wrapper
+
+
 class TestLogReader(unittest.TestCase):
     def setUp(self):
         # write log file
@@ -241,23 +256,13 @@ class TestLogReader(unittest.TestCase):
                 continue
 
         self.assertEqual(9, checks)
-
-
         os.remove(logpath)
 
 
-    def xtest_summing_2_columns_without_groupby(self):
-        logpath = '/tmp/sum.log'
-        f = open(logpath, 'w')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\t4\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t7\t2\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t11\t4\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\t13\t2\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\t13\t4\n')
-        f.close()
-
+    @log_to_sum_2_columns
+    def test_summing_2_columns_without_groupby(self):
         q = get_queue()
-        conf = {'logpath' : logpath,
+        conf = {'logpath' : '/tmp/sum.log',
                 'columns' : ['c0', 'c1', 'datetime', 'primes', 'evens'],
                 'delimiter' : '\t',
                 'datetime_column': 'datetime',
@@ -291,56 +296,21 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(5, len(prime_messages))
         self.assertEqual(5, len(even_messages))
 
-        checks = 0
-        for message in prime_messages:
-            content = message.content
-            if content['interval_started_at'].minute == 7:
-                self.assertEqual(5, content['value'])
-                checks += 1
+        result = map(lambda x: (x.content['interval_started_at'].minute, 
+                            x.content['value']), prime_messages)
+        self.assertIn((7, 5), result)
+        self.assertIn((8, 18), result)
+        self.assertIn((9, 0), result)
+        self.assertIn((10, 0), result)
+        self.assertIn((11, 13), result)
 
-            if content['interval_started_at'].minute == 8:
-                self.assertEqual(18, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 9:
-                self.assertEqual(0, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 10:
-                self.assertEqual(0, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 11:
-                self.assertEqual(13, content['value'])
-                checks += 1
-
-        self.assertEqual(5, checks)
-
-        checks = 0
-        for message in even_messages:
-            content = message.content
-            if content['interval_started_at'].minute == 7:
-                self.assertEqual(4, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 8:
-                self.assertEqual(6, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 9:
-                self.assertEqual(0, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 10:
-                self.assertEqual(0, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 11:
-                self.assertEqual(2, content['value'])
-                checks += 1
-
-        self.assertEqual(5, checks)
-        os.remove(logpath)
+        result = map(lambda x: (x.content['interval_started_at'].minute, 
+                            x.content['value']), even_messages)
+        self.assertIn((7, 4), result)
+        self.assertIn((8, 6), result)
+        self.assertIn((9, 0), result)
+        self.assertIn((10, 0), result)
+        self.assertIn((11, 2), result)
 
     def xtest_counting_without_groupby(self):
         logpath = '/tmp/count.log'
