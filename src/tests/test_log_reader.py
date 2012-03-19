@@ -283,15 +283,15 @@ class TestLogReader(unittest.TestCase):
         # minutes: 7, 8, 9, 10, 11 (x 2, since there are 2 sums)
         self.assertEqual(10, len(messages))
 
-        even_messages = filter(lambda x: x.content['column_name'] == 'evens', messages)
-        prime_messages = filter(lambda x: x.content['column_name'] == 'primes', messages)
+        evens = filter(lambda x: x.content['column_name'] == 'evens', messages)
+        primes = filter(lambda x: x.content['column_name'] == 'primes', messages)
 
         # assert that all minutes were delivered for each sum
-        self.assertEqual(5, len(prime_messages))
-        self.assertEqual(5, len(even_messages))
+        self.assertEqual(5, len(primes))
+        self.assertEqual(5, len(evens))
 
         result = map(lambda x: (x.content['interval_started_at'].minute, 
-                                x.content['value']), prime_messages)
+                                x.content['value']), primes)
         self.assertIn((7, 5), result)
         self.assertIn((8, 18), result)
         self.assertIn((9, 0), result)
@@ -299,7 +299,7 @@ class TestLogReader(unittest.TestCase):
         self.assertIn((11, 13), result)
 
         result = map(lambda x: (x.content['interval_started_at'].minute, 
-                                x.content['value']), even_messages)
+                                x.content['value']), evens)
         self.assertIn((7, 4), result)
         self.assertIn((8, 6), result)
         self.assertIn((9, 0), result)
