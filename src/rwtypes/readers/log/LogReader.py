@@ -59,7 +59,7 @@ class LogReader(Reader):
 
     @classmethod
     def get_datetime(cls, dictified_line, column1, column2=None):
-        """Input: dict (log line mapped to its column names),
+        """Input: dict (log line mapped to its columns names),
                   string (log column name with date/time data),
                   string (if log contains date and time data in
                           different columns, use this parameter)
@@ -76,7 +76,7 @@ class LogReader(Reader):
     def dictify_line(cls, line, delimiter, columns):
         """Input: string (raw log line)
                   string (usually, a delimiter character)
-                  list (column names)
+                  list (columns names)
            Output: dict"""
         err = ''
         try:
