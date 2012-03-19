@@ -310,9 +310,8 @@ class LogReader(Reader):
             self.current_counts = self.initialize_counts(self.counts)
 
     def read(self):
-        if self.period and self.get_line():
-            self.process_line()
+        if self.period:
+            self.get_line() and self.process_line()
         else:
             while True:
-                if self.get_line():
-                    self.process_line()
+                self.get_line() and self.process_line()
