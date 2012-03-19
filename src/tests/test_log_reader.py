@@ -13,6 +13,21 @@ def get_queue(maxsize=1024):
     return Queue.Queue(maxsize=maxsize)
 
 
+def log_to_sum(g):
+    def wrapper(self):
+        logpath = '/tmp/sum.log'
+        f = open(logpath, 'w')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t7\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t11\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\t13\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\t13\n')
+        f.close()
+        g(self)
+        os.remove(logpath)
+    return wrapper
+
+
 class TestLogReader(unittest.TestCase):
     def setUp(self):
         # write log file
@@ -118,18 +133,10 @@ class TestLogReader(unittest.TestCase):
                      'grouped_zeros': {}}]
         self.assertEqual(expected, result)
 
+    @log_to_sum
     def xtest_summing_without_groupby(self):
-        logpath = '/tmp/sum.log'
-        f = open(logpath, 'w')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t7\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t11\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\t13\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\t13\n')
-        f.close()
-
         q = get_queue()
-        conf = {'logpath' : logpath,
+        conf = {'logpath' : '/tmp/sum.log',
                 'columns' : ['c0', 'c1', 'datetime', 'primes'],
                 'delimiter' : '\t',
                 'datetime_column': 'datetime',
@@ -159,8 +166,6 @@ class TestLogReader(unittest.TestCase):
         content = q.get().content
         self.assertEqual(11, content['interval_started_at'].minute)
         self.assertEqual(13, content['value'])
-
-        os.remove(logpath)
 
     def xtest_summing_with_groupby(self):
         logpath = '/tmp/sum.log'
