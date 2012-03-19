@@ -87,18 +87,17 @@ class LogReader(Reader):
         return [{'column_name' : c['column'],
                  'interval_duration_sec' : c['period']*60,
                  'current' : {'interval_started_at' : 0,
-                              'value' : 0,
-                 'previous' : {}}} for c in conf]
+                              'value' : 0},
+                 'previous' : {}} for c in conf]
 
     @classmethod
     def initialize_counts(self, conf):
-        return [{'interval_started_at': 0,
-                 'interval_duration_sec': s['period']*60,
-                 'column_name': s['column'],
-                 'column_value': s['match'],
-                 'remaining': {},
-                 'zeros': [],
-                 'value' : 0} for s in conf]
+        return [{'column_name': c['column'],
+                 'column_value': c['match'],
+                 'interval_duration_sec' : c['period']*60,
+                 'current' : {'interval_started_at' : 0,
+                              'value' : 0},
+                 'previous' : {}} for c in conf]
 
     def get_line(self):
         """Returns a boolean indicating whether the log line
