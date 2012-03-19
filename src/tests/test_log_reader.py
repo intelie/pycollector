@@ -174,12 +174,11 @@ class TestLogReader(unittest.TestCase):
         sums_conf = [{'column': 'bytes_sent',
                       'period':  1,}]
         result = LogReader.initialize_sums(sums_conf)
-        expected = [{'interval_started_at': 0,
-                    'column_name': 'bytes_sent',
-                    'interval_duration_sec': 60,
-                    'value' : 0,
-                    'remaining': {}, # interval finished
-                    'zeros': []}] # intervals without values
+        expected = [{'column_name' : 'bytes_sent',
+                     'interval_duration_sec' : 60,
+                     'current' : {'interval_started_at' : 0,
+                                  'value' : 0},
+                     'previous' : {}}]
         self.assertEqual(expected, result)
 
     def test_initialize_counts_without_groupby(self):
