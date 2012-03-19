@@ -181,6 +181,26 @@ class TestLogReader(unittest.TestCase):
                      'previous' : {}}]
         self.assertEqual(expected, result)
 
+    def test_initialize_sums_with_groupby(self):
+        sums_conf = [{'column' : 'bytes_sent',
+                      'period' : 1,
+                      'group_by': {
+                          'column' : 'host',
+                          'match' : '(?P<host_name>.*)',
+                          }}]
+        result = LogReader.initialize_sums(sums_conf)
+        expected = [{'interval_started_at': 0,
+                     'column_name': 'bytes_sent',
+                     'group_by': {
+                         'column_name' : 'host',
+                         'match' : '(?P<host_name>.*)'
+                         },
+                     'interval_duration_sec' : 60,
+                     'grouped_values': {},
+                     'grouped_remaining': {},
+                     'grouped_zeros': {}}]
+        self.assertEqual(expected, result)
+
     def test_initialize_counts_without_groupby(self):
         counts_conf = [{'column': 'method',
                       'match' : 'GET',
@@ -289,6 +309,85 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(13, content['value'])
 
         os.remove(logpath)
+
+    def test_summing_with_groupby(self):
+        logpath = '/tmp/sum.log'
+        f = open(logpath, 'w')
+        f.write('g0\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\t5\n')
+        f.write('g1\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t7\n')
+        f.write('g1\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\t11\n')
+        f.write('g0\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\t13\n')
+        f.write('g1\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\t13\n')
+        f.close()
+
+        q = get_queue()
+        conf = {'logpath' : logpath,
+                'columns' : ['c0', 'c1', 'datetime', 'primes'],
+                'delimiter' : '\t',
+                'datetime_column': 'datetime',
+                'sums' : [{'column' : 'primes',
+                           'period': 1,
+                           'group_by': {
+                               'column' : 'c0',
+                               'match' : '(?P<host>.*)' }}]}
+
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # time to process
+        time.sleep(0.1)
+
+        messages = []
+        while q.qsize() > 0:
+            messages.append(q.get())
+
+        self.assertEqual(9, len(messages))
+
+        checks = 0
+        for m in messages:
+            content = m.content
+            if content['interval_started_at'].minute == 7 and \
+                content['host'] == 'g0':
+                self.assertEqual(5, content['value'])
+                checks += 1
+                continue
+
+            if content['interval_started_at'].minute == 8 and \
+                content['host'] == 'g0':
+                self.assertEqual(0, content['value'])
+                checks += 1
+                continue
+
+            if content['interval_started_at'].minute == 8 and \
+                content['host'] == 'g1':
+                self.assertEqual(18, content['value'])
+                checks += 1
+                continue
+
+            if (content['interval_started_at'].minute == 9 or \
+                content['interval_started_at'].minute == 10) and \
+                (content['host'] == 'g0' or content['host'] == 'g1'):
+                self.assertEqual(0, content['value'])
+                checks += 1
+                continue
+
+            if content['interval_started_at'].minute == 11 and \
+                content['host'] == 'g0':
+                self.assertEqual(13, content['value'])
+                checks += 1
+                continue
+
+            if content['interval_started_at'].minute == 11 and \
+                content['host'] == 'g1':
+                self.assertEqual(0, content['value'])
+                checks += 1
+                continue
+
+        self.assertEqual(9, checks)
+
+
+        os.remove(logpath)
+
 
     def test_summing_2_columns_without_groupby(self):
         logpath = '/tmp/sum.log'
