@@ -292,9 +292,6 @@ class LogReader(Reader):
         # failure recovering from checkpoint
         self.set_checkpoint()
 
-        # starts tail
-        self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
-
         # initializations
         self.to_split = True if hasattr(self, 'delimiter') else False
         self.to_dictify = True if hasattr(self, 'columns') else False
@@ -306,6 +303,9 @@ class LogReader(Reader):
 
         if hasattr(self, 'counts'):
             self.current_counts = self.initialize_counts(self.counts)
+
+        # starts tail
+        self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
 
     def read(self):
         # sync reader
