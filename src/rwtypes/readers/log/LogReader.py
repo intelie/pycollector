@@ -80,44 +80,39 @@ class LogReader(Reader):
             self.current_checkpoint['sums'] = self.current_sums
 
     def do_counts(self):
-        # TODO: merge with do_sums in one function
-        for i, s in enumerate(self.current_counts):
-            current_value = self.current_line[s['column_name']]
-            last_start_time = s['interval_started_at']
-            count_period = s['interval_duration_sec']
+        for i, c in enumerate(self.current_counts):
+            current_value = self.current_line[c['column_name']]
+            current_start_time = c['current']['interval_started_at']
+            period = c['current']['interval_duration_sec']
 
             # starting interval
-            if last_start_time == 0:
-                start = self.get_starting_minute(self.current_datetime)
-                s['interval_started_at'] = start
-                # TODO: apply regexp
-                if current_value == s['column_value']:
-                    s['value'] += 1
+            if current_start_time == 0:
+                start = LogUtils.get_starting_minute(self.current_datetime)
+                c['current']['interval_started_at'] = start
+                c['current_value'] += 1 if current_value == c['column_value'] else 0
             else:
-                (start, end) = self.get_interval(last_start_time, count_period)
+                (start, end) = LogUtils.get_interval(current_start_time, period)
                 # not in interval
                 if not (start <= self.current_datetime < end):
-                    s['remaining']['interval_started_at'] = s['interval_started_at']
-                    s['remaining']['value'] = s['value']
-                    s['zeros'] = self.get_missing_intervals(end, count_period, self.current_datetime)
-                    new_start, new_end = self.get_interval(self.current_datetime, count_period)
-                    s['interval_started_at'] = new_start
-                    if current_value == s['column_value']:
-                        s['value'] = 1
-                    else:
-                        s['value'] = 0
+                    previous = [{'interval_started_at' : c['current']['interval_started_at'],
+                                 'value' : c['current']['value']}]
+                    zeros  = LogUtils.get_missing_intervals(end, period, self.current_datetime)
+                    previous.extend([{'interval_started_at' : z, 'value' : 0} for z in zeros])
+                    c['previous'] = previous
+                    new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
+                    c['current']['interval_started_at'] = new_start
+                    c['current']['value'] = 1 if current_value == c['column_value'] else 0
                 # in interval
                 else:
-                    s['remaining'] = {}
-                    s['zeros'] = []
-                    # TODO: apply regexp
-                    if current_value == s['column_value']:
-                        s['value'] += 1
+                    c['previous'] = []
+                    c['current']['value'] += 1 if current_value == c['column_value'] else 0
+        return True
 
     def store_counts(self):
         # TODO: merge with store_sums in one function
         for s in self.current_counts:
             to_send = []
+
             if len(s['remaining']) > 0:
                 event = s['remaining']
                 event['interval_duration_sec'] = s['interval_duration_sec']
