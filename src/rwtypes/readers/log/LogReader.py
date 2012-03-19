@@ -35,9 +35,9 @@ class LogReader(Reader):
 
     def do_sums(self):
         for i, s in enumerate(self.current_sums):
-            current_value_to_sum = int(self.current_line[s['column_name']])
+            current_value = int(self.current_line[s['column_name']])
             current_start_time = s['current']['interval_started_at']
-            sum_period = s['interval_duration_sec']
+            period = s['interval_duration_sec']
 
             # starting interval
             if current_start_time == 0:
@@ -45,14 +45,14 @@ class LogReader(Reader):
                 s['current']['interval_started_at'] = start
                 s['current']['value'] = current_value_to_sum
             else:
-                (start, end) = self.get_interval(current_start_time, sum_period)
+                (start, end) = self.get_interval(current_start_time, period)
                 # not in interval
                 if not (start <= self.current_datetime < end):
                     previous = [{'interval_started_at' : s['interval_started_at'],
                                  'value' : s['value']}]
-                    zeros = LogUtils.get_missing_intervals(end, sum_period, self.current_datetime)
+                    zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
                     previous.extend([{'interval_started_at' : z, 'value' : 0} for z in zeros])
-                    new_start, new_end = LogUtils.get_interval(self.current_datetime, sum_period)
+                    new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
                     s['current']['interval_started_at'] = new_start
                     s['current']['value'] = current_value_to_sum
                 # in interval
