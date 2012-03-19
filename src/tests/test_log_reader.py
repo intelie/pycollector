@@ -277,20 +277,14 @@ class TestLogReader(unittest.TestCase):
         time.sleep(0.1)
 
         messages = []
-        while q.qsize() > 0:
-            messages.append(q.get())
+        while q.qsize() > 0: messages.append(q.get())
 
         # it should generate messages for the
         # minutes: 7, 8, 9, 10, 11 (x 2, since there are 2 sums)
         self.assertEqual(10, len(messages))
 
-        even_messages = []
-        prime_messages = []
-        for m in messages:
-            if m.content['column_name'] == 'primes':
-                prime_messages.append(m)
-            else:
-                even_messages.append(m)
+        even_messages = filter(lambda x: x.content['column_name'] == 'evens', messages)
+        prime_messages = filter(lambda x: x.content['column_name'] == 'primes', messages)
 
         # assert that all minutes were delivered for each sum
         self.assertEqual(5, len(prime_messages))
