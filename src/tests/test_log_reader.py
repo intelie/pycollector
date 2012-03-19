@@ -134,7 +134,7 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(expected, result)
 
     @log_to_sum
-    def xtest_summing_without_groupby(self):
+    def test_summing_without_groupby(self):
         q = get_queue()
         conf = {'logpath' : '/tmp/sum.log',
                 'columns' : ['c0', 'c1', 'datetime', 'primes'],

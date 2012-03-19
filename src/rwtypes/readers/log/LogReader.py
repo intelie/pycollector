@@ -41,49 +41,43 @@ class LogReader(Reader):
 
             # starting interval
             if current_start_time == 0:
-                start = self.get_starting_minute(self.current_datetime)
+                start = LogUtils.get_starting_minute(self.current_datetime)
                 s['current']['interval_started_at'] = start
-                s['current']['value'] = current_value_to_sum
+                s['current']['value'] = current_value
             else:
-                (start, end) = self.get_interval(current_start_time, period)
+                (start, end) = LogUtils.get_interval(current_start_time, period)
                 # not in interval
                 if not (start <= self.current_datetime < end):
-                    previous = [{'interval_started_at' : s['interval_started_at'],
-                                 'value' : s['value']}]
+                    previous = [{'interval_started_at' : s['current']['interval_started_at'],
+                                 'value' : s['current']['value']}]
                     zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
                     previous.extend([{'interval_started_at' : z, 'value' : 0} for z in zeros])
+                    s['previous'] = previous
                     new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
                     s['current']['interval_started_at'] = new_start
-                    s['current']['value'] = current_value_to_sum
+                    s['current']['value'] = current_value
                 # in interval
                 else:
                     s['previous'] = []
-                    s['current']['value'] += current_value_to_sum
+                    s['current']['value'] += current_value
+        return True
 
     def store_sums(self):
         for s in self.current_sums:
-            to_send = []
-            if len(s['remaining']) > 0:
-                event = s['remaining']
-                event['interval_duration_sec'] = s['interval_duration_sec']
-                event['column_name'] = s['column_name']
-                to_send.append(copy.deepcopy(event))
-            for z in s['zeros']:
-                event = {}
-                event['interval_started_at'] = z
-                event['interval_duration_sec'] = s['interval_duration_sec']
-                event['column_name'] = s['column_name']
-                event['value'] = 0
-                to_send.append(copy.deepcopy(event))
-            contents = to_send
-            if self.checkpoint_enabled:
-                self.current_checkpoint['sums'] = self.current_sums
-                for content in contents:
-                    self.store(Message(content=content,
-                                       checkpoint=self.current_checkpoint))
-            else:
-                for content in contents:
+            for p in s['previous']:
+                content = {'interval_duration_sec' : s['interval_duration_sec'],
+                          'interval_started_at' : p['interval_started_at'],
+                          'column_name' : s['column_name'],
+                          'value' : p['value']}
+                content = copy.deepcopy(content)
+                if self.checkpoint_enabled:
+                    self.store(Message(checkpoint=self.current_checkpoint,
+                                       content=content))
+                else:
                     self.store(Message(content=content))
+
+        if self.checkpoint_enabled:
+            self.current_checkpoint['sums'] = self.current_sums
 
     def do_counts(self):
         # TODO: merge with do_sums in one function
