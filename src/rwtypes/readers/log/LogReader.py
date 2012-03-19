@@ -83,7 +83,7 @@ class LogReader(Reader):
             raise ParsingError("Error parsing line: %s" % line)
 
     @classmethod
-    def initialize_sums(self, conf):
+    def initialize_sums(cls, conf):
         return [{'column_name' : c['column'],
                  'interval_duration_sec' : c['period']*60,
                  'current' : {'interval_started_at' : 0,
@@ -91,7 +91,7 @@ class LogReader(Reader):
                  'previous' : {}} for c in conf]
 
     @classmethod
-    def initialize_counts(self, conf):
+    def initialize_counts(cls, conf):
         return [{'column_name': c['column'],
                  'column_value': c['match'],
                  'interval_duration_sec' : c['period']*60,
