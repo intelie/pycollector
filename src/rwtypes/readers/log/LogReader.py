@@ -36,30 +36,30 @@ class LogReader(Reader):
     def do_sums(self):
         for i, s in enumerate(self.current_sums):
             current_value_to_sum = int(self.current_line[s['column_name']])
-            last_start_time = s['interval_started_at']
+            current_start_time = s['current']['interval_started_at']
             sum_period = s['interval_duration_sec']
 
-
             # starting interval
-            if last_start_time == 0:
+            if current_start_time == 0:
                 start = self.get_starting_minute(self.current_datetime)
-                s['interval_started_at'] = start
-                self.current_sums[i]['value'] += current_value_to_sum
+                s['current']['interval_started_at'] = start
+                s['current']['value'] = current_value_to_sum
             else:
-                (start, end) = self.get_interval(last_start_time, sum_period)
+                (start, end) = self.get_interval(current_start_time, sum_period)
                 # not in interval
                 if not (start <= self.current_datetime < end):
-                    s['remaining']['interval_started_at'] = s['interval_started_at']
-                    s['remaining']['value'] = s['value']
-                    s['zeros'] = self.get_missing_intervals(end, sum_period, self.current_datetime)
-                    new_start, new_end = self.get_interval(self.current_datetime, sum_period)
-                    s['interval_started_at'] = new_start
-                    s['value'] = current_value_to_sum
+                    previous = []
+                    previous.append({'interval_started_at' : s['interval_started_at'],
+                                     'value' : s['value']})
+                    zeros = LogUtils.get_missing_intervals(end, sum_period, self.current_datetime)
+                    previous.extend([{'interval_started_at' : z, 'value' : 0} for z in zeros])
+                    new_start, new_end = LogUtils.get_interval(self.current_datetime, sum_period)
+                    s['current']['interval_started_at'] = new_start
+                    s['current']['value'] = current_value_to_sum
                 # in interval
                 else:
-                    s['remaining'] = {}
-                    s['zeros'] = []
-                    self.current_sums[i]['value'] += current_value_to_sum
+                    s['previous'] = []
+                    s['current']['value'] += current_value_to_sum
 
     def store_sums(self):
         for s in self.current_sums:
