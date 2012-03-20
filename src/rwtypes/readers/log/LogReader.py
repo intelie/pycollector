@@ -133,12 +133,20 @@ class LogReader(Reader):
         try:
             if self.to_sum or self.to_count:
                 self.set_current_datetime()
-                if self.to_sum:
-                    self.do_aggregation('sums') and \
-                     self.store_aggregation('sums')
-                if self.to_count:
-                    self.do_aggregation('counts') and \
-                    self.store_aggregation('counts')
+                try:
+                    if self.to_sum:
+                        self.do_aggregation('sums') and \
+                         self.store_aggregation('sums')
+                except Exception, e:
+                    self.log.error("Error while summing.")
+                    self.log.error(traceback.format_exc())
+                try:
+                    if self.to_count:
+                        self.do_aggregation('counts') and \
+                        self.store_aggregation('counts')
+                except Exception, e:
+                    self.log.error("Error while counting.")
+                    self.log.error(traceback.format_exc())
                 return
 
             if self.checkpoint_enabled:
