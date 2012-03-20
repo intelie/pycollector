@@ -34,7 +34,7 @@ class LogReader(Reader):
         cache = self.current_sums if kind == 'sums' else self.current_counts
         for i, c in enumerate(cache):
             current_value = self.current_line[c['column_name']]
-            if kind = 'sums':
+            if kind == 'sums':
                 current_value = int(current_value)
             current_start_time = c['current']['interval_started_at']
             period = c['interval_duration_sec']
