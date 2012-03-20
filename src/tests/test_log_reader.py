@@ -57,6 +57,20 @@ def log_to_count(g):
         os.remove(logpath)
     return wrapper
 
+def log_to_count_2_columns(g):
+    def wrapper(self):
+        logpath = '/tmp/count.log'
+        f = open(logpath, 'w')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\tGET\t200\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\tGET\t200\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\tGET\t404\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\tPUT\t404\n')
+        f.write('first_column\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\tDELETE\t200\n')
+        f.close()
+        g(self)
+        os.remove(logpath)
+    return wrapper
+
 
 class TestLogReader(unittest.TestCase):
     def setUp(self):
@@ -297,7 +311,7 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(5, len(primes))
         self.assertEqual(5, len(evens))
 
-        result = map(lambda x: (x.content['interval_started_at'].minute, 
+        result = map(lambda x: (x.content['interval_started_at'].minute,
                                 x.content['value']), primes)
         self.assertIn((7, 5), result)
         self.assertIn((8, 18), result)
@@ -305,7 +319,7 @@ class TestLogReader(unittest.TestCase):
         self.assertIn((10, 0), result)
         self.assertIn((11, 13), result)
 
-        result = map(lambda x: (x.content['interval_started_at'].minute, 
+        result = map(lambda x: (x.content['interval_started_at'].minute,
                                 x.content['value']), evens)
         self.assertIn((7, 4), result)
         self.assertIn((8, 6), result)
@@ -341,18 +355,11 @@ class TestLogReader(unittest.TestCase):
         self.assertIn((10, 0), result)
         self.assertIn((11, 0), result)
 
-    def xtest_counting_2_columns_without_groupby(self):
-        logpath = '/tmp/count.log'
-        f = open(logpath, 'w')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:07:09 +0000]\tGET\t200\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\tGET\t200\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:08:09 +0000]\tGET\t404\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:11:09 +0000]\tPUT\t404\n')
-        f.write('first_column\tsecond_column\t[30/Jan/2012:18:12:00 +0000]\tDELETE\t200\n')
-        f.close()
+    @log_to_count_2_columns
+    def test_counting_2_columns_without_groupby(self):
 
         q = get_queue()
-        conf = {'logpath' : logpath,
+        conf = {'logpath' : '/tmp/count.log',
                 'columns' : ['c0', 'c1', 'datetime', 'method', 'status'],
                 'delimiter' : '\t',
                 'datetime_column': 'datetime',
@@ -369,75 +376,34 @@ class TestLogReader(unittest.TestCase):
         time.sleep(0.1)
 
         messages = []
-        while q.qsize() > 0:
-            messages.append(q.get())
+        while q.qsize() > 0: messages.append(q.get())
 
         # it should generate messages for the
         # minutes: 7, 8, 9, 10, 11 (x 2, since there are 2 counts)
         self.assertEqual(10, len(messages))
 
-        status_messages = []
-        method_messages = []
-        for m in messages:
-            if m.content['column_name'] == 'status':
-                status_messages.append(m)
-            else:
-                method_messages.append(m)
+        status = filter(lambda x: x.content['column_name'] == 'status', messages)
+        methods = filter(lambda x: x.content['column_name'] == 'method', messages)
 
         # assert that all minutes were delivered for each count
-        self.assertEqual(5, len(status_messages))
-        self.assertEqual(5, len(method_messages))
+        self.assertEqual(5, len(status))
+        self.assertEqual(5, len(methods))
 
-        checks = 0
-        for message in method_messages:
-            content = message.content
-            if content['interval_started_at'].minute == 7:
-                self.assertEqual(1, content['value'])
-                checks += 1
+        result = map(lambda x: (x.content['interval_started_at'].minute,
+                                x.content['value']), methods)
+        self.assertIn((7, 1), result)
+        self.assertIn((8, 2), result)
+        self.assertIn((9, 0), result)
+        self.assertIn((10, 0), result)
+        self.assertIn((11, 0), result)
 
-            if content['interval_started_at'].minute == 8:
-                self.assertEqual(2, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 9:
-                self.assertEqual(0, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 10:
-                self.assertEqual(0, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 11:
-                self.assertEqual(0, content['value'])
-                checks += 1
-
-        self.assertEqual(5, checks)
-
-        checks = 0
-        for message in status_messages:
-            content = message.content
-            if content['interval_started_at'].minute == 7:
-                self.assertEqual(1, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 8:
-                self.assertEqual(1, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 9:
-                self.assertEqual(0, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 10:
-                self.assertEqual(0, content['value'])
-                checks += 1
-
-            if content['interval_started_at'].minute == 11:
-                self.assertEqual(0, content['value'])
-                checks += 1
-        self.assertEqual(5, checks)
-
-        os.remove(logpath)
+        result = map(lambda x: (x.content['interval_started_at'].minute,
+                                x.content['value']), status)
+        self.assertIn((7, 1), result)
+        self.assertIn((8, 1), result)
+        self.assertIn((9, 1), result)
+        self.assertIn((10, 1), result)
+        self.assertIn((11, 1), result)
 
 
 def suite():
