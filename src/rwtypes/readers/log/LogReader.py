@@ -33,10 +33,9 @@ class LogReader(Reader):
     def do_aggregation(self, kind='sums'):
         cache = self.current_sums if kind == 'sums' else self.current_counts
         for i, c in enumerate(cache):
-            if kind == 'sums':
-                current_value = int(self.current_line[c['column_name']])
-            elif kind == 'counts':
-                current_value = self.current_line[c['column_name']]
+            current_value = self.current_line[c['column_name']]
+            if kind = 'sums':
+                current_value = int(current_value)
             current_start_time = c['current']['interval_started_at']
             period = c['interval_duration_sec']
 
@@ -112,6 +111,7 @@ class LogReader(Reader):
 
         # failure recovering from checkpoint
         if self.checkpoint_enabled: self.recover_checkpoint()
+
 
         # initializations
         self.to_split = True if hasattr(self, 'delimiter') else False
