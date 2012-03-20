@@ -326,25 +326,17 @@ class TestLogReader(unittest.TestCase):
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
-        content = q.get().content
-        self.assertEqual(7, content['interval_started_at'].minute)
-        self.assertEqual(1, content['value'])
+        messages = []
+        while q.qsize() > 0: messages.append(q.get())
 
-        content = q.get().content
-        self.assertEqual(8, content['interval_started_at'].minute)
-        self.assertEqual(2, content['value'])
+        result = map(lambda x: (x.content['interval_started_at'].minute,
+                                x.content['value']), messages)
 
-        content = q.get().content
-        self.assertEqual(9, content['interval_started_at'].minute)
-        self.assertEqual(0, content['value'])
-
-        content = q.get().content
-        self.assertEqual(10, content['interval_started_at'].minute)
-        self.assertEqual(0, content['value'])
-
-        content = q.get().content
-        self.assertEqual(11, content['interval_started_at'].minute)
-        self.assertEqual(0, content['value'])
+        self.assertIn((7, 1), result)
+        self.assertIn((8, 2), result)
+        self.assertIn((9, 0), result)
+        self.assertIn((10, 0), result)
+        self.assertIn((11, 0), result)
 
     def xtest_counting_2_columns_without_groupby(self):
         logpath = '/tmp/count.log'
