@@ -27,6 +27,27 @@ def log_to_sum(g):
         os.remove(logpath)
     return wrapper
 
+def log_to_sum_with_date_and_time_columns(g):
+    def wrapper(self):
+        logpath = '/tmp/sum.log'
+        f = open(logpath, 'w')
+        f.write('foo\tbar\t30/Jan/2012\t18:07:09\t5\n')
+        f.write('foo\tbar\t30/Jan/2012\t18:08:09\t7\n')
+        f.write('foo\tbar\t30/Jan/2012\t18:08:09\t11\n')
+        f.write('foo\tbar\t30/Jan/2012\t18:11:09\t13\n')
+        f.write('foo\tbar\t30/Jan/2012\t18:12:00\t13\n')
+        f.close()
+        g(self)
+        os.remove(logpath)
+    return wrapper
+
+def log_to_sum_2_columns(g):
+    def wrapper(self):
+        logpath = '/tmp/sum.log'
+        f = open(logpath, 'w')
+        f.write('foo\tbar\t[30/Jan/2012:18:07:09 +0000]\t5\t4\n')
+        f.write('foo\tbar\t[30/Jan/2012:18:08:09 +0000]\t7\t2\n')
+        f.write('foo\tbar\t[30/Jan/2012:18:08:09 +0000]\t11\t4\n')
 
 def log_to_sum_2_columns(g):
     def wrapper(self):
@@ -133,12 +154,12 @@ class TestLogReader(unittest.TestCase):
         time.sleep(0.1)
 
         msg = q.get()
-        self.assertEqual({'col0' : 'a',
+        self.assertEqual({'col0': 'a',
                           'col1': 'b',
                           'col2': 'c'}, msg.content)
 
         msg = q.get()
-        self.assertEqual({'col0' : 'x',
+        self.assertEqual({'col0': 'x',
                           'col1': 'y',
                           'col2': 'z'}, msg.content)
 
@@ -169,6 +190,33 @@ class TestLogReader(unittest.TestCase):
                 'delimiter' : '\t',
                 'datetime_column': 'datetime',
                 'sums' : [{'column' : 'primes', 'period': 1}]}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # time to process
+        time.sleep(0.1)
+
+        # get messages
+        messages = []
+        while q.qsize() > 0: messages.append(q.get())
+
+        result = map(lambda x: (x.content['interval_started_at'].minute,
+                                x.content['value']), messages)
+        self.assertIn((7, 5), result)
+        self.assertIn((8, 18), result)
+        self.assertIn((9, 0), result)
+        self.assertIn((10, 0), result)
+        self.assertIn((11, 13), result)
+
+    @log_to_sum_with_date_and_time_columns
+    def test_summing_with_date_and_time_columns_without_groupby(self):
+        q = get_queue()
+        conf = {'logpath': '/tmp/sum.log',
+                'columns': ['c0', 'c1', 'date', 'time', 'primes'],
+                'delimiter': '\t',
+                'date_column': 'date',
+                'time_column': 'time',
+                'sums': [{'column' : 'primes', 'period': 1}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 

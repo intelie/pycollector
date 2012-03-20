@@ -22,16 +22,13 @@ class LogReader(Reader):
 
     def set_current_datetime(self):
         """Set datetime from the current line"""
-        try:
-            if hasattr(self, 'datetime_column'):
-                self.current_datetime = LogUtils.get_datetime(self.current_line,
+        if self.use_datetime_column:
+            self.current_datetime = LogUtils.get_datetime(self.current_line,
                                                           self.datetime_column)
-            else:
-                self.current_datetime = LogUtils.get_datetime(self.current_line,
+        else:
+            self.current_datetime = LogUtils.get_datetime(self.current_line,
                                                           self.date_column,
                                                           self.time_column)
-        except Exception, e:
-            raise ParsingError("Can't set datetime from line %s" % self.current_line)
 
     def do_sums(self):
         for i, s in enumerate(self.current_sums):
@@ -46,7 +43,7 @@ class LogReader(Reader):
                 s['current']['value'] = current_value
             else:
                 (start, end) = LogUtils.get_interval(current_start_time, period)
-                # not in interval
+                # not in current interval
                 if not (start <= self.current_datetime < end):
                     previous = [{'interval_started_at' : s['current']['interval_started_at'],
                                  'value' : s['current']['value']}]
@@ -56,7 +53,7 @@ class LogReader(Reader):
                     new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
                     s['current']['interval_started_at'] = new_start
                     s['current']['value'] = current_value
-                # in interval
+                # in current interval
                 else:
                     s['previous'] = []
                     s['current']['value'] += current_value
@@ -92,7 +89,7 @@ class LogReader(Reader):
                 c['current']['value'] = 1 if current_value == c['column_value'] else 0
             else:
                 (start, end) = LogUtils.get_interval(current_start_time, period)
-                # not in interval
+                # not in current interval
                 if not (start <= self.current_datetime < end):
                     previous = [{'interval_started_at' : c['current']['interval_started_at'],
                                  'value' : c['current']['value']}]
@@ -102,7 +99,7 @@ class LogReader(Reader):
                     new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
                     c['current']['interval_started_at'] = new_start
                     c['current']['value'] = 1 if current_value == c['column_value'] else 0
-                # in interval
+                # in current interval
                 else:
                     c['previous'] = []
                     if current_value == c['column_value']: c['current']['value'] += 1
@@ -151,6 +148,7 @@ class LogReader(Reader):
         self.to_dictify = True if hasattr(self, 'columns') else False
         self.to_sum = True if hasattr(self, 'sums') else False
         self.to_count = True if hasattr(self, 'counts') else False
+        self.use_datetime_column = True if hasattr(self, 'datetime_column') else False
 
         if hasattr(self, 'sums'):
             self.current_sums = LogUtils.initialize_sums(self.sums)
