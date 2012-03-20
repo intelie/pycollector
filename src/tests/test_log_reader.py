@@ -133,10 +133,14 @@ class TestLogReader(unittest.TestCase):
         time.sleep(0.1)
 
         msg = q.get()
-        self.assertEqual({'col0' : 'a', 'col1': 'b', 'col2': 'c'}, msg.content)
+        self.assertEqual({'col0' : 'a',
+                          'col1': 'b',
+                          'col2': 'c'}, msg.content)
 
         msg = q.get()
-        self.assertEqual({'col0' : 'x', 'col1': 'y', 'col2': 'z'}, msg.content)
+        self.assertEqual({'col0' : 'x',
+                          'col1': 'y',
+                          'col2': 'z'}, msg.content)
 
     def test_saving_checkpoint_in_bytes_read(self):
         # starting reader
@@ -156,26 +160,6 @@ class TestLogReader(unittest.TestCase):
 
         msg = q.get()
         self.assertEqual(12, msg.checkpoint['bytes_read'])
-
-    def xtest_initialize_sums_with_groupby(self):
-        sums_conf = [{'column' : 'bytes_sent',
-                      'period' : 1,
-                      'group_by': {
-                          'column' : 'host',
-                          'match' : '(?P<host_name>.*)',
-                         }}]
-        result = LogReader.initialize_sums(sums_conf)
-        expected = [{'interval_started_at': 0,
-                     'column_name': 'bytes_sent',
-                     'group_by': {
-                         'column_name' : 'host',
-                         'match' : '(?P<host_name>.*)'
-                         },
-                     'interval_duration_sec' : 60,
-                     'grouped_values': {},
-                     'grouped_remaining': {},
-                     'grouped_zeros': {}}]
-        self.assertEqual(expected, result)
 
     @log_to_sum
     def test_summing_without_groupby(self):
@@ -207,7 +191,7 @@ class TestLogReader(unittest.TestCase):
     def test_summing_2_columns_without_groupby(self):
         q = get_queue()
         conf = {'logpath' : '/tmp/sum.log',
-                'columns' : ['c0', 'c1', 'datetime', 
+                'columns' : ['c0', 'c1', 'datetime',
                              'primes', 'evens'],
                 'delimiter' : '\t',
                 'datetime_column': 'datetime',
@@ -284,7 +268,7 @@ class TestLogReader(unittest.TestCase):
 
         q = get_queue()
         conf = {'logpath' : '/tmp/count.log',
-                'columns' : ['c0', 'c1', 'datetime', 
+                'columns' : ['c0', 'c1', 'datetime',
                              'method', 'status'],
                 'delimiter' : '\t',
                 'datetime_column': 'datetime',
