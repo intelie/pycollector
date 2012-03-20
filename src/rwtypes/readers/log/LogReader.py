@@ -80,58 +80,59 @@ class LogReader(Reader):
             self.current_checkpoint['sums'] = self.current_sums
 
     def do_counts(self):
-        try:
-            for i, c in enumerate(self.current_counts):
-                current_value = self.current_line[c['column_name']]
-                current_start_time = c['current']['interval_started_at']
-                period = c['interval_duration_sec']
+        for i, c in enumerate(self.current_counts):
+            current_value = self.current_line[c['column_name']]
+            current_start_time = c['current']['interval_started_at']
+            period = c['interval_duration_sec']
 
-                # starting interval
-                if current_start_time == 0:
-                    start = LogUtils.get_starting_minute(self.current_datetime)
-                    c['current']['interval_started_at'] = start
+            # starting interval
+            if current_start_time == 0:
+                start = LogUtils.get_starting_minute(self.current_datetime)
+                c['current']['interval_started_at'] = start
+                if current_value == c['column_value']:
+                    c['current']['value'] = 1
+                else:
+                    c['current']['value'] = 0
+            else:
+                (start, end) = LogUtils.get_interval(current_start_time, period)
+                # not in interval
+                if not (start <= self.current_datetime < end):
+                    previous = [{'interval_started_at' : c['current']['interval_started_at'],
+                                 'value' : c['current']['value']}]
+                    zeros  = LogUtils.get_missing_intervals(end, period, self.current_datetime)
+                    previous.extend([{'interval_started_at' : z, 'value' : 0} for z in zeros])
+                    c['previous'] = previous
+                    new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
+                    c['current']['interval_started_at'] = new_start
                     if current_value == c['column_value']:
                         c['current']['value'] = 1
-                else:
-                    (start, end) = LogUtils.get_interval(current_start_time, period)
-                    # not in interval
-                    if not (start <= self.current_datetime < end):
-                        previous = [{'interval_started_at' : c['current']['interval_started_at'],
-                                     'value' : c['current']['value']}]
-                        zeros  = LogUtils.get_missing_intervals(end, period, self.current_datetime)
-                        previous.extend([{'interval_started_at' : z, 'value' : 0} for z in zeros])
-                        c['previous'] = previous
-                        new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
-                        c['current']['interval_started_at'] = new_start
-                        if current_value == c['column_value']:
-                            c['current']['value'] = 1
-                    # in interval
                     else:
-                        c['previous'] = []
-                        if current_value == c['column_value']:
-                            c['current']['value'] += 1
-            print self.current_counts
-            return True
-        except Exception, e:
-            print e
+                        c['current']['value'] = 0
+                # in interval
+                else:
+                    c['previous'] = []
+                    if current_value == c['column_value']:
+                        c['current']['value'] += 1
+        print self.current_counts
+        return True
 
     def store_counts(self):
-        try:
-            for c in self.current_counts:
-                for p in c['previous']:
-                    content = {'interval_started_at' : p['interval_started_at'],
-                               'interval_duration_sec' : c['interval_duration_sec'],
-                               'column_name' : c['column_name'],
-                               'column_value' : c['column_value'],
-                               'value' : p['value']}
-                    content = copy.deepcopy(content) 
-                    if self.checkpoint_enabled:
-                        self.store(Message(checkpoint=self.current_checkpoint,
-                                           content=content))
-                    else:
-                        self.store(Message(content=content))
-        except Exception, e:
-            print e
+        for c in self.current_counts:
+            for p in c['previous']:
+                content = {'interval_started_at' : p['interval_started_at'],
+                           'interval_duration_sec' : c['interval_duration_sec'],
+                           'column_name' : c['column_name'],
+                           'column_value' : c['column_value'],
+                           'value' : p['value']}
+                content = copy.deepcopy(content) 
+                if self.checkpoint_enabled:
+                    self.store(Message(checkpoint=self.current_checkpoint,
+                                       content=content))
+                else:
+                    self.store(Message(content=content))
+
+        #if self.checkpoint_enabled:
+        #    self.current_checkpoint['counts'] = self.current_counts
 
     def recover_checkpoint(self):
         """Seek file if previous checkpoint was found."""

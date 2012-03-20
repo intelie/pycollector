@@ -326,6 +326,9 @@ class TestLogReader(unittest.TestCase):
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
+        # time to process
+        time.sleep(0.1)
+
         messages = []
         while q.qsize() > 0: messages.append(q.get())
 
