@@ -284,7 +284,8 @@ class TestLogReader(unittest.TestCase):
     def test_summing_2_columns_without_groupby(self):
         q = get_queue()
         conf = {'logpath' : '/tmp/sum.log',
-                'columns' : ['c0', 'c1', 'datetime', 'primes', 'evens'],
+                'columns' : ['c0', 'c1', 'datetime', 
+                             'primes', 'evens'],
                 'delimiter' : '\t',
                 'datetime_column': 'datetime',
                 'sums' : [{'column': 'primes',
@@ -360,7 +361,8 @@ class TestLogReader(unittest.TestCase):
 
         q = get_queue()
         conf = {'logpath' : '/tmp/count.log',
-                'columns' : ['c0', 'c1', 'datetime', 'method', 'status'],
+                'columns' : ['c0', 'c1', 'datetime', 
+                             'method', 'status'],
                 'delimiter' : '\t',
                 'datetime_column': 'datetime',
                 'counts' : [{'column': 'method',
