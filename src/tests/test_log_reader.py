@@ -372,7 +372,7 @@ class TestLogReader(unittest.TestCase):
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
-        # give time to process messages
+        # time to process
         time.sleep(0.1)
 
         messages = []
@@ -401,9 +401,9 @@ class TestLogReader(unittest.TestCase):
                                 x.content['value']), status)
         self.assertIn((7, 1), result)
         self.assertIn((8, 1), result)
-        self.assertIn((9, 1), result)
-        self.assertIn((10, 1), result)
-        self.assertIn((11, 1), result)
+        self.assertIn((9, 0), result)
+        self.assertIn((10, 0), result)
+        self.assertIn((11, 0), result)
 
 
 def suite():
