@@ -120,8 +120,8 @@ class LogReader(Reader):
                 else:
                     self.store(Message(content=content))
 
-        #if self.checkpoint_enabled:
-        #    self.current_checkpoint['counts'] = self.current_counts
+        if self.checkpoint_enabled:
+            self.current_checkpoint['counts'] = self.current_counts
 
     def recover_checkpoint(self):
         """Seek file if previous checkpoint was found."""
