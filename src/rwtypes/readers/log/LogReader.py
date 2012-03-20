@@ -89,10 +89,7 @@ class LogReader(Reader):
             if current_start_time == 0:
                 start = LogUtils.get_starting_minute(self.current_datetime)
                 c['current']['interval_started_at'] = start
-                if current_value == c['column_value']:
-                    c['current']['value'] = 1
-                else:
-                    c['current']['value'] = 0
+                c['current']['value'] = 1 if current_value == c['column_value'] else 0
             else:
                 (start, end) = LogUtils.get_interval(current_start_time, period)
                 # not in interval
@@ -104,16 +101,11 @@ class LogReader(Reader):
                     c['previous'] = previous
                     new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
                     c['current']['interval_started_at'] = new_start
-                    if current_value == c['column_value']:
-                        c['current']['value'] = 1
-                    else:
-                        c['current']['value'] = 0
+                    c['current']['value'] = 1 if current_value == c['column_value'] else 0
                 # in interval
                 else:
                     c['previous'] = []
-                    if current_value == c['column_value']:
-                        c['current']['value'] += 1
-        print self.current_counts
+                    if current_value == c['column_value']: c['current']['value'] += 1
         return True
 
     def store_counts(self):
