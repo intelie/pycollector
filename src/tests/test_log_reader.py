@@ -162,25 +162,17 @@ class TestLogReader(unittest.TestCase):
         # time to process
         time.sleep(0.1)
 
-        content = q.get().content
-        self.assertEqual(7, content['interval_started_at'].minute)
-        self.assertEqual(5, content['value'])
+        # get messages
+        messages = []
+        while q.qsize() > 0: messages.append(q.get())
 
-        content = q.get().content
-        self.assertEqual(8, content['interval_started_at'].minute)
-        self.assertEqual(18, content['value'])
-
-        content = q.get().content
-        self.assertEqual(9, content['interval_started_at'].minute)
-        self.assertEqual(0, content['value'])
-
-        content = q.get().content
-        self.assertEqual(10, content['interval_started_at'].minute)
-        self.assertEqual(0, content['value'])
-
-        content = q.get().content
-        self.assertEqual(11, content['interval_started_at'].minute)
-        self.assertEqual(13, content['value'])
+        result = map(lambda x: (x.content['interval_started_at'].minute,
+                                x.content['value']), messages)
+        self.assertIn((7, 5), result)
+        self.assertIn((8, 18), result)
+        self.assertIn((9, 0), result)
+        self.assertIn((10, 0), result)
+        self.assertIn((11, 13), result)
 
     def xtest_summing_with_groupby(self):
         logpath = '/tmp/sum.log'
