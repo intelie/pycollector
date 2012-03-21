@@ -7,11 +7,11 @@ from __exceptions import ConfigurationError
 
 class TestConfReader(unittest.TestCase):
     def setUp(self):
-        self.reader = {'type' : 'stdin'}
-        self.writer = {'type' : 'stdout'}
-        self.base = {'specs': [], 'conf' : []}
-        self.base['conf'] = [{'reader' : self.reader,
-                             'writer' : self.writer}]
+        self.reader = {'type': 'stdin'}
+        self.writer = {'type': 'stdout'}
+        self.base = {'specs': [], 'conf': []}
+        self.base['conf'] = [{'reader': self.reader,
+                             'writer': self.writer}]
 
     def tearDown(self):
         # back with initial stage
