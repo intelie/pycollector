@@ -179,7 +179,7 @@ class TestLogReader(unittest.TestCase):
         q = get_queue()
         conf = {'logpath' : self.logpath,
                 'checkpoint_path' : self.reader_checkpoint,
-                'checkpoint_enabled' : True}
+                'checkpoint_enabled' : True} 
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -192,6 +192,7 @@ class TestLogReader(unittest.TestCase):
         msg = q.get()
         self.assertEqual(12, msg.checkpoint['bytes_read'])
 
+    ########################## SUMS TESTS ##########################
     @log_to_sum
     def test_summing_without_groupby(self):
         q = get_queue()
@@ -292,6 +293,9 @@ class TestLogReader(unittest.TestCase):
         self.assertIn((9, 0), result)
         self.assertIn((10, 0), result)
         self.assertIn((11, 2), result)
+
+
+    ########################## COUNT TESTS ##########################
 
     @log_to_count
     def test_counting_without_groupby(self):
