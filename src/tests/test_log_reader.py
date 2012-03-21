@@ -119,6 +119,23 @@ def log_to_count_2_columns(g):
     return wrapper
 
 
+def log_to_count_with_groupy(g):
+    def wrapper(self):
+        logpath = '/tmp/count.log'
+        f = open(logpath, 'w')
+        f.write('host1\tbar\t[30/Jan/2012:18:07:42 +0000]\tGET\n')
+        f.write('host1\tbar\t[30/Jan/2012:18:07:43 +0000]\tGET\n')
+        f.write('host2\tbar\t[30/Jan/2012:18:07:45 +0000]\tPUT\n')
+        f.write('host1\tbar\t[30/Jan/2012:18:07:45 +0000]\tGET\n')
+        f.write('host2\tbar\t[30/Jan/2012:18:07:46 +0000]\tPUT\n')
+        f.write('host3\tbar\t[30/Jan/2012:18:07:46 +0000]\tPOST')
+        f.write('host3\tbar\t[30/Jan/2012:18:07:46 +0000]\tGET')
+        f.write('host2\tbar\t[30/Jan/2012:18:07:47 +0000]\tGET\n')
+        g(self)
+        os.remove(logpath)
+    return wrapper
+
+
 class TestLogReader(unittest.TestCase):
     def setUp(self):
         # write log file
