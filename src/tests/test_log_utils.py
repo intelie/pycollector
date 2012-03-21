@@ -128,6 +128,19 @@ class TestLogUtils(unittest.TestCase):
         result = LogUtils.initialize_counts(counts_conf)
         self.assertEqual(expected, result)
 
+    def test_initialize_counts_with_groupby(self):
+        counts_conf = [{'column': 'method',
+                      'match' : 'GET',
+                      'period':  1,
+                      'groupby' : {'column' : 'host'}}]
+        expected = [{'column_name' : 'method',
+                     'column_value' : 'GET',
+                     'interval_duration_sec' : 60,
+                     'groupby': {'column' : 'host'},
+                     'groups' : {}}]
+        result = LogUtils.initialize_counts(counts_conf)
+        self.assertEqual(expected, result)
+
     def test_get_missing_intervals(self):
         expected = [datetime.datetime(2012, 1, 1, 1, 1, 0),
                     datetime.datetime(2012, 1, 1, 1, 2, 0),
