@@ -58,6 +58,22 @@ def log_to_sum_2_columns(g):
     return wrapper
 
 
+def log_to_sum_with_groupby(g):
+    def wrapper(self):
+        logpath = '/tmp/sum.log'
+        f = open(logpath, 'w')
+        f.write('host1\tbar\t[30/Jan/2012:18:07:09 +0000]\t5\n')
+        f.write('host2\tbar\t[30/Jan/2012:18:07:29 +0000]\t3\n')
+        f.write('host2\tbar\t[30/Jan/2012:18:07:39 +0000]\t2\n')
+        f.write('host1\tbar\t[30/Jan/2012:18:10:39 +0000]\t42\n')
+        f.write('host3\tbar\t[30/Jan/2012:18:11:39 +0000]\t2\n')
+        f.write('host1\tbar\t[30/Jan/2012:18:12:39 +0000]\t2\n')
+        f.close()
+        g(self)
+        os.remove(logpath)
+    return wrapper
+
+
 def log_to_count(g):
     def wrapper(self):
         logpath = '/tmp/count.log'
