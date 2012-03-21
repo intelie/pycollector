@@ -16,7 +16,7 @@ class LogReader(Reader):
         - logpath (required): path of log file,
             e.g. /tmp/my.log
         - delimiter (optional): character to split log lines,
-            e.g. 
+            e.g. '\t' 
         - columns (optional): list of columns for each log line,
             e.g. ['date', 'hour', 'message']"""
 
