@@ -104,6 +104,17 @@ class TestLogUtils(unittest.TestCase):
         result = LogUtils.initialize_sums(sums_conf)
         self.assertEqual(expected, result)
 
+    def test_initialize_sum_with_groupby(self):
+        sums_conf = [{'column': 'bytes_sent',
+                      'period': 1,
+                      'groupby' : {'column': 'host'}}]
+        expected = [{'column_name' : 'bytes_sent',
+                     'interval_duration_sec': 60,
+                     'groupby' : {'column' : 'host'},
+                     'groups': {}}]
+        result = LogUtils.initialize_sums(sums_conf)
+        self.assertEqual(expected, result)
+
     def test_initialize_counts_without_groupby(self):
         counts_conf = [{'column': 'method',
                       'match' : 'GET',
