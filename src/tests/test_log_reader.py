@@ -320,6 +320,7 @@ class TestLogReader(unittest.TestCase):
                 'delimiter': '\t',
                 'datetime_column': 'datetime',
                 'sums': [{'column': 'x',
+                          'period': 1,
                           'groupby': {'column': 'host'}}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
