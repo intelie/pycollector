@@ -88,16 +88,16 @@ class LogUtils:
     def initialize_sums(cls, conf):
         """Input: dict (sums configuration)
            Output: dict"""
-        return [{'column_name' : c['column'],
-                 'interval_duration_sec' : c['period']*60,
-                 'groupby' : c['groupby'],
-                 'groups' : {}}
+        return [{'column_name': c['column'],
+                 'interval_duration_sec': c['period']*60,
+                 'groupby': c['groupby'],
+                 'groups': {}}
                  if 'groupby' in c else
-                {'column_name' : c['column'],
-                 'interval_duration_sec' : c['period']*60,
-                 'current' : {'interval_started_at' : 0,
-                              'value' : 0},
-                 'previous' : []}
+                {'column_name': c['column'],
+                 'interval_duration_sec': c['period']*60,
+                 'current': {'interval_started_at': 0,
+                              'value': 0},
+                 'previous': []}
                  for c in conf]
 
     @classmethod
@@ -106,15 +106,15 @@ class LogUtils:
            Output: dict"""
         return [{'column_name': c['column'],
                  'column_value': c['match'],
-                 'interval_duration_sec' : c['period']*60,
+                 'interval_duration_sec': c['period']*60,
                  'groupby': c['groupby'],
-                 'groups' : {}}
+                 'groups': {}}
                 if 'groupby' in c else
                 {'column_name': c['column'],
                  'column_value': c['match'],
-                 'interval_duration_sec' : c['period']*60,
-                 'current' : {'interval_started_at' : 0,
-                              'value' : 0},
-                 'previous' : []}
+                 'interval_duration_sec': c['period']*60,
+                 'current': {'interval_started_at': 0,
+                              'value': 0},
+                 'previous': []}
                 for c in conf]
 
