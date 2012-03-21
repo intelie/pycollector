@@ -107,7 +107,14 @@ class LogUtils:
         return [{'column_name': c['column'],
                  'column_value': c['match'],
                  'interval_duration_sec' : c['period']*60,
+                 'groupby': c['groupby'],
+                 'groups' : {}}
+                if 'groupby' in c else
+                {'column_name': c['column'],
+                 'column_value': c['match'],
+                 'interval_duration_sec' : c['period']*60,
                  'current' : {'interval_started_at' : 0,
                               'value' : 0},
-                 'previous' : []} for c in conf]
+                 'previous' : []}
+                for c in conf]
 
