@@ -121,9 +121,9 @@ class TestLogReader(unittest.TestCase):
     def test_reading_log_and_saving_into_queue(self):
         # starting reader
         q = get_queue()
-        conf = {'logpath' : self.logpath,
-                'checkpoint_path' : self.reader_checkpoint,
-                'checkpoint_enabled' : True}
+        conf = {'logpath': self.logpath,
+                'checkpoint_path': self.reader_checkpoint,
+                'checkpoint_enabled': True}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -139,7 +139,7 @@ class TestLogReader(unittest.TestCase):
     def test_reading_log_with_delimiters_and_saving_into_queue(self):
         # starting reader
         q = get_queue()
-        conf = {'logpath' : self.logpath, 'delimiter': '\t'}
+        conf = {'logpath': self.logpath, 'delimiter': '\t'}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -154,9 +154,9 @@ class TestLogReader(unittest.TestCase):
 
     def test_reading_log_with_delimiters_and_columns_and_saving_into_queue(self):
         q = get_queue()
-        conf = {'logpath' : self.logpath,
+        conf = {'logpath': self.logpath,
                 'delimiter': '\t',
-                'columns' : ['col0', 'col1', 'col2']}
+                'columns': ['col0', 'col1', 'col2']}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -177,9 +177,9 @@ class TestLogReader(unittest.TestCase):
         # starting reader
         f = open(self.reader_checkpoint, 'rb')
         q = get_queue()
-        conf = {'logpath' : self.logpath,
-                'checkpoint_path' : self.reader_checkpoint,
-                'checkpoint_enabled' : True} 
+        conf = {'logpath': self.logpath,
+                'checkpoint_path': self.reader_checkpoint,
+                'checkpoint_enabled': True}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -192,15 +192,17 @@ class TestLogReader(unittest.TestCase):
         msg = q.get()
         self.assertEqual(12, msg.checkpoint['bytes_read'])
 
+
     ########################## SUMS TESTS ##########################
+
     @log_to_sum
     def test_summing_without_groupby(self):
         q = get_queue()
-        conf = {'logpath' : '/tmp/sum.log',
-                'columns' : ['c0', 'c1', 'datetime', 'primes'],
-                'delimiter' : '\t',
+        conf = {'logpath': '/tmp/sum.log',
+                'columns': ['c0', 'c1', 'datetime', 'primes'],
+                'delimiter': '\t',
                 'datetime_column': 'datetime',
-                'sums' : [{'column' : 'primes', 'period': 1}]}
+                'sums': [{'column': 'primes', 'period': 1}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -227,7 +229,7 @@ class TestLogReader(unittest.TestCase):
                 'delimiter': '\t',
                 'date_column': 'date',
                 'time_column': 'time',
-                'sums': [{'column' : 'primes', 'period': 1}]}
+                'sums': [{'column': 'primes', 'period': 1}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -249,15 +251,15 @@ class TestLogReader(unittest.TestCase):
     @log_to_sum_2_columns
     def test_summing_2_columns_without_groupby(self):
         q = get_queue()
-        conf = {'logpath' : '/tmp/sum.log',
-                'columns' : ['c0', 'c1', 'datetime',
+        conf = {'logpath': '/tmp/sum.log',
+                'columns': ['c0', 'c1', 'datetime',
                              'primes', 'evens'],
-                'delimiter' : '\t',
+                'delimiter': '\t',
                 'datetime_column': 'datetime',
-                'sums' : [{'column': 'primes',
-                           'period': 1},
-                          {'column': 'evens',
-                           'period': 1}]}
+                'sums': [{'column': 'primes',
+                          'period': 1},
+                         {'column': 'evens',
+                          'period': 1}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -300,13 +302,13 @@ class TestLogReader(unittest.TestCase):
     @log_to_count
     def test_counting_without_groupby(self):
         q = get_queue()
-        conf = {'logpath' : '/tmp/count.log',
-                'columns' : ['c0', 'c1', 'datetime', 'method'],
-                'delimiter' : '\t',
+        conf = {'logpath': '/tmp/count.log',
+                'columns': ['c0', 'c1', 'datetime', 'method'],
+                'delimiter': '\t',
                 'datetime_column': 'datetime',
-                'counts' : [{'column' : 'method',
-                             'match': 'GET',
-                             'period': 1}]}
+                'counts': [{'column': 'method',
+                            'match': 'GET',
+                            'period': 1}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -329,14 +331,14 @@ class TestLogReader(unittest.TestCase):
     @log_to_count_with_date_and_time_columns
     def test_counting_with_date_and_time_columns_without_groupby(self):
         q = get_queue()
-        conf = {'logpath' : '/tmp/count.log',
-                'columns' : ['c0', 'c1', 'date', 'time', 'method'],
-                'delimiter' : '\t',
+        conf = {'logpath': '/tmp/count.log',
+                'columns': ['c0', 'c1', 'date', 'time', 'method'],
+                'delimiter': '\t',
                 'date_column': 'date',
                 'time_column': 'time',
-                'counts' : [{'column' : 'method',
-                             'match': 'GET',
-                             'period': 1}]}
+                'counts': [{'column': 'method',
+                            'match': 'GET',
+                            'period': 1}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -359,17 +361,17 @@ class TestLogReader(unittest.TestCase):
     def test_counting_2_columns_without_groupby(self):
 
         q = get_queue()
-        conf = {'logpath' : '/tmp/count.log',
-                'columns' : ['c0', 'c1', 'datetime',
+        conf = {'logpath': '/tmp/count.log',
+                'columns': ['c0', 'c1', 'datetime',
                              'method', 'status'],
-                'delimiter' : '\t',
+                'delimiter': '\t',
                 'datetime_column': 'datetime',
-                'counts' : [{'column': 'method',
-                             'match': 'GET',
-                             'period': 1,},
-                            {'column': 'status',
-                             'match' : '200',
-                             'period' : 1,}]}
+                'counts': [{'column': 'method',
+                            'match': 'GET',
+                            'period': 1,},
+                           {'column': 'status',
+                            'match': '200',
+                            'period': 1,}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
