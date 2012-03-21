@@ -119,18 +119,18 @@ def log_to_count_2_columns(g):
     return wrapper
 
 
-def log_to_count_with_groupy(g):
+def log_to_count_with_groupby(g):
     def wrapper(self):
         logpath = '/tmp/count.log'
         f = open(logpath, 'w')
         f.write('host1\tbar\t[30/Jan/2012:18:07:42 +0000]\tGET\n')
         f.write('host1\tbar\t[30/Jan/2012:18:07:43 +0000]\tGET\n')
-        f.write('host2\tbar\t[30/Jan/2012:18:07:45 +0000]\tPUT\n')
-        f.write('host1\tbar\t[30/Jan/2012:18:07:45 +0000]\tGET\n')
-        f.write('host2\tbar\t[30/Jan/2012:18:07:46 +0000]\tPUT\n')
-        f.write('host3\tbar\t[30/Jan/2012:18:07:46 +0000]\tPOST')
-        f.write('host3\tbar\t[30/Jan/2012:18:07:46 +0000]\tGET')
-        f.write('host2\tbar\t[30/Jan/2012:18:07:47 +0000]\tGET\n')
+        f.write('host2\tbar\t[30/Jan/2012:18:08:45 +0000]\tPUT\n')
+        f.write('host1\tbar\t[30/Jan/2012:18:09:45 +0000]\tGET\n')
+        f.write('host2\tbar\t[30/Jan/2012:18:09:46 +0000]\tPUT\n')
+        f.write('host3\tbar\t[30/Jan/2012:18:11:46 +0000]\tPOST')
+        f.write('host3\tbar\t[30/Jan/2012:18:11:46 +0000]\tGET')
+        f.write('host2\tbar\t[30/Jan/2012:18:12:47 +0000]\tGET\n')
         g(self)
         os.remove(logpath)
     return wrapper
@@ -474,6 +474,42 @@ class TestLogReader(unittest.TestCase):
         self.assertIn((9, 0), result)
         self.assertIn((10, 0), result)
         self.assertIn((11, 0), result)
+
+
+    @log_to_count_with_groupby
+    def test_counting_with_groupby(self):
+        q = get_queue()
+        conf = {'logpath': '/tmp/count.log',
+                'columns': ['host', 'unknown',
+                            'datetime', 'method'],
+                'delimiter': '\t',
+                'datetime_column': 'datetime',
+                'sums': [{'column': 'method',
+                          'match': 'GET',
+                          'period': 1,
+                          'groupby': {'column': 'host'}}]}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # time to process
+        time.sleep(0.1)
+
+        messages = []
+        while q.qsize() > 0: messages.append(q.get())
+
+        result = map(lambda x: (x.content['host'],
+                                x.content['interval_started_at'].minute,
+                                x.content['value']), messages)
+        self.assertIn(("host1", 7, 2), result)
+        self.assertIn(("host1", 8, 0), result)
+        self.assertIn(("host1", 9, 1), result)
+        self.assertIn(("host1", 10, 0), result)
+        self.assertIn(("host1", 11, 0), result)
+        self.assertIn(("host2", 8, 1), result)
+        self.assertIn(("host2", 9, 0), result)
+        self.assertIn(("host2", 10, 0), result)
+        self.assertIn(("host2", 11, 0), result)
+        self.assertIn(("host3", 11, 1), result)
 
 
 def suite():
