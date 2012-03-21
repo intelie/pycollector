@@ -312,6 +312,39 @@ class TestLogReader(unittest.TestCase):
         self.assertIn((10, 0), result)
         self.assertIn((11, 2), result)
 
+    @log_to_sum_with_groupby
+    def test_summing_with_groupby(self):
+        q = get_queue()
+        conf = {'logpath': '/tmp/sum.log',
+                'columns': ['host', 'unknown', 'datetime', 'x'],
+                'delimiter': '\t',
+                'datetime_column': 'datetime',
+                'sums': [{'column': 'x',
+                          'groupby': {'column': 'host'}}]}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # time to process
+        time.sleep(0.1)
+
+        messages = []
+        while q.qsize() > 0: messages.append(q.get())
+
+        result = map(lambda x: (x.content['host'],
+                                x.content['interval_started_at'].minute,
+                                x.content['value']), messages)
+        self.assertIn(("host1", 7, 5), result)
+        self.assertIn(("host1", 8, 0), result)
+        self.assertIn(("host1", 9, 0), result)
+        self.assertIn(("host1", 10, 42), result)
+        self.assertIn(("host1", 11, 5), result)
+        self.assertIn(("host2", 7, 5), result)
+        self.assertIn(("host2", 8, 0), result)
+        self.assertIn(("host2", 9, 0), result)
+        self.assertIn(("host2", 10, 0), result)
+        self.assertIn(("host2", 11, 0), result)
+        self.assertIn(("host3", 11, 2), result)
+
 
     ########################## COUNT TESTS ##########################
 
