@@ -10,6 +10,10 @@ class TestLogConfReader(unittest.TestCase):
         conf = {'groupby': {'column': 'spam'}}
         self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
 
+    def test_raise_exception_if_conf_contains_groupby_without_column_property(self):
+        conf = {'groupby': {'match': '(.*)'}}
+        self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
+
 
 def suite():
     suite = unittest.TestSuite()
