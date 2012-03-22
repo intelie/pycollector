@@ -189,7 +189,7 @@ class TestWriter(unittest.TestCase):
         class MyWriter(Writer):
             def setup(self):
                 self.required_confs = ['jack', 'white']
-                self.validate_conf()
+                self.check_required_confs()
 
         q = get_queue()
         self.assertRaises(ConfigurationError, MyWriter, q, {'jack': 'bauer'})

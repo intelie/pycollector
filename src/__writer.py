@@ -22,8 +22,8 @@
             ... # You may define a list of required confs, e.g.:
             ... self.required_confs = ['foo', 'bar']
 
-            ... # and call validate_conf to check if it was loaded properly
-            ... self.validate_conf()
+            ... # and call check_required_confs to check if it was loaded properly
+            ... self.check_required_confs()
             ... # If they are not found in your conf, an exception is raised
 
         def write(self, msg):
@@ -118,7 +118,7 @@ class Writer(threading.Thread):
                                          [],
                                          None)
 
-    def validate_conf(self):
+    def check_required_confs(self):
         """Validate if required confs are present.
            required_confs are supposed to be set in setup() method."""
         for item in self.required_confs:

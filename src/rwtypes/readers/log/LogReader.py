@@ -222,7 +222,7 @@ class LogReader(Reader):
 
         # check for required confs
         self.required_confs = ['logpath']
-        self.validate_conf()
+        self.check_required_confs()
 
         # starts tail
         self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)

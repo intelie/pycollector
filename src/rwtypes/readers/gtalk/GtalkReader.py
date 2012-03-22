@@ -16,7 +16,7 @@ class GtalkReader(Reader):
         self.con.connect(server=('talk.google.com', 5222))
 
         self.required_confs = ['login', 'passwd']
-        self.validate_conf()
+        self.check_required_confs()
 
         self.con.auth(self.login, self.passwd, "gtalkreader")
         self.con.sendInitPresence()

@@ -197,7 +197,7 @@ class TestReader(unittest.TestCase):
         class MyReader(Reader):
             def setup(self):
                 self.required_confs = ['a', 'b']
-                self.validate_conf()
+                self.check_required_confs()
 
         q = get_queue(3)
 

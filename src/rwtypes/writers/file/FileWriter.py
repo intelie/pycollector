@@ -13,7 +13,7 @@ class FileWriter(Writer):
         self.log = logging.getLogger('pycollector')
 
         self.required_confs = ['filepath']
-        self.validate_conf()
+        self.check_required_confs()
         self.f = open(self.filepath, 'a+')
 
     def write(self, msg):
