@@ -38,7 +38,6 @@ class LogReader(Reader):
                         'groups': {}}
 
            Output: side effect in cache structure"""
-        print 'inside do aggregation with groupby'
         try:
             current_value = self.current_line[cache['column_name']]
             if kind == 'sums':
@@ -88,7 +87,7 @@ class LogReader(Reader):
                             if kind == 'sums':
                                 cache['groups'][groupby_value]['current']['value'] = current_value
                             elif kind == 'counts':
-                                cache['groups'][groupby_value]['current']['value'] = 1 if current_value == cache['column_name'] else 0
+                                cache['groups'][groupby_value]['current']['value'] = 1 if current_value == cache['column_value'] else 0
                         else:
                             previous = [{'interval_started_at': cache['groups'][group]['current']['interval_started_at'],
                                          'value': cache['groups'][group]['current']['value']}]
@@ -100,7 +99,7 @@ class LogReader(Reader):
                             if kind == 'sums':
                                 cache['groups'][group]['current']['value'] = 0
                             elif kind == 'counts':
-                                cache['groups'][groupby]['current']['value'] = 0
+                                cache['groups'][group]['current']['value'] = 0
                 # in interval
                 else:
                     for group in cache['groups']:
@@ -110,58 +109,58 @@ class LogReader(Reader):
                     elif kind == 'counts' and \
                          current_value == cache['column_value']:
                          cache['groups'][groupby_value]['current']['value'] += 1
-            print "current_sums", self.current_sums
+
         except Exception, e:
-            traceback.print_exc()
         return True
                     
     def do_aggregation(self, kind):
-        cache = self.current_sums if kind == 'sums' else self.current_counts
-        for i, c in enumerate(cache):
-            if 'groupby' in c:
-                self.do_aggregation_with_groupby(kind, c)
-            else:
-                current_value = self.current_line[c['column_name']]
-                if kind == 'sums':
-                    current_value = int(current_value)
-                current_start_time = c['current']['interval_started_at']
-                period = c['interval_duration_sec']
-
-                # starting interval
-                if current_start_time == 0:
-                    start = LogUtils.get_starting_minute(self.current_datetime)
-                    c['current']['interval_started_at'] = start
-                    if kind == 'sums':
-                        c['current']['value'] = current_value
-                    elif kind == 'counts':
-                        c['current']['value'] = 1 if current_value == c['column_value'] else 0
+        try:
+            cache = self.current_sums if kind == 'sums' else self.current_counts
+            for i, c in enumerate(cache):
+                if 'groupby' in c:
+                    self.do_aggregation_with_groupby(kind, c)
                 else:
-                    (start, end) = LogUtils.get_interval(current_start_time, period)
-                    # not in interval
-                    if not (start <= self.current_datetime < end):
-                        previous = [{'interval_started_at': c['current']['interval_started_at'],
-                                     'value': c['current']['value']}]
-                        zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
-                        previous.extend([{'interval_started_at': z, 'value': 0 } for z in zeros])
-                        c['previous'] = previous
-                        new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
-                        c['current']['interval_started_at'] = new_start
+                    current_value = self.current_line[c['column_name']]
+                    if kind == 'sums':
+                        current_value = int(current_value)
+                    current_start_time = c['current']['interval_started_at']
+                    period = c['interval_duration_sec']
+
+                    # starting interval
+                    if current_start_time == 0:
+                        start = LogUtils.get_starting_minute(self.current_datetime)
+                        c['current']['interval_started_at'] = start
                         if kind == 'sums':
                             c['current']['value'] = current_value
                         elif kind == 'counts':
                             c['current']['value'] = 1 if current_value == c['column_value'] else 0
-                    # in interval
                     else:
-                        c['previous'] = []
-                        if kind == 'sums':
-                            c['current']['value'] += current_value
-                        elif kind == 'counts' and \
-                             current_value == c['column_value']:
-                             c['current']['value'] += 1
-        return True
+                        (start, end) = LogUtils.get_interval(current_start_time, period)
+                        # not in interval
+                        if not (start <= self.current_datetime < end):
+                            previous = [{'interval_started_at': c['current']['interval_started_at'],
+                                         'value': c['current']['value']}]
+                            zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
+                            previous.extend([{'interval_started_at': z, 'value': 0 } for z in zeros])
+                            c['previous'] = previous
+                            new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
+                            c['current']['interval_started_at'] = new_start
+                            if kind == 'sums':
+                                c['current']['value'] = current_value
+                            elif kind == 'counts':
+                                c['current']['value'] = 1 if current_value == c['column_value'] else 0
+                        # in interval
+                        else:
+                            c['previous'] = []
+                            if kind == 'sums':
+                                c['current']['value'] += current_value
+                            elif kind == 'counts' and \
+                                 current_value == c['column_value']:
+                                 c['current']['value'] += 1
+            return True
+        except Exception, e:
 
     def store_aggregation_with_groupby(self, kind, cache):
-        print 'inside store aggregation with groupby'
         try:
             for group in cache['groups']:
                 for p in cache['groups'][group]['previous']:
@@ -171,14 +170,16 @@ class LogReader(Reader):
                                'value': p['value'],
                                cache['groupby']['column']: group}
                     if kind == "counts":
-                        content.update({'column_value': c['column_value']})
+                        content.update({'column_value': cache['column_value']})
                     content = copy.deepcopy(content)
-                    print 'content', content
-                    if self.checkpoint_enabled:
-                        self.store(Message(checkpoint=self.current_checkpoint,
-                                           content=content))
-                    else:
-                        self.store(Message(content=content))
+                    try:
+                        if self.checkpoint_enabled:
+                            self.store(Message(checkpoint=self.current_checkpoint,
+                                               content=content))
+                        else:
+                            self.store(Message(content=content))
+                    except Exception, e:
+                        traceback.print_exc()
         except Exception, e:
             traceback.print_exc()
 
