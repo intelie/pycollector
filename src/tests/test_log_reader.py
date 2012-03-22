@@ -355,7 +355,7 @@ class TestLogReader(unittest.TestCase):
         self.assertIn(("host1", 8, 0), result)
         self.assertIn(("host1", 9, 0), result)
         self.assertIn(("host1", 10, 42), result)
-        self.assertIn(("host1", 11, 5), result)
+        self.assertIn(("host1", 11, 0), result)
         self.assertIn(("host2", 7, 5), result)
         self.assertIn(("host2", 8, 0), result)
         self.assertIn(("host2", 9, 0), result)
