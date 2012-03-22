@@ -131,6 +131,7 @@ def log_to_count_with_groupby(g):
         f.write('host3\tbar\t[30/Jan/2012:18:11:46 +0000]\tPOST\n')
         f.write('host3\tbar\t[30/Jan/2012:18:11:46 +0000]\tGET\n')
         f.write('host2\tbar\t[30/Jan/2012:18:12:47 +0000]\tGET\n')
+        f.close()
         g(self)
         os.remove(logpath)
     return wrapper
@@ -495,6 +496,7 @@ class TestLogReader(unittest.TestCase):
         time.sleep(0.1)
 
         messages = []
+
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (x.content['host'],
@@ -505,7 +507,7 @@ class TestLogReader(unittest.TestCase):
         self.assertIn(("host1", 9, 1), result)
         self.assertIn(("host1", 10, 0), result)
         self.assertIn(("host1", 11, 0), result)
-        self.assertIn(("host2", 8, 1), result)
+        self.assertIn(("host2", 8, 0), result)
         self.assertIn(("host2", 9, 0), result)
         self.assertIn(("host2", 10, 0), result)
         self.assertIn(("host2", 11, 0), result)
