@@ -221,6 +221,9 @@ class LogReader(Reader):
         # starts the logger
         self.log = logging.getLogger('pycollector')
 
+        # validate conf
+        LogConfReader.validate_conf(self.conf)
+
         # check for required confs
         self.required_confs = ['logpath']
         self.check_required_confs()
