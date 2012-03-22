@@ -128,8 +128,8 @@ def log_to_count_with_groupby(g):
         f.write('host2\tbar\t[30/Jan/2012:18:08:45 +0000]\tPUT\n')
         f.write('host1\tbar\t[30/Jan/2012:18:09:45 +0000]\tGET\n')
         f.write('host2\tbar\t[30/Jan/2012:18:09:46 +0000]\tPUT\n')
-        f.write('host3\tbar\t[30/Jan/2012:18:11:46 +0000]\tPOST')
-        f.write('host3\tbar\t[30/Jan/2012:18:11:46 +0000]\tGET')
+        f.write('host3\tbar\t[30/Jan/2012:18:11:46 +0000]\tPOST\n')
+        f.write('host3\tbar\t[30/Jan/2012:18:11:46 +0000]\tGET\n')
         f.write('host2\tbar\t[30/Jan/2012:18:12:47 +0000]\tGET\n')
         g(self)
         os.remove(logpath)
@@ -484,7 +484,7 @@ class TestLogReader(unittest.TestCase):
                             'datetime', 'method'],
                 'delimiter': '\t',
                 'datetime_column': 'datetime',
-                'sums': [{'column': 'method',
+                'counts': [{'column': 'method',
                           'match': 'GET',
                           'period': 1,
                           'groupby': {'column': 'host'}}]}
