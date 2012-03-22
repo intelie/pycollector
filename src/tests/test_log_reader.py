@@ -357,7 +357,8 @@ class TestLogReader(unittest.TestCase):
                 'datetime_column': 'datetime',
                 'sums': [{'column': 'x',
                           'period': 1,
-                          'groupby': {'column': 'host'}}]}
+                          'groupby': {'column': 'host',
+                                      'match': '(.*)'}}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
@@ -504,7 +505,8 @@ class TestLogReader(unittest.TestCase):
                 'counts': [{'column': 'method',
                           'match': 'GET',
                           'period': 1,
-                          'groupby': {'column': 'host'}}]}
+                          'groupby': {'column': 'host',
+                                      'match': '(.*)'}}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
