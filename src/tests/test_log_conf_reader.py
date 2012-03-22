@@ -7,11 +7,13 @@ from rwtypes.readers.log.LogConfReader import LogConfReader
 
 class TestLogConfReader(unittest.TestCase):
     def test_raise_exception_if_conf_contains_groupby_without_a_match_property(self):
-        conf = {'groupby': {'column': 'spam'}}
+        conf = {'sums': [{'groupby': {'column': 'spam'}}],
+                'counts': [{'groupby': {'column': 'spam'}}]}
         self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
 
     def test_raise_exception_if_conf_contains_groupby_without_column_property(self):
-        conf = {'groupby': {'match': '(.*)'}}
+        conf = {'sums': [{'groupby': {'match': '(.*)'}}],
+                'counts': [{'groupby': {'match': '(.*)'}}]}
         self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
 
 
