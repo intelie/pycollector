@@ -27,6 +27,12 @@ class TestLogConfReader(unittest.TestCase):
         conf = {'counts': [{'groupby': {'match': '.*)', 'column': 'spam'}}]}
         self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
 
+    def test_raise_exception_if_match_regex_contains_more_or_less_than_1_group(self):
+        conf = {'sums': [{'groupby': {'match': '(spam)(spam)', 'column': 'spam'}}]}
+        self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
+
+        conf = {'counts': [{'groupby': {'match': '(spam)(spam)', 'column': 'spam'}}]}
+        self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
 
 def suite():
     suite = unittest.TestSuite()
