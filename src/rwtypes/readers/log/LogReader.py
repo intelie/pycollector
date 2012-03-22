@@ -110,7 +110,7 @@ class LogReader(Reader):
                     elif kind == 'counts' and \
                          current_value == cache['column_value']:
                          cache['groups'][groupby_value]['current']['value'] += 1
-            print self.current_sums
+            print "current_sums", self.current_sums
         except Exception, e:
             traceback.print_exc()
         return True
@@ -164,27 +164,27 @@ class LogReader(Reader):
         print 'inside store aggregation with groupby'
         try:
             for group in cache['groups']:
-                print 'group', group
-                for p in group['previous']:
+                for p in cache['groups'][group]['previous']:
                     content = {'interval_duration_sec': cache['interval_duration_sec'],
                                'interval_started_at': p['interval_started_at'],
                                'column_name': cache['column_name'],
-                               'value': p['value']}
+                               'value': p['value'],
+                               cache['groupby']['column']: group}
                     if kind == "counts":
                         content.update({'column_value': c['column_value']})
                     content = copy.deepcopy(content)
+                    print 'content', content
                     if self.checkpoint_enabled:
                         self.store(Message(checkpoint=self.current_checkpoint,
                                            content=content))
                     else:
                         self.store(Message(content=content))
         except Exception, e:
-            print e
+            traceback.print_exc()
 
     def store_aggregation(self, kind):
         cache = self.current_sums if kind == 'sums' else self.current_counts
         for c in cache:
-            print "brubles", c
             if 'groupby' in c:
                 self.store_aggregation_with_groupby(kind, c)
             else:
