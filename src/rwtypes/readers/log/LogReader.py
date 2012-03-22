@@ -9,6 +9,7 @@ from third import filetail
 from __reader import Reader
 from __message import Message
 from __exceptions import ParsingError
+from LogConfReader import LogConfReader
 from LogUtils import LogUtils
 
 
