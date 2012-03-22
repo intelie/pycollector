@@ -1,4 +1,9 @@
+from __exceptions import ConfigurationError
 
 class LogConfReader:
-    pass
+    @classmethod
+    def validate_conf(cls, conf):
+        if 'groupby' in conf and \
+            not 'match' in conf['groupby']:
+            raise ConfigurationError("groupby' must have a match regexp in your conf.")
 
