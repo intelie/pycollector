@@ -107,24 +107,26 @@ class TestLogUtils(unittest.TestCase):
     def test_initialize_sum_with_groupby(self):
         sums_conf = [{'column': 'bytes_sent',
                       'period': 1,
-                      'groupby' : {'column': 'host'}}]
+                      'groupby' : {'column': 'host',
+                                   'match': '(.*)'}}]
         expected = [{'column_name' : 'bytes_sent',
                      'interval_duration_sec': 60,
-                     'groupby' : {'column' : 'host'},
+                     'groupby' : {'column' : 'host',
+                                  'match': '(.*)'},
                      'groups': {}}]
         result = LogUtils.initialize_sums(sums_conf)
         self.assertEqual(expected, result)
 
     def test_initialize_counts_without_groupby(self):
         counts_conf = [{'column': 'method',
-                      'match' : 'GET',
+                      'match': 'GET',
                       'period':  1,}]
-        expected = [{'column_name' : 'method',
-                     'column_value' : 'GET',
-                     'interval_duration_sec' : 60,
-                     'current' : {'interval_started_at' : 0,
-                                  'value' : 0},
-                     'previous' : []}]
+        expected = [{'column_name': 'method',
+                     'column_value': 'GET',
+                     'interval_duration_sec': 60,
+                     'current' : {'interval_started_at': 0,
+                                  'value': 0},
+                     'previous': []}]
         result = LogUtils.initialize_counts(counts_conf)
         self.assertEqual(expected, result)
 
@@ -132,12 +134,14 @@ class TestLogUtils(unittest.TestCase):
         counts_conf = [{'column': 'method',
                       'match' : 'GET',
                       'period':  1,
-                      'groupby' : {'column' : 'host'}}]
-        expected = [{'column_name' : 'method',
-                     'column_value' : 'GET',
-                     'interval_duration_sec' : 60,
-                     'groupby': {'column' : 'host'},
-                     'groups' : {}}]
+                      'groupby': {'column': 'host',
+                                  'match': '(.*)'}}]
+        expected = [{'column_name': 'method',
+                     'column_value': 'GET',
+                     'interval_duration_sec': 60,
+                     'groupby': {'column': 'host',
+                                 'match': '(.*)'},
+                     'groups': {}}]
         result = LogUtils.initialize_counts(counts_conf)
         self.assertEqual(expected, result)
 
