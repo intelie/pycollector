@@ -529,7 +529,7 @@ class TestLogReader(unittest.TestCase):
         self.assertIn(("host2", 11, 0), result)
         self.assertIn(("host3", 11, 1), result)
 
-    @log_to_count_with_groupby_and_regexp
+    @log_to_count_with_groupby_and_regex
     def test_couting_with_groupby_and_regexp(self):
         q = get_queue()
         conf = {'logpath': '/tmp/count.log',
@@ -541,7 +541,8 @@ class TestLogReader(unittest.TestCase):
                           'match': 'GET',
                           'period': 1,
                           'groupby': {'column': 'host',
-                                      'match': '^(.*)\..*$'}}]}
+                                      'match': '^(host\d).*$'}}]}
+
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
