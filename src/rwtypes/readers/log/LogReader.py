@@ -1,3 +1,4 @@
+import re
 import copy
 import logging
 import datetime
@@ -16,7 +17,7 @@ class LogReader(Reader):
         - logpath (required): path of log file,
             e.g. /tmp/my.log
         - delimiter (optional): character to split log lines,
-            e.g. '\t' 
+            e.g. '\t'
         - columns (optional): list of columns for each log line,
             e.g. ['date', 'hour', 'message']"""
 
@@ -38,78 +39,83 @@ class LogReader(Reader):
                         'groups': {}}
 
            Output: side effect in cache structure"""
-        current_value = self.current_line[cache['column_name']]
-        if kind == 'sums':
-            current_value = int(current_value)
-        groupby_value = self.current_line[cache['groupby']['column']]
-        period = cache['interval_duration_sec']
-        # starting interval
-        if not groupby_value in cache['groups']:
-            for group in cache['groups']:
-                current_start_time = cache['groups'][group]['current']['interval_started_at']
-                (start, end) = LogUtils.get_interval(current_start_time, period)
-                if not (start <= self.current_datetime < end):
-                    closed = [{'interval_started_at': cache['groups'][group]['current']['interval_started_at'],
-                                 'value': cache['groups'][group]['current']['value']}]
-                    zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
-                    closed.extend([{'interval_started_at': z, 'value': 0} for z in zeros])
-                    cache['groups'][group]['closed'] = closed
-                    cache['groups'][group]['current']['interval_started_at'] = LogUtils.get_starting_minute(self.current_datetime)
-                    cache['groups'][group]['current']['value'] = 0
-
-            start = LogUtils.get_starting_minute(self.current_datetime)
+        try:
+            current_value = self.current_line[cache['column_name']]
             if kind == 'sums':
-                cache['groups'][groupby_value] = {'current':
-                                                    {'interval_started_at': start,
-                                                     'value': current_value},
-                                                 'closed': []}
-            elif kind == 'counts':
-                value = 1 if current_value == cache['column_value'] else 0
-                cache['groups'][groupby_value] = {'current':
-                                                    {'interval_started_at': start,
-                                                     'value': value},
-                                                  'closed': []}
-        else:
-            current_start_time = cache['groups'][groupby_value]['current']['interval_started_at']
-            (start, end) = LogUtils.get_interval(current_start_time, period)
-            # not in interval
-            if not (start <= self.current_datetime < end):
+                current_value = int(current_value)
+            groupby_value = self.current_line[cache['groupby']['column']]
+            groupby_value = re.match(cache['groupby']['match'], groupby_value).groups()[0]
+            period = cache['interval_duration_sec']
+
+            # starting interval
+            if not groupby_value in cache['groups']:
                 for group in cache['groups']:
-                    if group == groupby_value:
-                        closed = [{'interval_started_at': cache['groups'][groupby_value]['current']['interval_started_at'],
-                                     'value': cache['groups'][groupby_value]['current']['value']}]
-                        zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
-                        closed.extend([{'interval_started_at': z, 'value': 0} for z in zeros])
-                        cache['groups'][groupby_value]['closed'] = closed
-                        new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
-                        cache['groups'][groupby_value]['current']['interval_started_at'] = new_start
-                        if kind == 'sums':
-                            cache['groups'][groupby_value]['current']['value'] = current_value
-                        elif kind == 'counts':
-                            cache['groups'][groupby_value]['current']['value'] = 1 if current_value == cache['column_value'] else 0
-                    else:
+                    current_start_time = cache['groups'][group]['current']['interval_started_at']
+                    (start, end) = LogUtils.get_interval(current_start_time, period)
+                    if not (start <= self.current_datetime < end):
                         closed = [{'interval_started_at': cache['groups'][group]['current']['interval_started_at'],
                                      'value': cache['groups'][group]['current']['value']}]
                         zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
                         closed.extend([{'interval_started_at': z, 'value': 0} for z in zeros])
                         cache['groups'][group]['closed'] = closed
-                        new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
-                        cache['groups'][group]['current']['interval_started_at'] = new_start
-                        if kind == 'sums':
-                            cache['groups'][group]['current']['value'] = 0
-                        elif kind == 'counts':
-                            cache['groups'][group]['current']['value'] = 0
-            # in interval
-            else:
-                for group in cache['groups']:
-                    cache['groups'][group]['closed'] = []
+                        cache['groups'][group]['current']['interval_started_at'] = LogUtils.get_starting_minute(self.current_datetime)
+                        cache['groups'][group]['current']['value'] = 0
+
+                start = LogUtils.get_starting_minute(self.current_datetime)
                 if kind == 'sums':
-                    cache['groups'][groupby_value]['current']['value'] += current_value
-                elif kind == 'counts' and \
-                     current_value == cache['column_value']:
-                     cache['groups'][groupby_value]['current']['value'] += 1
-        return True
-                    
+                    cache['groups'][groupby_value] = {'current':
+                                                        {'interval_started_at': start,
+                                                         'value': current_value},
+                                                      'closed': []}
+                elif kind == 'counts':
+                    value = 1 if current_value == cache['column_value'] else 0
+                    cache['groups'][groupby_value] = {'current':
+                                                        {'interval_started_at': start,
+                                                         'value': value},
+                                                      'closed': []}
+            else:
+                current_start_time = cache['groups'][groupby_value]['current']['interval_started_at']
+                (start, end) = LogUtils.get_interval(current_start_time, period)
+                # not in interval
+                if not (start <= self.current_datetime < end):
+                    for group in cache['groups']:
+                        if group == groupby_value:
+                            closed = [{'interval_started_at': cache['groups'][groupby_value]['current']['interval_started_at'],
+                                         'value': cache['groups'][groupby_value]['current']['value']}]
+                            zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
+                            closed.extend([{'interval_started_at': z, 'value': 0} for z in zeros])
+                            cache['groups'][groupby_value]['closed'] = closed
+                            new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
+                            cache['groups'][groupby_value]['current']['interval_started_at'] = new_start
+                            if kind == 'sums':
+                                cache['groups'][groupby_value]['current']['value'] = current_value
+                            elif kind == 'counts':
+                                cache['groups'][groupby_value]['current']['value'] = 1 if current_value == cache['column_value'] else 0
+                        else:
+                            closed = [{'interval_started_at': cache['groups'][group]['current']['interval_started_at'],
+                                         'value': cache['groups'][group]['current']['value']}]
+                            zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
+                            closed.extend([{'interval_started_at': z, 'value': 0} for z in zeros])
+                            cache['groups'][group]['closed'] = closed
+                            new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
+                            cache['groups'][group]['current']['interval_started_at'] = new_start
+                            if kind == 'sums':
+                                cache['groups'][group]['current']['value'] = 0
+                            elif kind == 'counts':
+                                cache['groups'][group]['current']['value'] = 0
+                # in interval
+                else:
+                    for group in cache['groups']:
+                        cache['groups'][group]['closed'] = []
+                    if kind == 'sums':
+                        cache['groups'][groupby_value]['current']['value'] += current_value
+                    elif kind == 'counts' and \
+                         current_value == cache['column_value']:
+                         cache['groups'][groupby_value]['current']['value'] += 1
+            return True
+        except Exception, e:
+            traceback.print_exc()
+
     def do_aggregation(self, kind):
         cache = self.current_sums if kind == 'sums' else self.current_counts
         for i, c in enumerate(cache):
