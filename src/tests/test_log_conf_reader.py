@@ -20,11 +20,11 @@ class TestLogConfReader(unittest.TestCase):
         conf = {'counts': [{'groupby': {'match': '(.*)'}}]}
         self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
 
-    def test_raise_exception_if_match_doesnt_contain_a_group(self):
-        conf = {'sums': [{'groupby': {'match': '(.*'}}]}
+    def test_raise_exception_if_match_doesnt_contain_an_invalid_regexp(self):
+        conf = {'sums': [{'groupby': {'match': '(.*', 'column': 'spam'}}]}
         self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
 
-        conf = {'counts': [{'groupby': {'match': '.*)'}}]}
+        conf = {'counts': [{'groupby': {'match': '.*)', 'column': 'spam'}}]}
         self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
 
 def suite():
