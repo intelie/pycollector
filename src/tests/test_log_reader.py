@@ -74,6 +74,22 @@ def log_to_sum_with_groupby(g):
     return wrapper
 
 
+def log_to_sum_with_groupby_and_regex(g):
+    def wrapper(self):
+        logpath = '/tmp/sum.log'
+        f = open(logpath, 'w')
+        f.write('host1\tbar\t[30/Jan/2012:18:07:09 +0000]\t5\n')
+        f.write('host2\tbar\t[30/Jan/2012:18:07:29 +0000]\t3\n')
+        f.write('host2\tbar\t[30/Jan/2012:18:07:39 +0000]\t2\n')
+        f.write('host1\tbar\t[30/Jan/2012:18:10:39 +0000]\t42\n')
+        f.write('host3\tbar\t[30/Jan/2012:18:11:39 +0000]\t2\n')
+        f.write('host1\tbar\t[30/Jan/2012:18:12:39 +0000]\t2\n')
+        f.close()
+        g(self)
+        os.remove(logpath)
+    return wrapper
+
+
 def log_to_count(g):
     def wrapper(self):
         logpath = '/tmp/count.log'
@@ -359,6 +375,41 @@ class TestLogReader(unittest.TestCase):
                           'period': 1,
                           'groupby': {'column': 'host',
                                       'match': '(.*)'}}]}
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # time to process
+        time.sleep(0.1)
+
+        messages = []
+        while q.qsize() > 0: messages.append(q.get())
+
+        result = map(lambda x: (x.content['host'],
+                                x.content['interval_started_at'].minute,
+                                x.content['value']), messages)
+        self.assertIn(("host1", 7, 5), result)
+        self.assertIn(("host1", 8, 0), result)
+        self.assertIn(("host1", 9, 0), result)
+        self.assertIn(("host1", 10, 42), result)
+        self.assertIn(("host1", 11, 0), result)
+        self.assertIn(("host2", 7, 5), result)
+        self.assertIn(("host2", 8, 0), result)
+        self.assertIn(("host2", 9, 0), result)
+        self.assertIn(("host2", 10, 0), result)
+        self.assertIn(("host2", 11, 0), result)
+        self.assertIn(("host3", 11, 2), result)
+
+    @log_to_sum_with_groupby_and_regex
+    def test_summing_with_groupby_and_regex(self):
+        q = get_queue()
+        conf = {'logpath': '/tmp/sum.log',
+                'columns': ['host', 'unknown', 'datetime', 'x'],
+                'delimiter': '\t',
+                'datetime_column': 'datetime',
+                'sums': [{'column': 'x',
+                          'period': 1,
+                          'groupby': {'column': 'host',
+                                      'match': '^(host\d).*$'}}]}
         myreader = LogReader(q, conf=conf)
         myreader.start()
 
