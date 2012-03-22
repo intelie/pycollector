@@ -20,8 +20,10 @@ class LogConfReader:
 
             if 'groupby' in c:
                 try:
-                    if re.compile(c['groupby']['match']).groups != 1:
-                        raise ConfigurationError("'groupby' must contain a 'match' regexp with exactly one group in your conf.")
+                    groups = re.compile(c['groupby']['match']).groups
                 except Exception, e:
                     raise ConfigurationError("'match' regexp: %s is not valid." % c['groupby']['match'])
+
+                if groups != 1:
+                    raise ConfigurationError("'groupby' must contain a 'match' regexp with exactly one group in your conf.")
 
