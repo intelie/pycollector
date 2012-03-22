@@ -50,13 +50,14 @@ class LogReader(Reader):
                 for group in cache['groups']:
                     current_start_time = cache['groups'][group]['current']['interval_started_at']
                     (start, end) = LogUtils.get_interval(current_start_time, period)
-                    previous = [{'interval_started_at': cache['groups'][group]['current']['interval_started_at'],
-                                 'value': cache['groups'][group]['current']['value']}]
-                    zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
-                    previous.extend([{'interval_started_at': z, 'value': 0} for z in zeros])
-                    cache['groups'][group]['previous'] = previous
-                    cache['groups'][group]['current']['interval_started_at'] = LogUtils.get_starting_minute(self.current_datetime)
-                    cache['groups'][group]['current']['value'] = 0
+                    if not (start <= self.current_datetime < end):
+                        previous = [{'interval_started_at': cache['groups'][group]['current']['interval_started_at'],
+                                     'value': cache['groups'][group]['current']['value']}]
+                        zeros = LogUtils.get_missing_intervals(end, period, self.current_datetime)
+                        previous.extend([{'interval_started_at': z, 'value': 0} for z in zeros])
+                        cache['groups'][group]['previous'] = previous
+                        cache['groups'][group]['current']['interval_started_at'] = LogUtils.get_starting_minute(self.current_datetime)
+                        cache['groups'][group]['current']['value'] = 0
 
                 start = LogUtils.get_starting_minute(self.current_datetime)
                 if kind == 'sums':
@@ -159,22 +160,47 @@ class LogReader(Reader):
                              c['current']['value'] += 1
         return True
 
-    def store_aggregation(self, kind='sums'):
+    def store_aggregation_with_groupby(self, kind, cache):
+        print 'inside store aggregation with groupby'
+        try:
+            for group in cache['groups']:
+                print 'group', group
+                for p in group['previous']:
+                    content = {'interval_duration_sec': cache['interval_duration_sec'],
+                               'interval_started_at': p['interval_started_at'],
+                               'column_name': cache['column_name'],
+                               'value': p['value']}
+                    if kind == "counts":
+                        content.update({'column_value': c['column_value']})
+                    content = copy.deepcopy(content)
+                    if self.checkpoint_enabled:
+                        self.store(Message(checkpoint=self.current_checkpoint,
+                                           content=content))
+                    else:
+                        self.store(Message(content=content))
+        except Exception, e:
+            print e
+
+    def store_aggregation(self, kind):
         cache = self.current_sums if kind == 'sums' else self.current_counts
         for c in cache:
-            for p in c['previous']:
-                content = {'interval_duration_sec': c['interval_duration_sec'],
-                           'interval_started_at': p['interval_started_at'],
-                           'column_name' : c['column_name'],
-                           'value' : p['value']}
-                if kind == "counts":
-                    content.update({'column_value': c['column_value']})
-                content = copy.deepcopy(content)
-                if self.checkpoint_enabled:
-                    self.store(Message(checkpoint=self.current_checkpoint,
-                                       content=content))
-                else:
-                    self.store(Message(content=content))
+            print "brubles", c
+            if 'groupby' in c:
+                self.store_aggregation_with_groupby(kind, c)
+            else:
+                for p in c['previous']:
+                    content = {'interval_duration_sec': c['interval_duration_sec'],
+                               'interval_started_at': p['interval_started_at'],
+                               'column_name' : c['column_name'],
+                               'value' : p['value']}
+                    if kind == "counts":
+                        content.update({'column_value': c['column_value']})
+                    content = copy.deepcopy(content)
+                    if self.checkpoint_enabled:
+                        self.store(Message(checkpoint=self.current_checkpoint,
+                                           content=content))
+                    else:
+                        self.store(Message(content=content))
 
         if self.checkpoint_enabled:
             self.current_checkpoint[kind] = cache
