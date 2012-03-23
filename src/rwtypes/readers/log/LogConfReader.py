@@ -6,7 +6,7 @@ from __exceptions import ConfigurationError
 class LogConfReader:
     @classmethod
     def validate_conf(cls, conf):
-        columns = conf.get('column', [])
+        columns = conf.get('columns', [])
         counts = conf.get('counts', [])
         sums = conf.get('sums', [])
         confs = counts + sums
