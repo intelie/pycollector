@@ -254,7 +254,7 @@ class TestLogReader(unittest.TestCase):
                         'egg': 'egg'}
                 
 
-        myreader = LogReader(q, conf=conf)
+        myreader = MyReader(q, conf=conf)
         myreader.start()
     
         # time to process log lines
