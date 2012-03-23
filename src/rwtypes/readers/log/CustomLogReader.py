@@ -1,4 +1,4 @@
-
+from LogReader import LogReader
 
 class CustomLogReader(LogReader):
     def to_add(self):
