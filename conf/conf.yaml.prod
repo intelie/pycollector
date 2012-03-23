@@ -30,7 +30,7 @@ specs:
 
 
 conf
-# Reading from an nginx with custom log reader
+# Reading from an nginx log and delivering to activemq
 - reader:
     type: custom_log
     logpath: /var/log/nginx/azion/sa/AZ.0058b.log
