@@ -90,6 +90,22 @@ def log_to_sum_with_groupby_and_regex(g):
         os.remove(logpath)
     return wrapper
 
+def log_to_sum_with_groupby_and_filter(g):
+    def wrapper(self):
+        logpath = '/tmp/sum.log'
+        f = open(logpath, 'w')
+        f.write('host1\tno\t[30/Jan/2012:18:07:07 +0000]\t1\n')
+        f.write('host1\tyes\t[30/Jan/2012:18:07:17 +0000]\t1\n')
+        f.write('host1\tyes\t[30/Jan/2012:18:07:17 +0000]\t2\n')
+        f.write('host1\tyes\t[30/Jan/2012:18:07:17 +0000]\t3\n')
+        f.write('host2\tno\t[30/Jan/2012:18:07:17 +0000]\t1\n')
+        f.write('host3\tyes\t[30/Jan/2012:18:07:17 +0000]\t5\n')
+        f.write('host3\tyes\t[30/Jan/2012:18:07:17 +0000]\t7\n')
+        f.write('host1\tyes\t[30/Jan/2012:18:08:17 +0000]\t7\n')
+        f.close()
+        g(self)
+        os.remove(logpath)
+    return wrapper
 
 def log_to_count(g):
     def wrapper(self):
@@ -471,6 +487,38 @@ class TestLogReader(unittest.TestCase):
         self.assertIn(("host2", 10, "sum", 0), result)
         self.assertIn(("host2", 11, "sum", 0), result)
         self.assertIn(("host3", 11, "sum", 2), result)
+
+    @log_to_sum_with_groupby_and_filter
+    def test_summing_with_filter(self):
+        q = get_queue()
+        conf = {'logpath': '/tmp/sum.log',
+                'columns': ['host', 'unknown', 'datetime', 'x'],
+                'delimiter': '\t',
+                'datetime_column': 'datetime',
+                'sums': [{'column': 'x',
+                          'period': 1,
+                          'groupby': {'column': 'host',
+                                      'match': '^(host\d).*$'}}]}
+        class MyReader(LogReader):
+            def sum_filter(self):
+                if self.current_line['unknown'] == 'yes':
+                    return True
+        
+        myreader = MyReader(q, conf=conf)
+        myreader.start()
+
+        # time to process
+        time.sleep(0.1)
+
+        messages = []
+        while q.qsize() > 0: messages.append(q.get())
+
+        result = map(lambda x: (x.content['host'],
+                                datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
+                                x.content['value']), messages)
+        self.assertIn(("host1", "7", "sum", 6), result)
+        self.assertIn(("host3", "7", "sum", 12), result)
 
 
     ########################## COUNT TESTS ##########################
