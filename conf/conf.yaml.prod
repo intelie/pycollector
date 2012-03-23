@@ -29,7 +29,7 @@ specs:
    destination: '/queue/events'
 
 
-conf
+conf:
 # Reading from an nginx log and delivering to activemq
 - reader:
     type: custom_log
