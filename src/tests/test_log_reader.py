@@ -83,6 +83,7 @@ def log_to_sum_with_groupby_and_regex(g):
         f.write('host2\tbar\t[30/Jan/2012:18:07:39 +0000]\t2\n')
         f.write('host1\tbar\t[30/Jan/2012:18:10:39 +0000]\t42\n')
         f.write('host3\tbar\t[30/Jan/2012:18:11:39 +0000]\t2\n')
+        f.write('unknown\tbar\t[30/Jan/2012:18:11:39 +0000]\t2\n')
         f.write('host1\tbar\t[30/Jan/2012:18:12:39 +0000]\t2\n')
         f.close()
         g(self)
