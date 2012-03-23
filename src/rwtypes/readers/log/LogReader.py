@@ -28,7 +28,7 @@ class LogReader(Reader):
         May be implemented by subclasses."""
         return {}
 
-    def sum_filter(self):
+    def sum_filter(self, sums_conf):
         """Should return a Boolean based on self.current_line.
         May be implemented by subclasses."""
         return True
@@ -54,7 +54,7 @@ class LogReader(Reader):
         current_value = self.current_line[cache['column_name']]
         if kind == 'sums':
             current_value = int(current_value)
-        to_sum = self.sum_filter()
+        to_sum = self.sum_filter(cache)
         groupby_value = self.current_line[cache['groupby']['column']]
         matched = re.match(cache['groupby']['match'], groupby_value)
         if matched:

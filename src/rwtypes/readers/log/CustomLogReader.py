@@ -9,9 +9,13 @@ class CustomLogReader(LogReader):
                 'service': self.logpath.split('/')[3],
                 'service_type': self.logpath.split('/')[5]}
 
-    def sum_filter(self):
+    def sum_filter(self, sum_conf):
         data = self.current_line
         try:
+            if not (sum_conf['column_name'] == 'cs-bytes' or \
+               sum_conf['column_name'] == 'sc-bytes'):
+               return True
+
             if data['x-event'] == 'disconnect':
                 return True
             elif data['x-category'] == 'stream' and \

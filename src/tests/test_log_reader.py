@@ -500,7 +500,7 @@ class TestLogReader(unittest.TestCase):
                           'groupby': {'column': 'host',
                                       'match': '^(host\d).*$'}}]}
         class MyReader(LogReader):
-            def sum_filter(self):
+            def sum_filter(self, conf):
                 return True if self.current_line['unknown'] == 'yes' else False
         
         myreader = MyReader(q, conf=conf)
