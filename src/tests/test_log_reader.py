@@ -283,12 +283,13 @@ class TestLogReader(unittest.TestCase):
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
                                 x.content['value']), messages)
-        self.assertIn((7, 5), result)
-        self.assertIn((8, 18), result)
-        self.assertIn((9, 0), result)
-        self.assertIn((10, 0), result)
-        self.assertIn((11, 13), result)
+        self.assertIn((7, 'sum', 5), result)
+        self.assertIn((8, 'sum', 18), result)
+        self.assertIn((9, 'sum', 0), result)
+        self.assertIn((10, 'sum', 0), result)
+        self.assertIn((11, 'sum', 13), result)
 
     @log_to_sum_with_date_and_time_columns
     def test_summing_with_date_and_time_columns_without_groupby(self):
@@ -310,12 +311,13 @@ class TestLogReader(unittest.TestCase):
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
                                 x.content['value']), messages)
-        self.assertIn((7, 5), result)
-        self.assertIn((8, 18), result)
-        self.assertIn((9, 0), result)
-        self.assertIn((10, 0), result)
-        self.assertIn((11, 13), result)
+        self.assertIn((7, 'sum', 5), result)
+        self.assertIn((8, 'sum', 18), result)
+        self.assertIn((9, 'sum', 0), result)
+        self.assertIn((10, 'sum', 0), result)
+        self.assertIn((11, 'sum', 13), result)
 
     @log_to_sum_2_columns
     def test_summing_2_columns_without_groupby(self):
@@ -350,20 +352,22 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(5, len(evens))
 
         result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
                                 x.content['value']), primes)
-        self.assertIn((7, 5), result)
-        self.assertIn((8, 18), result)
-        self.assertIn((9, 0), result)
-        self.assertIn((10, 0), result)
-        self.assertIn((11, 13), result)
+        self.assertIn((7, 'sum', 5), result)
+        self.assertIn((8, 'sum', 18), result)
+        self.assertIn((9, 'sum', 0), result)
+        self.assertIn((10, 'sum', 0), result)
+        self.assertIn((11, 'sum', 13), result)
 
         result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
                                 x.content['value']), evens)
-        self.assertIn((7, 4), result)
-        self.assertIn((8, 6), result)
-        self.assertIn((9, 0), result)
-        self.assertIn((10, 0), result)
-        self.assertIn((11, 2), result)
+        self.assertIn((7, 'sum', 4), result)
+        self.assertIn((8, 'sum', 6), result)
+        self.assertIn((9, 'sum', 0), result)
+        self.assertIn((10, 'sum', 0), result)
+        self.assertIn((11, 'sum', 2), result)
 
     @log_to_sum_with_groupby
     def test_summing_with_groupby(self):
@@ -387,18 +391,19 @@ class TestLogReader(unittest.TestCase):
 
         result = map(lambda x: (x.content['host'],
                                 datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
                                 x.content['value']), messages)
-        self.assertIn(("host1", 7, 5), result)
-        self.assertIn(("host1", 8, 0), result)
-        self.assertIn(("host1", 9, 0), result)
-        self.assertIn(("host1", 10, 42), result)
-        self.assertIn(("host1", 11, 0), result)
-        self.assertIn(("host2", 7, 5), result)
-        self.assertIn(("host2", 8, 0), result)
-        self.assertIn(("host2", 9, 0), result)
-        self.assertIn(("host2", 10, 0), result)
-        self.assertIn(("host2", 11, 0), result)
-        self.assertIn(("host3", 11, 2), result)
+        self.assertIn(("host1", 7, "sum",  5), result)
+        self.assertIn(("host1", 8, "sum", 0), result)
+        self.assertIn(("host1", 9, "sum", 0), result)
+        self.assertIn(("host1", 10, "sum", 42), result)
+        self.assertIn(("host1", 11, "sum", 0), result)
+        self.assertIn(("host2", 7, "sum", 5), result)
+        self.assertIn(("host2", 8, "sum", 0), result)
+        self.assertIn(("host2", 9, "sum", 0), result)
+        self.assertIn(("host2", 10, "sum", 0), result)
+        self.assertIn(("host2", 11, "sum", 0), result)
+        self.assertIn(("host3", 11, "sum", 2), result)
 
     @log_to_sum_with_groupby_and_regex
     def test_summing_with_groupby_and_regex(self):
@@ -422,18 +427,19 @@ class TestLogReader(unittest.TestCase):
 
         result = map(lambda x: (x.content['host'],
                                 datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
                                 x.content['value']), messages)
-        self.assertIn(("host1", 7, 5), result)
-        self.assertIn(("host1", 8, 0), result)
-        self.assertIn(("host1", 9, 0), result)
-        self.assertIn(("host1", 10, 42), result)
-        self.assertIn(("host1", 11, 0), result)
-        self.assertIn(("host2", 7, 5), result)
-        self.assertIn(("host2", 8, 0), result)
-        self.assertIn(("host2", 9, 0), result)
-        self.assertIn(("host2", 10, 0), result)
-        self.assertIn(("host2", 11, 0), result)
-        self.assertIn(("host3", 11, 2), result)
+        self.assertIn(("host1", 7, "sum", 5), result)
+        self.assertIn(("host1", 8, "sum", 0), result)
+        self.assertIn(("host1", 9, "sum", 0), result)
+        self.assertIn(("host1", 10, "sum", 42), result)
+        self.assertIn(("host1", 11, "sum", 0), result)
+        self.assertIn(("host2", 7, "sum", 5), result)
+        self.assertIn(("host2", 8, "sum", 0), result)
+        self.assertIn(("host2", 9, "sum", 0), result)
+        self.assertIn(("host2", 10, "sum", 0), result)
+        self.assertIn(("host2", 11, "sum", 0), result)
+        self.assertIn(("host3", 11, "sum", 2), result)
 
 
     ########################## COUNT TESTS ##########################
@@ -458,13 +464,14 @@ class TestLogReader(unittest.TestCase):
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
                                 x.content['value']), messages)
 
-        self.assertIn((7, 1), result)
-        self.assertIn((8, 2), result)
-        self.assertIn((9, 0), result)
-        self.assertIn((10, 0), result)
-        self.assertIn((11, 0), result)
+        self.assertIn((7, 'count', 1), result)
+        self.assertIn((8, 'count', 2), result)
+        self.assertIn((9, 'count', 0), result)
+        self.assertIn((10, 'count', 0), result)
+        self.assertIn((11, 'count', 0), result)
 
     @log_to_count_with_date_and_time_columns
     def test_counting_with_date_and_time_columns_without_groupby(self):
@@ -487,13 +494,14 @@ class TestLogReader(unittest.TestCase):
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
                                 x.content['value']), messages)
 
-        self.assertIn((7, 1), result)
-        self.assertIn((8, 2), result)
-        self.assertIn((9, 0), result)
-        self.assertIn((10, 0), result)
-        self.assertIn((11, 0), result)
+        self.assertIn((7, 'count', 1), result)
+        self.assertIn((8, 'count', 2), result)
+        self.assertIn((9, 'count', 0), result)
+        self.assertIn((10, 'count', 0), result)
+        self.assertIn((11, 'count', 0), result)
 
     @log_to_count_2_columns
     def test_counting_2_columns_without_groupby(self):
@@ -531,20 +539,22 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(5, len(methods))
 
         result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
                                 x.content['value']), methods)
-        self.assertIn((7, 1), result)
-        self.assertIn((8, 2), result)
-        self.assertIn((9, 0), result)
-        self.assertIn((10, 0), result)
-        self.assertIn((11, 0), result)
+        self.assertIn((7, 'count', 1), result)
+        self.assertIn((8, 'count', 2), result)
+        self.assertIn((9, 'count', 0), result)
+        self.assertIn((10, 'count', 0), result)
+        self.assertIn((11, 'count', 0), result)
 
         result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
+                                x.content['aggregation_type'],
                                 x.content['value']), status)
-        self.assertIn((7, 1), result)
-        self.assertIn((8, 1), result)
-        self.assertIn((9, 0), result)
-        self.assertIn((10, 0), result)
-        self.assertIn((11, 0), result)
+        self.assertIn((7, 'count', 1), result)
+        self.assertIn((8, 'count', 1), result)
+        self.assertIn((9, 'count', 0), result)
+        self.assertIn((10, 'count', 0), result)
+        self.assertIn((11, 'count', 0), result)
 
     @log_to_count_with_groupby
     def test_counting_with_groupby(self):
@@ -570,18 +580,19 @@ class TestLogReader(unittest.TestCase):
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (x.content['host'],
+                                x.content['aggregation_type'],
                                 datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), messages)
-        self.assertIn(("host1", 7, 2), result)
-        self.assertIn(("host1", 8, 0), result)
-        self.assertIn(("host1", 9, 1), result)
-        self.assertIn(("host1", 10, 0), result)
-        self.assertIn(("host1", 11, 0), result)
-        self.assertIn(("host2", 8, 0), result)
-        self.assertIn(("host2", 9, 0), result)
-        self.assertIn(("host2", 10, 0), result)
-        self.assertIn(("host2", 11, 0), result)
-        self.assertIn(("host3", 11, 1), result)
+        self.assertIn(("host1", 'count', 7, 2), result)
+        self.assertIn(("host1", 'count', 8, 0), result)
+        self.assertIn(("host1", 'count', 9, 1), result)
+        self.assertIn(("host1", 'count', 10, 0), result)
+        self.assertIn(("host1", 'count', 11, 0), result)
+        self.assertIn(("host2", 'count', 8, 0), result)
+        self.assertIn(("host2", 'count', 9, 0), result)
+        self.assertIn(("host2", 'count', 10, 0), result)
+        self.assertIn(("host2", 'count', 11, 0), result)
+        self.assertIn(("host3", 'count', 11, 1), result)
 
     @log_to_count_with_groupby_and_regex
     def test_couting_with_groupby_and_regexp(self):
@@ -608,18 +619,19 @@ class TestLogReader(unittest.TestCase):
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (x.content['host'],
+                                x.content['aggregation_type'],
                                 datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), messages)
-        self.assertIn(("host1", 7, 2), result)
-        self.assertIn(("host1", 8, 0), result)
-        self.assertIn(("host1", 9, 1), result)
-        self.assertIn(("host1", 10, 0), result)
-        self.assertIn(("host1", 11, 0), result)
-        self.assertIn(("host2", 8, 0), result)
-        self.assertIn(("host2", 9, 0), result)
-        self.assertIn(("host2", 10, 0), result)
-        self.assertIn(("host2", 11, 0), result)
-        self.assertIn(("host3", 11, 1), result)
+        self.assertIn(("host1", "count",  7, 2), result)
+        self.assertIn(("host1", "count", 8, 0), result)
+        self.assertIn(("host1", "count", 9, 1), result)
+        self.assertIn(("host1", "count", 10, 0), result)
+        self.assertIn(("host1", "count", 11, 0), result)
+        self.assertIn(("host2", "count", 8, 0), result)
+        self.assertIn(("host2", "count", 9, 0), result)
+        self.assertIn(("host2", "count", 10, 0), result)
+        self.assertIn(("host2", "count", 11, 0), result)
+        self.assertIn(("host3", "count", 11, 1), result)
 
 
 def suite():
