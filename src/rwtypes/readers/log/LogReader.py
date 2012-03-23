@@ -1,6 +1,7 @@
 import re
 import copy
 import logging
+import calendar
 import datetime
 import traceback
 
@@ -171,7 +172,7 @@ class LogReader(Reader):
             for group in cache['groups']:
                 for p in cache['groups'][group]['closed']:
                     content = {'interval_duration_sec': cache['interval_duration_sec'],
-                               'interval_started_at': p['interval_started_at'],
+                               'interval_started_at': calendar.timegm(p['interval_started_at'].timetuple()[:6])*1000,
                                'column_name': cache['column_name'],
                                'value': p['value'],
                                cache['groupby']['column']: group}
@@ -197,7 +198,7 @@ class LogReader(Reader):
             else:
                 for p in c['closed']:
                     content = {'interval_duration_sec': c['interval_duration_sec'],
-                               'interval_started_at': p['interval_started_at'],
+                               'interval_started_at': calendar.timegm(p['interval_started_at'].timetuple()[:6])*1000,
                                'column_name' : c['column_name'],
                                'value' : p['value']}
                     if kind == "counts":

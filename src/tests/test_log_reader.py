@@ -282,7 +282,7 @@ class TestLogReader(unittest.TestCase):
         messages = []
         while q.qsize() > 0: messages.append(q.get())
 
-        result = map(lambda x: (x.content['interval_started_at'].minute,
+        result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), messages)
         self.assertIn((7, 5), result)
         self.assertIn((8, 18), result)
@@ -309,7 +309,7 @@ class TestLogReader(unittest.TestCase):
         messages = []
         while q.qsize() > 0: messages.append(q.get())
 
-        result = map(lambda x: (x.content['interval_started_at'].minute,
+        result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), messages)
         self.assertIn((7, 5), result)
         self.assertIn((8, 18), result)
@@ -349,7 +349,7 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(5, len(primes))
         self.assertEqual(5, len(evens))
 
-        result = map(lambda x: (x.content['interval_started_at'].minute,
+        result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), primes)
         self.assertIn((7, 5), result)
         self.assertIn((8, 18), result)
@@ -357,7 +357,7 @@ class TestLogReader(unittest.TestCase):
         self.assertIn((10, 0), result)
         self.assertIn((11, 13), result)
 
-        result = map(lambda x: (x.content['interval_started_at'].minute,
+        result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), evens)
         self.assertIn((7, 4), result)
         self.assertIn((8, 6), result)
@@ -386,7 +386,7 @@ class TestLogReader(unittest.TestCase):
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (x.content['host'],
-                                x.content['interval_started_at'].minute,
+                                datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), messages)
         self.assertIn(("host1", 7, 5), result)
         self.assertIn(("host1", 8, 0), result)
@@ -421,7 +421,7 @@ class TestLogReader(unittest.TestCase):
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (x.content['host'],
-                                x.content['interval_started_at'].minute,
+                                datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), messages)
         self.assertIn(("host1", 7, 5), result)
         self.assertIn(("host1", 8, 0), result)
@@ -457,7 +457,7 @@ class TestLogReader(unittest.TestCase):
         messages = []
         while q.qsize() > 0: messages.append(q.get())
 
-        result = map(lambda x: (x.content['interval_started_at'].minute,
+        result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), messages)
 
         self.assertIn((7, 1), result)
@@ -486,7 +486,7 @@ class TestLogReader(unittest.TestCase):
         messages = []
         while q.qsize() > 0: messages.append(q.get())
 
-        result = map(lambda x: (x.content['interval_started_at'].minute,
+        result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), messages)
 
         self.assertIn((7, 1), result)
@@ -530,7 +530,7 @@ class TestLogReader(unittest.TestCase):
         self.assertEqual(5, len(status))
         self.assertEqual(5, len(methods))
 
-        result = map(lambda x: (x.content['interval_started_at'].minute,
+        result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), methods)
         self.assertIn((7, 1), result)
         self.assertIn((8, 2), result)
@@ -538,7 +538,7 @@ class TestLogReader(unittest.TestCase):
         self.assertIn((10, 0), result)
         self.assertIn((11, 0), result)
 
-        result = map(lambda x: (x.content['interval_started_at'].minute,
+        result = map(lambda x: (datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), status)
         self.assertIn((7, 1), result)
         self.assertIn((8, 1), result)
@@ -570,7 +570,7 @@ class TestLogReader(unittest.TestCase):
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (x.content['host'],
-                                x.content['interval_started_at'].minute,
+                                datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), messages)
         self.assertIn(("host1", 7, 2), result)
         self.assertIn(("host1", 8, 0), result)
@@ -608,7 +608,7 @@ class TestLogReader(unittest.TestCase):
         while q.qsize() > 0: messages.append(q.get())
 
         result = map(lambda x: (x.content['host'],
-                                x.content['interval_started_at'].minute,
+                                datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['value']), messages)
         self.assertIn(("host1", 7, 2), result)
         self.assertIn(("host1", 8, 0), result)
