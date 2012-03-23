@@ -1,4 +1,4 @@
-import sys 
+import sys
 import os
 
 reader_types = {
@@ -8,7 +8,11 @@ reader_types = {
         },
     'log' : {
         'module' : 'readers.log.LogReader',
-        'class' : 'LogReader'        
+        'class' : 'LogReader'
+        },
+    'custom_log' : {
+        'module' : 'readers.log.CustomLogReader',
+        'class' : 'CustomLogReader'
         },
     'stdin' : {
         'module' : 'readers.stdin.StdinReader',
@@ -52,7 +56,7 @@ writer_types = {
     },
     'file' : {
         'module' : 'writers.file.FileWriter',
-        'class' : 'FileWriter' 
+        'class' : 'FileWriter'
     },
     'socket' : {
         'module' : 'writers.socket.SocketWriter',
@@ -88,7 +92,7 @@ def get_type(type):
         return None
 
 def get_all_types():
-    return reader_types.values() + writer_types.values() 
+    return reader_types.values() + writer_types.values()
 
 
 if __name__ == '__main__':
