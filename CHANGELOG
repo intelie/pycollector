@@ -62,7 +62,7 @@ CHANGELOG
 - Readers/Writers setup now may define a 'required_confs' list of properties that must exist in conf.yaml
 
 
-0.1.12 (maybe it should be 0.2, lot of changes here)
+0.2
 - loose coupled readers/writers, no more callbacks from reader to writer 
 - answering in localhost/queues and localhost/coll 
 - forked filetail (base for log readers) and added rotating file test
@@ -75,5 +75,6 @@ CHANGELOG
 - collector stops in initialization if writer checkpoint is corrupted
 - added a gtalk reader that executes shell commands
 - refactored LogReader to make sums/counts aggregated periodically
+- added a service shellscript to start/stop daemon
 - + tests
 
