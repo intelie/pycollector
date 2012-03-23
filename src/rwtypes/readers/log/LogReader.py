@@ -23,6 +23,11 @@ class LogReader(Reader):
         - columns (optional): list of columns for each log line,
             e.g. ['date', 'hour', 'message']"""
 
+    def to_add(self):
+        """Should return a dictionary with fields that will be added to each messages.
+        Should be implemented by subclasses"""
+        return {}
+
     def set_current_datetime(self):
         """Set datetime from the current line"""
         if self.use_datetime_column:
@@ -179,6 +184,7 @@ class LogReader(Reader):
                                cache['groupby']['column']: group}
                     if kind == "counts":
                         content.update({'column_value': cache['column_value']})
+                    content.update(self.additional_fields)
                     content = copy.deepcopy(content)
                     try:
                         if self.checkpoint_enabled:
@@ -205,6 +211,7 @@ class LogReader(Reader):
                                'value': p['value']}
                     if kind == "counts":
                         content.update({'column_value': c['column_value']})
+                    content.update(self.additional_fields)
                     content = copy.deepcopy(content)
                     if self.checkpoint_enabled:
                         self.store(Message(checkpoint=self.current_checkpoint,
@@ -242,6 +249,7 @@ class LogReader(Reader):
         if self.checkpoint_enabled: self.recover_checkpoint()
 
         # initializations
+        self.additional_fields = self.to_add()
         self.to_split = True if hasattr(self, 'delimiter') else False
         self.to_dictify = True if hasattr(self, 'columns') else False
         self.to_sum = True if hasattr(self, 'sums') else False
@@ -276,9 +284,13 @@ class LogReader(Reader):
 
             if self.checkpoint_enabled:
                 checkpoint = copy.deepcopy(self.current_checkpoint)
+                if isinstance(self.current_line, dict):
+                    content = self.current_line.update(self.additional_fields)
                 self.store(Message(checkpoint=checkpoint,
                                    content=self.current_line))
             else:
+                if isinstance(self.current_line, dict):
+                    content = self.current_line.update(self.additional_fields)
                 self.store(Message(content=self.current_line))
         except Exception, e:
             self.log.error("Error processing line")

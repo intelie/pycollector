@@ -253,7 +253,6 @@ class TestLogReader(unittest.TestCase):
                 return {'spam': 'spam',
                         'egg': 'egg'}
                 
-
         myreader = MyReader(q, conf=conf)
         myreader.start()
     
