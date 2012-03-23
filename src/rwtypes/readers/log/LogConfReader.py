@@ -6,6 +6,7 @@ from __exceptions import ConfigurationError
 class LogConfReader:
     @classmethod
     def validate_conf(cls, conf):
+        columns = conf.get('column', [])
         counts = conf.get('counts', [])
         sums = conf.get('sums', [])
         confs = counts + sums
@@ -19,6 +20,9 @@ class LogConfReader:
                 raise ConfigurationError("'groupby' must have a 'column' entry in your conf.")
 
             if 'groupby' in c:
+                for column in c['groupby']['column']:
+                    if not column in columns:
+                        raise ConfigurationError("'column' defined in 'groupby' is not defined in 'columns'")
                 try:
                     groups = re.compile(c['groupby']['match']).groups
                 except Exception, e:
