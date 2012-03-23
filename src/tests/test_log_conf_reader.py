@@ -34,6 +34,15 @@ class TestLogConfReader(unittest.TestCase):
         conf = {'counts': [{'groupby': {'match': '(spam)(spam)', 'column': 'spam'}}]}
         self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
 
+    def test_raise_exception_if_column_doesnt_exist(self):
+        conf = {'columns': ['s', 'p', 'a', 'm'],
+                'sums': [{'groupby': {'column': 'd', 'match': '(.*)'}}]}
+        self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
+
+        conf = {'columns': ['s', 'p', 'a', 'm'],
+                'counts': [{'groupby': {'column': 'd', 'match': '(.*)'}}]}
+        self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
+
 
 def suite():
     suite = unittest.TestSuite()
