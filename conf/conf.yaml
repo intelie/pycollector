@@ -61,43 +61,94 @@ specs:
 
 
 conf:
-# Reading from nginx with new reader (new conf)
-- reader:
-    type: log
-    logpath: /var/log/nginx/azion/sa/AZ.0058b.log
-    delimiter: \t
-    columns: [request_time, host, remote_addr, time_local, request, status, request_method, bytes_sent, request_uri, http_user_agent, http_referer, upstream_cache_status]
-    datetime_column: time_local
-    counts:
-        - column: status
-          match: '200'
-          period: 1 
-          groupby: 
-            - column: host 
-              regexp: .*
-    sums:
-        - column: bytes_sent
-          period: 1
-          groupby:
-            - column: host
-              regexp: .*
-    checkpoint_enabled: True
-    checkpoint_path: /tmp/rcheckpoint
-    checkpoint_period: 20
-    blockable: True
-  writer:
-    type: stdout
-    checkpoint_enabled: True
-    checkpoint_path: /tmp/wcheckpoint
-    checkpoint_period: 20
-    blockable: True
-
-
 #Reading from stdin and writing to stdout
 #- reader:
 #    type: stdin
 #  writer:
 #    type: stdout
+
+# Reading from an nginx log and delivering to activemq
+#- reader:
+#    type: custom_log
+#    logpath: /var/log/nginx/foo/sa/AZ.0058b.log
+#    delimiter: \t
+#    columns: [request_time, host, remote_addr, time_local, request, status, request_method, bytes_sent, request_uri, http_user_agent, http_referer, upstream_cache_status]
+#    datetime_column: time_local
+#    counts:
+#        - column: request_method
+#          match: 'GET'
+#          period: 1
+#          groupby:
+#            column: host
+#            match: '(.*)'
+#        - column: status
+#          match: 200
+#          period: 1
+#          groupby:
+#            column: host
+#            match: '(.*)'
+#        - column: status
+#          match: 404
+#          period: 1
+#          groupby:
+#            column: host
+#            match: '(.*)'
+#        - column: status
+#          match: 500
+#          period: 1 
+#          groupby:
+#            column: host
+#            match: '(.*)'
+#    sums:
+#        - column: bytes_sent
+#          period: 1
+#          groupby:
+#            column: host
+#            match: '(.*)'
+#    checkpoint_enabled: True
+#    checkpoint_path: /tmp/rnginxcheckpoint
+#    checkpoint_period: 20
+#    blockable: True
+#  writer:
+#    spec: activemq
+#    eventtype: test
+#    checkpoint_enabled: True
+#    checkpoint_path: /tmp/wnginxcheckpoint
+#    checkpoint_period: 20
+#    blockable: True
+
+# Reading from a wowza log and delivering to activemq
+#- reader:
+#    type: custom_log
+#    logpath: /var/log/wowza/foo/ls/AZ.0035c.log.2012-03-05-14
+#    delimiter: \t
+#    columns: [x-severity, x-category, x-event, tz, date, time, c-client-id, c-ip, c-port, cs-bytes, sc-bytes, x-duration, x-sname, x-stream-id, x-spos, sc-stream-bytes, cs-stream-bytes, x-file-size, x-file-length, x-ctx, x-comment, c_proto, c_referrer, c_user_agent, x-app, x-suri]
+#    date_column: date
+#    time_column: time
+#    sums:
+#        - column: sc-bytes
+#          period: 1
+#          groupby:
+#            column: 'x-suri'
+#            match: '^.*//(.*azioncdn.net)'
+#        - column: cs-bytes
+#          period: 1
+#          groupby:
+#            column: 'x-suri'
+#            match: '^.*//(.*azioncdn.net)'
+#    checkpoint_enabled: True
+#    checkpoint_path: /tmp/rwowzacheckpoint
+#    checkpoint_period: 20
+#    blockable: True
+#  writer:
+#    spec: activemq
+#    eventtype: test
+#    checkpoint_enabled: True
+#    checkpoint_path: /tmp/wwowzacheckpoint
+#    checkpoint_period: 20
+#    blockable: True
+                
+
 
 #Reading from an nginx/wowza log and writing to activemq
 #- reader:
