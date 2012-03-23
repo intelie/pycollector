@@ -155,6 +155,8 @@ class Writer(threading.Thread):
             else:
                 return ''
             self.log.info("Checkpoint read from %s" % self.checkpoint_path)
+        except EOFError:
+            return ''
         except Exception, e:
             self.log.error('Error reading checkpoint in %s.' % self.checkpoint_path)
             self.log.error('It may be the case to remove it manually.')

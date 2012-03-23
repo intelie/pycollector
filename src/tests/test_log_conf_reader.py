@@ -34,6 +34,7 @@ class TestLogConfReader(unittest.TestCase):
         conf = {'counts': [{'groupby': {'match': '(spam)(spam)', 'column': 'spam'}}]}
         self.assertRaises(ConfigurationError, LogConfReader.validate_conf, conf)
 
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestLogConfReader))
