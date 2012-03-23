@@ -45,7 +45,11 @@ class LogReader(Reader):
             if kind == 'sums':
                 current_value = int(current_value)
             groupby_value = self.current_line[cache['groupby']['column']]
-            groupby_value = re.match(cache['groupby']['match'], groupby_value).groups()[0]
+            matched = re.match(cache['groupby']['match'], groupby_value)
+            if matched:
+                groupby_value = matched.groups()[0]
+            else:
+                raise Exception("'%s' didn't match with %s" % (groupby_value, cache['groupby']['match']))
             period = cache['interval_duration_sec']
 
             # starting interval
