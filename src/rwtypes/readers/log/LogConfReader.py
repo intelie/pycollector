@@ -20,9 +20,8 @@ class LogConfReader:
                 raise ConfigurationError("'groupby' must have a 'column' entry in your conf.")
 
             if 'groupby' in c:
-                for column in c['groupby']['column']:
-                    if not column in columns:
-                        raise ConfigurationError("'column' defined in 'groupby' is not defined in 'columns'")
+                if c['groupby']['column'] not in columns:
+                    raise ConfigurationError("'column': %s in 'groupby' is not defined in 'columns'." % c['groupby']['column'])
                 try:
                     groups = re.compile(c['groupby']['match']).groups
                 except Exception, e:
