@@ -25,8 +25,13 @@ class LogReader(Reader):
 
     def to_add(self):
         """Should return a dictionary with fields that will be added to each messages.
-        Should be implemented by subclasses"""
+        May be implemented by subclasses."""
         return {}
+
+    def sum_filter(self):
+        """Should return a Boolean based on self.current_line.
+        May be implemented by subclasses."""
+        return True
 
     def set_current_datetime(self):
         """Set datetime from the current line"""
@@ -49,6 +54,7 @@ class LogReader(Reader):
         current_value = self.current_line[cache['column_name']]
         if kind == 'sums':
             current_value = int(current_value)
+        to_sum = self.sum_filter()
         groupby_value = self.current_line[cache['groupby']['column']]
         matched = re.match(cache['groupby']['match'], groupby_value)
         if matched:
@@ -75,7 +81,7 @@ class LogReader(Reader):
             if kind == 'sums':
                 cache['groups'][groupby_value] = {'current':
                                                     {'interval_started_at': start,
-                                                     'value': current_value},
+                                                     'value': current_value if to_sum else 0},
                                                   'closed': []}
             elif kind == 'counts':
                 value = 1 if current_value == cache['column_value'] else 0
@@ -98,7 +104,7 @@ class LogReader(Reader):
                         new_start, new_end = LogUtils.get_interval(self.current_datetime, period)
                         cache['groups'][groupby_value]['current']['interval_started_at'] = new_start
                         if kind == 'sums':
-                            cache['groups'][groupby_value]['current']['value'] = current_value
+                            cache['groups'][groupby_value]['current']['value'] = current_value if to_sum else 0
                         elif kind == 'counts':
                             cache['groups'][groupby_value]['current']['value'] = 1 if current_value == cache['column_value'] else 0
                     else:
@@ -118,7 +124,7 @@ class LogReader(Reader):
                 for group in cache['groups']:
                     cache['groups'][group]['closed'] = []
                 if kind == 'sums':
-                    cache['groups'][groupby_value]['current']['value'] += current_value
+                    cache['groups'][groupby_value]['current']['value'] += current_value if to_sum else 0
                 elif kind == 'counts' and \
                      current_value == cache['column_value']:
                      cache['groups'][groupby_value]['current']['value'] += 1

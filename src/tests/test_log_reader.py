@@ -516,8 +516,8 @@ class TestLogReader(unittest.TestCase):
                                 datetime.datetime.utcfromtimestamp(x.content['interval_started_at']/1000).minute,
                                 x.content['aggregation_type'],
                                 x.content['value']), messages)
-        self.assertIn(("host1", "7", "sum", 6), result)
-        self.assertIn(("host3", "7", "sum", 12), result)
+        self.assertIn(("host1", 7, "sum", 6), result)
+        self.assertIn(("host3", 7, "sum", 12), result)
 
 
     ########################## COUNT TESTS ##########################
