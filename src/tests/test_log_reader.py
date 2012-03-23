@@ -242,6 +242,38 @@ class TestLogReader(unittest.TestCase):
                           'col1': 'y',
                           'col2': 'z'}, msg.content)
 
+    def test_adding_additional_fields_in_messages(self):
+        q = get_queue()
+        conf = {'logpath': self.logpath,
+                'delimiter': '\t',
+                'columns': ['col0', 'col1', 'col2']}
+
+        class MyReader(LogReader):
+            def to_add(self):
+                return {'spam': 'spam',
+                        'egg': 'egg'}
+                
+
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+    
+        # time to process log lines
+        time.sleep(0.1)
+        
+        msg = q.get()
+        self.assertEqual({'col0': 'a',
+                          'col1': 'b',
+                          'col2': 'c',
+                          'spam': 'spam',
+                          'egg': 'egg'}, msg.content)
+
+        msg = q.get()
+        self.assertEqual({'col0': 'x',
+                          'col1': 'y',
+                          'col2': 'z',
+                          'spam': 'spam',
+                          'egg': 'egg'}, msg.content)
+
     def test_saving_checkpoint_in_bytes_read(self):
         # starting reader
         f = open(self.reader_checkpoint, 'rb')
