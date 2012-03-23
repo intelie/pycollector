@@ -127,7 +127,6 @@ class LogReader(Reader):
                     self.do_aggregation_with_groupby(kind, c)
                 except ParsingError, e:
                     self.log.debug(e.msg)
-                    return False
             else:
                 current_value = self.current_line[c['column_name']]
                 if kind == 'sums':
@@ -176,6 +175,7 @@ class LogReader(Reader):
                                'interval_started_at': calendar.timegm(p['interval_started_at'].timetuple()[:6])*1000,
                                'column_name': cache['column_name'],
                                'value': p['value'],
+                               'aggregation_type': kind[:-1],
                                cache['groupby']['column']: group}
                     if kind == "counts":
                         content.update({'column_value': cache['column_value']})
@@ -200,8 +200,9 @@ class LogReader(Reader):
                 for p in c['closed']:
                     content = {'interval_duration_sec': c['interval_duration_sec'],
                                'interval_started_at': calendar.timegm(p['interval_started_at'].timetuple()[:6])*1000,
-                               'column_name' : c['column_name'],
-                               'value' : p['value']}
+                               'column_name': c['column_name'],
+                               'aggregation_type': kind[:-1],
+                               'value': p['value']}
                     if kind == "counts":
                         content.update({'column_value': c['column_value']})
                     content = copy.deepcopy(content)
