@@ -6,6 +6,9 @@ import sys; sys.path.append('..')
 import __meta__; __meta__.load_paths()
 from rwtypes.readers.db.DBReader import DBReader
 
+from third.sqlalchemy import create_engine, Table, Column, Integer, String, MetaData
+from third.sqlalchemy.orm import sessionmaker 
+
 
 def create_database(db_name):
     call(shlex.split("mysql -e 'create database %s'" % db_name))
@@ -15,19 +18,37 @@ def drop_database(db_name):
     call(shlex.split("mysql -e 'drop database %s'" % db_name))
 
 
-class TestDBReader(unittest.TestCase):
-    def __init__(self):
-        unittest.TestCase.__init__(self)
-        self.db_name = "dbreader_test"
+def db_periodic_reading(f):
+    def wrapper(self):
+        engine = create_engine(self.connection, echo=False)
+        self.session = sessionmaker(bind=engine)()
+        metadata = MetaData()
+        t = Table('users', metadata, Column(u'id', Integer()),
+                                     Column(u'name', String(7)))
+        metadata.create_all(engine)
 
+    return wrapper
+
+class TestDBReader(unittest.TestCase):
     def setUp(self):
+        self.user = ''
+        self.password = ''
+        self.host = "localhost"
+        self.db_name = "dbreader_test"
+        self.connection = 'mysql+mysqldb://%s:%s@%s/%s' % (self.user,
+                                                           self.password,
+                                                           self.host,
+                                                           self.db_name)
         create_database(self.db_name)
 
     def tearDown(self):
         drop_database(self.db_name)
 
-    def test_(self):
+    @db_periodic_reading
+    def test_happy_periodic_reading(self):
         pass
+        
+        
 
 def suite():
     suite = unittest.TestSuite()
