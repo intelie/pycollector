@@ -1,7 +1,7 @@
 import unittest
 
 import sys; sys.path.append('..')
-from __message import Message
+import __meta__; __meta__.load_paths()
 from rwtypes.readers.db.DBReader import DBReader
 
 
