@@ -21,12 +21,16 @@ def drop_database(db_name):
 def db_periodic_reading(f):
     def wrapper(self):
         engine = create_engine(self.connection, echo=False)
-        self.session = sessionmaker(bind=engine)()
         metadata = MetaData()
-        t = Table('users', metadata, Column(u'id', Integer()),
-                                     Column(u'name', String(7)))
+        table = Table('users', metadata, Column(u'id', Integer()),
+                                         Column(u'name', String(7)))
         metadata.create_all(engine)
-
+        conn = engine.connect()
+        conn.execute(table.insert(), [
+            {'id': 0, 'name': 'spam'},
+            {'id': 1, 'name': 'egg'},
+            {'id': 2, 'name': 'bacon'},
+        ])
     return wrapper
 
 class TestDBReader(unittest.TestCase):
