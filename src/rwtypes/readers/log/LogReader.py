@@ -1,5 +1,7 @@
+import os
 import re
 import copy
+import time
 import logging
 import calendar
 import datetime
@@ -237,6 +239,18 @@ class LogReader(Reader):
                            self.last_checkpoint['bytes_read']))
             self.tail.seek_bytes(self.current_checkpoint['bytes_read'])
 
+    def check_file_existence(self):
+        self.log_not_found = True
+        while not os.path.exists(self.logpath):
+            self.log.debug("Log file: %s not found." % self.logpath)
+            self.log.debug("Trying to reopen log file: %s ..." % self.logpath)
+            if hasattr(self, 'retry_open_file_period'):
+                time.sleep(self.retry_open_file_period)
+            else:
+                time.sleep(60)
+        self.log_not_found = False
+
+
     def setup(self):
         # starts the logger
         self.log = logging.getLogger('pycollector')
@@ -244,9 +258,12 @@ class LogReader(Reader):
         # validate conf
         LogConfReader.validate_conf(self.conf)
 
-        # check for required confs
+        # checks for required confs
         self.required_confs = ['logpath']
         self.check_required_confs()
+
+        # checks if log file exists
+        self.check_file_existence()
 
         # starts tail
         self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)

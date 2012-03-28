@@ -3,6 +3,7 @@ import time
 import Queue
 import unittest
 import datetime
+import threading
 
 import sys; sys.path.append('..')
 from __message import Message
@@ -310,28 +311,27 @@ class TestLogReader(unittest.TestCase):
 
     def test_file_not_found_should_set_a_blocked_flag(self):
         q = get_queue()
-        conf = {'logpath': '/tmp/retry.log',
+        retry_log = '/tmp/retry.log'
+        conf = {'logpath': retry_log,
                 'checkpoint_path': self.reader_checkpoint,
                 'retry_open_file_period': 1,
                 'checkpoint_enabled': True}
 
-        myreader = LogReader(q, conf=conf)
-        myreader.start()
-
-        # starting overhead
-        time.sleep(0.1)
-
-        self.assertEqual(True, myreader.log_not_found)
-
         # creating the file
-        open('/tmp/retry.log', 'w').close()
+        def create_file():
+            if os.path.exists(retry_log):
+                os.remove(retry_log)
+            open(retry_log, 'w').close()
+
+        threading.Timer(1, create_file).start()
+
+        myreader = LogReader(q, conf=conf)
 
         # waiting retry open file period
-        time.sleep(1)
+        time.sleep(1.1)
 
         # asserting file was found
         self.assertEqual(False, myreader.log_not_found)
-
 
 
     ########################## SUMS TESTS ##########################
