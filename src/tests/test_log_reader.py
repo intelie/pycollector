@@ -268,13 +268,13 @@ class TestLogReader(unittest.TestCase):
             def to_add(self):
                 return {'spam': 'spam',
                         'egg': 'egg'}
-                
+
         myreader = MyReader(q, conf=conf)
         myreader.start()
-    
+
         # time to process log lines
         time.sleep(0.1)
-        
+
         msg = q.get()
         self.assertEqual({'col0': 'a',
                           'col1': 'b',
@@ -307,6 +307,31 @@ class TestLogReader(unittest.TestCase):
 
         msg = q.get()
         self.assertEqual(12, msg.checkpoint['bytes_read'])
+
+    def test_file_not_found_should_set_a_blocked_flag(self):
+        q = get_queue()
+        conf = {'logpath': '/tmp/retry.log',
+                'checkpoint_path': self.reader_checkpoint,
+                'retry_open_file_period': 1,
+                'checkpoint_enabled': True}
+
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # starting overhead
+        time.sleep(0.1)
+
+        self.assertEqual(True, myreader.log_not_found)
+
+        # creating the file
+        open('/tmp/retry.log', 'w').close()
+
+        # waiting retry open file period
+        time.sleep(1)
+
+        # asserting file was found
+        self.assertEqual(False, myreader.log_not_found)
+
 
 
     ########################## SUMS TESTS ##########################
@@ -502,7 +527,7 @@ class TestLogReader(unittest.TestCase):
         class MyReader(LogReader):
             def sum_filter(self, conf):
                 return True if self.current_line['unknown'] == 'yes' else False
-        
+
         myreader = MyReader(q, conf=conf)
         myreader.start()
 
