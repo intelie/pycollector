@@ -78,3 +78,6 @@ CHANGELOG
 - added a service shellscript to start/stop daemon
 - + tests
 
+
+0.2.1
+- when starting or during execution, log reader doesn't stop when file is removed.
