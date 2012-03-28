@@ -67,8 +67,8 @@ class TestDBReader(unittest.TestCase):
     def test_happy_periodic_reading(self):
         q = get_queue()
         conf = deepcopy(self.base_conf)
-        conf.update({'period': 1})
-        conf.update({'columns': ['id', 'name'],
+        conf.update({'period': 1,
+                     'columns': ['id', 'name'],
                      'query': 'select id, name from users'})
 
         myreader = DBReader(q, conf=conf)
