@@ -333,6 +333,44 @@ class TestLogReader(unittest.TestCase):
         # asserting file was found
         self.assertEqual(False, myreader.log_not_found)
 
+    def test_removing_log_file_during_reading(self):
+        q = get_queue()
+        retry_log = '/tmp/retry.log'
+        conf = {'logpath': retry_log,
+                'checkpoint_path': self.reader_checkpoint,
+                'retry_open_file_period': 1,
+                'checkpoint_enabled': True}
+
+        def remove_file():
+            os.remove(retry_log)
+
+        def create_file():
+            open(retry_log, 'w').close()
+
+        create_file()
+        myreader = LogReader(q, conf=conf)
+        myreader.start()
+
+        # starting overhead
+        time.sleep(0.1)
+
+        self.assertEqual(False, myreader.log_not_found)
+
+        remove_file()
+
+        # time to perceive file removing
+        time.sleep(1)
+
+        self.assertEqual(True, myreader.log_not_found)
+
+        create_file()
+
+        # waiting retry open file period
+        time.sleep(1.1)
+
+        # asserting file was found
+        self.assertEqual(False, myreader.log_not_found)
+
 
     ########################## SUMS TESTS ##########################
 

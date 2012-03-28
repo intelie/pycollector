@@ -239,17 +239,27 @@ class LogReader(Reader):
                            self.last_checkpoint['bytes_read']))
             self.tail.seek_bytes(self.current_checkpoint['bytes_read'])
 
+    def clean_sums(self):
+        if hasattr(self, 'sums'):
+            self.current_sums = LogUtils.initialize_sums(self.sums)
+
+    def clean_counts(self):
+        if hasattr(self, 'counts'):
+            self.current_counts = LogUtils.initialize_counts(self.counts)
+
     def check_file_existence(self):
         self.log_not_found = True
         while not os.path.exists(self.logpath):
+            self.clean_sums()
+            self.clean_counts()
             self.log.debug("Log file: %s not found." % self.logpath)
             self.log.debug("Trying to reopen log file: %s ..." % self.logpath)
             if hasattr(self, 'retry_open_file_period'):
                 time.sleep(self.retry_open_file_period)
             else:
                 time.sleep(60)
+        self.log.debug("Log file: %s found." % self.logpath)
         self.log_not_found = False
-
 
     def setup(self):
         # starts the logger
@@ -278,12 +288,8 @@ class LogReader(Reader):
         self.to_sum = True if hasattr(self, 'sums') else False
         self.to_count = True if hasattr(self, 'counts') else False
         self.use_datetime_column = True if hasattr(self, 'datetime_column') else False
-
-        if hasattr(self, 'sums'):
-            self.current_sums = LogUtils.initialize_sums(self.sums)
-
-        if hasattr(self, 'counts'):
-            self.current_counts = LogUtils.initialize_counts(self.counts)
+        self.clean_sums()
+        self.clean_counts()
 
     def process_line(self):
         try:
@@ -339,6 +345,7 @@ class LogReader(Reader):
             return False
         except Exception, e:
             self.log.error(traceback.format_exc())
+            self.check_file_existence()
             return False
         return True
 
