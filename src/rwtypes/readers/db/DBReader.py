@@ -3,6 +3,7 @@
 import datetime
 import calendar
 import logging
+import traceback
 
 from third.sqlalchemy import create_engine
 from third.sqlalchemy.orm import sessionmaker
@@ -12,7 +13,7 @@ from __message import Message
 
 
 class DBReader(Reader):
-    """Conf: 
+    """Conf:
         - period (required): period of reads in seconds
         - user (required): database username,
         - passwd (required): database password
@@ -27,4 +28,44 @@ class DBReader(Reader):
 
         Note: if checkpoint is used, query must ensure sorted data"""
 
-    pass
+    def start_session(self):
+        engine = create_engine(self.connection % (self.user,
+                                                  self.passwd,
+                                                  self.host,
+                                                  self.database),
+                                                  echo=False)
+        Session = sessionmaker(bind=engine)
+        self.session = Session()
+
+    def close_session(self):
+        self.session.close()
+
+    def do_query(self):
+        try:
+            self.start_session()
+            self.results = self.session.query(*self.columns).from_statement(self.query).all()
+            self.close_session()
+            return True
+        except Exception, e:
+            self.log.error("Error during query execution: %s" % self.query)
+            self.log.error(traceback.format_exc())
+            return False
+
+    def store_results(self):
+        messages = [Message(content={column: result[i] for i, column in enumerate(self.columns)})
+                    for result in self.results]
+
+        for message in messages: self.store(message)
+
+    def setup(self):
+        self.log = logging.getLogger()
+
+        self.required_confs = ['columns', 'query', 'user',
+                               'passwd', 'host', 'database']
+        self.check_required_confs()
+
+    def read(self):
+        if self.period:
+            self.do_query() and self.store_results()
+            return
+

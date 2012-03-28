@@ -10,7 +10,7 @@ import __meta__; __meta__.load_paths()
 from rwtypes.readers.db.DBReader import DBReader
 
 from third.sqlalchemy import create_engine, Table, Column, Integer, String, MetaData
-from third.sqlalchemy.orm import sessionmaker 
+from third.sqlalchemy.orm import sessionmaker
 
 
 def get_queue(maxsize=1024):
@@ -68,6 +68,8 @@ class TestDBReader(unittest.TestCase):
         q = get_queue()
         conf = deepcopy(self.base_conf)
         conf.update({'period': 1})
+        conf.update({'columns': ['id', 'name'],
+                     'query': 'select id, name from users'})
 
         myreader = DBReader(q, conf=conf)
         myreader.start()
@@ -77,13 +79,13 @@ class TestDBReader(unittest.TestCase):
 
         message = q.get()
         self.assertEqual({'id': 0, 'name': 'spam'}, message.content)
-        
+
         message = q.get()
         self.assertEqual({'id': 1, 'name': 'egg'}, message.content)
 
         message = q.get()
         self.assertEqual({'id': 2, 'name': 'bacon'}, message.content)
-        
+
 
 def suite():
     suite = unittest.TestSuite()
