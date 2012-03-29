@@ -53,6 +53,8 @@ class LogReader(Reader):
                         'groups': {}}
 
            Output: side effect in cache structure"""
+        #TODO: This code is ugly. Refactor me!
+
         current_value = self.current_line[cache['column_name']]
         if kind == 'sums':
             current_value = int(current_value)
@@ -133,6 +135,7 @@ class LogReader(Reader):
         return True
 
     def do_aggregation(self, kind):
+        #TODO: Refactor me!
         cache = self.current_sums if kind == 'sums' else self.current_counts
         for i, c in enumerate(cache):
             if 'groupby' in c:
@@ -181,6 +184,7 @@ class LogReader(Reader):
         return True
 
     def store_aggregation_with_groupby(self, kind, cache):
+        # TODO: Refactor me. Mix with store_aggregation method.
         try:
             for group in cache['groups']:
                 for p in cache['groups'][group]['closed']:
