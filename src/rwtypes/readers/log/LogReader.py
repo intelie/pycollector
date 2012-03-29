@@ -330,32 +330,20 @@ class LogReader(Reader):
             self.log.error(traceback.format_exc())
 
     def get_line(self):
-        """Returns a boolean indicating whether the log line
-           was successfully read or not"""
+        """ Output: (int, string)"""
         try:
-            self.bytes_read, self.current_line = self.tail.nextline()
-            if self.checkpoint_enabled:
-                self.current_checkpoint['bytes_read'] = self.bytes_read
-
-            if self.to_split and self.to_dictify:
-                self.current_line = LogUtils.dictify_line(self.current_line,
-                                                      self.delimiter,
-                                                      self.columns)
-            elif self.to_split:
-                self.current_line = LogUtils.split_line(self.current_line,
-                                                    self.delimiter)
-        except ParsingError, e:
-            self.log.error(e.msg)
-            return False
-        except Exception, e:
+            return self.tail.nextline()
+        except Exception:
             self.log.error(traceback.format_exc())
-            self.check_file_existence()
-            return False
-        return True
+        return None
 
     def read(self):
-        if self.period:
-            self.get_line() and self.process_line()
-            return
-        while True:
-            self.get_line() and self.process_line()
+        def task():
+            bytes_read, line = get_line()
+            if line:
+                messages = process_line(line)
+                checkpoints = store_messages(messages)
+                record_checkpoints(checkpoints)
+
+        if self.period: task()
+        else: while True: task()
