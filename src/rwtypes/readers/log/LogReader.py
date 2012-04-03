@@ -295,7 +295,7 @@ class LogReader(Reader):
         self.clean_sums()
         self.clean_counts()
 
-    def process_line(self):
+    def process_data(self, data):
         try:
             if self.to_sum or self.to_count:
                 self.set_current_datetime()
@@ -317,14 +317,14 @@ class LogReader(Reader):
 
             if self.checkpoint_enabled:
                 checkpoint = copy.deepcopy(self.current_checkpoint)
-                if isinstance(self.current_line, dict):
-                    content = self.current_line.update(self.additional_fields)
+                if isinstance(data, dict):
+                    content = data.update(self.additional_fields)
                 self.store(Message(checkpoint=checkpoint,
-                                   content=self.current_line))
+                                   content=data))
             else:
-                if isinstance(self.current_line, dict):
-                    content = self.current_line.update(self.additional_fields)
-                self.store(Message(content=self.current_line))
+                if isinstance(data, dict):
+                    content = data.update(self.additional_fields)
+                self.store(Message(content=data))
         except Exception, e:
             self.log.error("Error processing line")
             self.log.error(traceback.format_exc())
@@ -337,13 +337,32 @@ class LogReader(Reader):
             self.log.error(traceback.format_exc())
         return None
 
+    def store_messages(self, messages):
+        pass
+
+    def record_checkpoints(self, bytes_read, checkpoints):
+        pass
+
+    def structure_line(self, line):
+        """Returns a dict if to_dictify = True,
+                   a list if only to_split = True,
+                   a string with the original line otherwise"""
+        if self.to_dictify:
+            return LogUtils.dictify_line(line, self.delimiter, self.columns)
+        elif self.to_split:
+            return LogUtils.split_line(line, self.delimiter)
+        return line
+
     def read(self):
         def task():
-            bytes_read, line = get_line()
+            bytes_read, line = self.get_line()
             if line:
-                messages = process_line(line)
-                checkpoints = store_messages(messages)
-                record_checkpoints(checkpoints)
-
-        if self.period: task()
-        else: while True: task()
+                data = self.structure_line(line)
+                messages = self.process_data(data)
+                checkpoints = self.store_messages(messages)
+                self.record_checkpoints(bytes_read, checkpoints)
+        if self.period: 
+            task()
+        else: 
+            while True: 
+                task()
