@@ -48,7 +48,7 @@ class LogLinesProcessor:
             event.update(conf['one_event_per_line_conf']['user_defined_fields'])
 
         if is_consolidation_enabled(conf):
-                self.consolidated[conf_index][conf['consolidation_conf']['field']] += 1
+            self.consolidated[conf_index][conf['consolidation_conf']['field']] += 1
         else:
             event.update({'line' : line})
 

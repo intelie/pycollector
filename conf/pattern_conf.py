@@ -4,16 +4,16 @@
 """
 
 conf = [{
-           'log_filename': '/home/kaiser/oi_vendas_online.access.log',
+           'log_filename': 'C:\inetpub\logs\LogFiles\W3SVC1\u_ex120416.log',
            'global_fields': { 
                'host': 'WebServer-VendasOnline',
                'log_type': 'apache-access-log',
            },
            'events_conf': [{
-                'eventtype': 'VendasOnline',
-                'regexps': ['^.*GET /sale/wizardControl.html\?prd_code1=9052.*$'],
+                'eventtype': 'Welcome',
+                'regexps': ['^.*GET /welcome\.png.*$'],
                 'consolidation_conf': {
-                    'period' : 1,
+                    'period' : 1/60.0,
                     'enable': True,
                     'field': 'acessos',
                     'user_defined_fields': {

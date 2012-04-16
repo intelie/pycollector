@@ -11,7 +11,7 @@ PID_PATH="/home/kaiser/workspace/log-collector/collector.pid"
 #ACTIVEMQ SETTINGS-----------------------------------------------
 
 #ACTIVEMQ_SERVER: activemq stomp server
-ACTIVEMQ_SERVER="localhost"
+ACTIVEMQ_SERVER="juanplopes"
 
 #ACTIVEMQ_PORT: activemq stomp port
 ACTIVEMQ_PORT=61613
@@ -19,7 +19,7 @@ ACTIVEMQ_PORT=61613
 #APPLICATION LOG SETTINGS-----------------------------------------------
 
 #LOGGING_PATH: sets where the logs will be located.
-LOGGING_PATH="/home/kaiser/workspace/log-collector/logs/"
+LOGGING_PATH="."
 
 #SEVERITY: changes the level of severity for all application logs created.
 #Options: DEBUG, INFO, WARNING, ERROR, CRITICAL

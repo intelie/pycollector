@@ -1,3 +1,5 @@
 *.e4p
 logs/**
 *.pid
+*.pyc
+build

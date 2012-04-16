@@ -93,6 +93,7 @@ class LogFileManager:
             self.logger.debug("Starting tailing for %s..." % self.filename)
         while True:
             line = t.nextline() 
+            
             try:
                 self.line_processor.process(line)
                 if self.to_log:
@@ -116,12 +117,13 @@ class LogFileManager:
                                                  None)
 
     def schedule_simple_events_task(self):
-        self.scheduler.add_single_task(self.send_simple_event,
-                                       "simple event task",
-                                       0,
-                                       kronos.method.threaded,
-                                       [],
-                                       None)
+        pass
+        # self.scheduler.add_single_task(self.send_simple_event,
+                                       # "simple event task",
+                                       # 0,
+                                       # kronos.method.threaded,
+                                       # [],
+                                       # None)
 
 
 class LogFileManagerThreaded(threading.Thread):

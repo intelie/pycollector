@@ -11,10 +11,9 @@ __email__ = "ronald at intelie dot com dot br"
 
 
 import logging, logging.config
-
 from conf_util import *
 from log_file_manager import LogFileManagerThreaded
-
+import sys
 
 class LogCollector:
     def __init__(self, conf, logging_conf=None, to_log=False):
@@ -71,3 +70,15 @@ class LogCollector:
             self.logger.debug("Threads started: %s" % self.log_threads)
             self.logger.info("LogCollector started.")
 
+if __name__ == '__main__':
+	try:
+		sys.path.append('../conf')
+		from pattern_conf import conf
+		import daemon_conf
+		print "Configuration file in use: pattern_conf"
+		c = LogCollector(conf)
+		c.start()
+	except Exception, e:
+		print "Can't import configuration file."
+		print e
+		exit(-1)
