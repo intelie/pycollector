@@ -30,6 +30,7 @@ class LogFileManager:
         self.logging_conf = logging_conf
         self.logger = None
         self.filename = conf['log_filename']
+        self._stopped = False
         if to_log:
             self.set_logging()
         self.scheduler = kronos.ThreadedScheduler()
@@ -84,15 +85,15 @@ class LogFileManager:
         self.scheduler.start()
 
     def tail(self):
-        t = filetail.Tail(self.filename, only_new=True)
+        self.tail = filetail.Tail(self.filename, only_new=True)
         if self.to_log:
             self.logger.info("Scheduling tasks for: %s..." % self.filename)
         self.schedule_tasks()
         if self.to_log:
             self.logger.debug("Tasks for %s scheduled." % self.filename)
             self.logger.debug("Starting tailing for %s..." % self.filename)
-        while True:
-            line = t.nextline() 
+        while not self._stopped:
+            line = self.tail.nextline() 
             
             try:
                 self.line_processor.process(line)
@@ -103,6 +104,10 @@ class LogFileManager:
                     self.logger.info("Couldn't process line.")
                     self.logger.debug(e)
 
+    def stop(self):
+        self._stopped = True
+        self.tail.stop()
+                    
     def schedule_consolidated_events_tasks(self):
         events_conf = self.conf['events_conf']
         for index, event_conf in enumerate(events_conf):
@@ -133,3 +138,6 @@ class LogFileManagerThreaded(threading.Thread):
 
     def run(self):
         self.log_file_manager.tail()
+        
+    def stop(self):
+        self.log_file_manager.stop()

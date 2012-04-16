@@ -64,6 +64,8 @@ class Tail(object):
         self.min_sleep = min_sleep * 1.0
         self.sleep_interval = sleep_interval * 1.0
         self.max_sleep = max_sleep * 1.0
+        self._stopped = False
+
         if only_new:
             # seek to current end of file
             file_len = stat(path)[ST_SIZE]
@@ -158,7 +160,7 @@ class Tail(object):
             return self._dequeue()
 
         # hmm, still no input available
-        while True:
+        while not self._stopped:
             sleep(self.sleep_interval)
             if self._fill_cache() > 0:
                 return self._dequeue()
@@ -171,6 +173,9 @@ class Tail(object):
                     if self._fill_cache() > 0:
                         return self._dequeue()
 
+    def stop(self):
+        self._stopped = True
+                        
     def close(self):
         """Close the tail monitor, discarding any remaining input."""
         self.f.close()
