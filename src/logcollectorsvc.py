@@ -11,12 +11,10 @@ import sys
 import time
 import os
 import sys, os 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../src"))  
-sys.path.append(os.path.join(os.path.dirname(__file__), "../conf"))  
 
 class LogCollectSvc (win32serviceutil.ServiceFramework):
-    _svc_name_ = "LogCollect"
-    _svc_display_name_ = "Log Collect Service"
+    _svc_name_ = "LogCollector"
+    _svc_display_name_ = "Log Collector Service"
 
     def __init__(self,args):
         win32serviceutil.ServiceFramework.__init__(self,args)
@@ -37,6 +35,14 @@ class LogCollectSvc (win32serviceutil.ServiceFramework):
         self.main()
 
     def main(self):
+        try:
+            curr_file = __file__ 
+        except:
+            curr_file = sys.argv[0]
+        sys.path.append(os.path.dirname(curr_file))  
+        sys.path.append(os.path.join(os.path.dirname(curr_file), "../src"))  
+        sys.path.append(os.path.join(os.path.dirname(curr_file), "../conf"))  
+
         import daemon_conf
         from pattern_conf import conf
         from logcollector import LogCollector

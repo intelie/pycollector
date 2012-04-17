@@ -9,7 +9,6 @@
 __author__ = "Ronald Kaiser"
 __email__ = "ronald at intelie dot com dot br"
 
-
 import logging, logging.config
 from conf_util import *
 from log_file_manager import LogFileManagerThreaded
@@ -74,18 +73,4 @@ class LogCollector:
         print 'stopping'
         for thread in self.log_threads:
             thread.stop()
-            
-if __name__ == '__main__':
-    try:
-        sys.path.append('../conf')
-        from pattern_conf import conf
-        import daemon_conf
-        print "Configuration file in use: pattern_conf"
-        c = LogCollector(conf)
-        c.start()
-        sys.stdin.readline()
-        c.stop()
-    except Exception, e:
-        print "Can't import configuration file."
-        print e
-        exit(-1)
+           
