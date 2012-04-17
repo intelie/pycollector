@@ -2,15 +2,19 @@
 # -*- coding: utf-8 -*-
 
 import sys, os
-from distutils.core import setup
+from distutils.core import *
 from distutils.file_util import *
-import py2exe
+from py2exe import *
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))  
 #sys.path.append(os.path.join(os.path.dirname(__file__), "conf"))  
 
 setup(
-    console=['src/logcollectorsvc.py'],
+    service=[{
+        'description': "Log Collector Service",
+        'modules': ["logcollectorsvc"],
+        'cmdline_style': 'pywin32'
+    }],
     zipfile=None,
     options={
                 "py2exe":{

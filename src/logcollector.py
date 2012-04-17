@@ -70,7 +70,6 @@ class LogCollector:
             self.logger.info("LogCollector started.")
 
     def stop(self):
-        print 'stopping'
         for thread in self.log_threads:
             thread.stop()
            

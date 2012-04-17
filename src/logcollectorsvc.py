@@ -12,7 +12,7 @@ import time
 import os
 import sys, os 
 
-class LogCollectSvc (win32serviceutil.ServiceFramework):
+class LogCollectorSvc (win32serviceutil.ServiceFramework):
     _svc_name_ = "LogCollector"
     _svc_display_name_ = "Log Collector Service"
 
@@ -31,26 +31,24 @@ class LogCollectSvc (win32serviceutil.ServiceFramework):
     def SvcDoRun(self):
         servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
                               servicemanager.PYS_SERVICE_STARTED,
-                              (self._svc_name_,''))
+                              (self._svc_name_, ''))
         self.main()
 
     def main(self):
-        try:
-            curr_file = __file__ 
-        except:
-            curr_file = sys.argv[0]
-        sys.path.append(os.path.dirname(curr_file))  
-        sys.path.append(os.path.join(os.path.dirname(curr_file), "../src"))  
-        sys.path.append(os.path.join(os.path.dirname(curr_file), "../conf"))  
-
+        servicemanager.LogInfoMsg(os.path.dirname(sys.argv[0]))
+        servicemanager.LogInfoMsg(os.getcwd())
+        
+        sys.path.append(os.path.dirname(sys.argv[0]))  
+        sys.path.append(os.path.join(os.path.dirname(__file__), "../src"))  
+        sys.path.append(os.path.join(os.path.dirname(__file__), "../conf"))  
+        
         import daemon_conf
         from pattern_conf import conf
         from logcollector import LogCollector
-        print "Configuration file in use: pattern_conf"
         self.collector = LogCollector(conf, daemon_conf, daemon_conf.TO_LOG)
         self.collector.start()
         while not self._stopped:
             time.sleep(1)
 
 if __name__ == '__main__':
-    win32serviceutil.HandleCommandLine(LogCollectSvc)
+    win32serviceutil.HandleCommandLine(LogCollectorSvc)
