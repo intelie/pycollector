@@ -3,6 +3,7 @@
 
 import sys, os
 from distutils.core import setup
+from distutils.file_util import *
 import py2exe
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "src"))  
@@ -19,3 +20,5 @@ setup(
                 }
         }
 )
+copy_file('conf/daemon_conf.py', 'dist')
+copy_file('conf/pattern_conf.py', 'dist')

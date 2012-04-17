@@ -47,7 +47,7 @@ class LogCollectSvc (win32serviceutil.ServiceFramework):
         from pattern_conf import conf
         from logcollector import LogCollector
         print "Configuration file in use: pattern_conf"
-        self.collector = LogCollector(conf)
+        self.collector = LogCollector(conf, daemon_conf, daemon_conf.TO_LOG)
         self.collector.start()
         while not self._stopped:
             time.sleep(1)

@@ -21,6 +21,7 @@ import helpers.simplejson as json
 from conf_util import *
 from daemon_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT
 from log_lines_processor import LogLinesProcessor
+import os
 
 
 class LogFileManager:
@@ -38,7 +39,7 @@ class LogFileManager:
         self.default_task_period = 1 #minute
 
     def set_logging(self):
-        logger = self.filename.split('/')[-1].split('.log')[0] + '.lc.log'
+        logger = self.filename.split(os.sep)[-1].split('.log')[0] + '.lc.log'
         self.logger = logging.getLogger(logger)
         self.logger.setLevel(self.logging_conf.SEVERITY)
         filename = self.logging_conf.LOGGING_PATH + logger
