@@ -171,7 +171,8 @@ class Tail(object):
                     # file got truncated and/or re-created
                     self._reset()
                     if self._fill_cache() > 0:
-                        return self._dequeue()
+                        return self._dequeue
+        return None
 
     def stop(self):
         self._stopped = True

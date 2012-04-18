@@ -22,6 +22,7 @@ from conf_util import *
 from daemon_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT
 from log_lines_processor import LogLinesProcessor
 import os
+from datetime import datetime
 
 
 class LogFileManager:
@@ -29,8 +30,9 @@ class LogFileManager:
         self.conf = conf
         self.to_log = to_log
         self.logging_conf = logging_conf
+        self.filename = self.make_filename()
+        self.tail = filetail.Tail(self.filename, only_new=True)
         self.logger = None
-        self.filename = conf['log_filename']
         self._stopped = False
         if to_log:
             self.set_logging()
@@ -38,6 +40,9 @@ class LogFileManager:
         self.line_processor = LogLinesProcessor(self.conf, self.logger, to_log)
         self.default_task_period = 1 #minute
 
+    def make_filename(self):
+        return datetime.now().strftime(self.conf['log_filename'])
+        
     def set_logging(self):
         logger = self.filename.split(os.sep)[-1].split('.log')[0] + '.lc.log'
         self.logger = logging.getLogger(logger)
@@ -60,6 +65,18 @@ class LogFileManager:
         field = self.conf['events_conf'][conf_index]['consolidation_conf']['field']
         self.line_processor.consolidated[conf_index][field] = 0
 
+    def check_filename(self):
+        new_filename = self.make_filename()
+        if self.to_log:
+            self.logger.info("Expected filename: %s" % (new_filename,))
+        
+        if new_filename != self.filename:
+            old_tail = self.tail
+            
+            self.tail = filetail.Tail(new_filename, only_new=False)
+            self.filename = new_filename
+            old_tail.stop()
+        
     def send_2_activemq(self, message_data):
         body = message_data.copy()
         header = { 'destination' : '/queue/events',
@@ -82,11 +99,10 @@ class LogFileManager:
 
     def schedule_tasks(self):
         self.schedule_consolidated_events_tasks()
-        self.schedule_simple_events_task()
+        self.schedule_filename_task()
         self.scheduler.start()
 
-    def tail(self):
-        self.tail = filetail.Tail(self.filename, only_new=True)
+    def start(self):
         if self.to_log:
             self.logger.info("Scheduling tasks for: %s..." % self.filename)
         self.schedule_tasks()
@@ -95,6 +111,9 @@ class LogFileManager:
             self.logger.debug("Starting tailing for %s..." % self.filename)
         while not self._stopped:
             line = self.tail.nextline() 
+            
+            if line == None:
+                continue
             
             try:
                 self.line_processor.process(line)
@@ -122,14 +141,14 @@ class LogFileManager:
                                                  [index],
                                                  None)
 
-    def schedule_simple_events_task(self):
-        pass
-        # self.scheduler.add_single_task(self.send_simple_event,
-                                       # "simple event task",
-                                       # 0,
-                                       # kronos.method.threaded,
-                                       # [],
-                                       # None)
+    def schedule_filename_task(self):
+        self.scheduler.add_interval_task(self.check_filename,
+                                         "filename check task",
+                                         0,
+                                         10,
+                                         kronos.method.threaded,
+                                         None,
+                                         None)
 
 
 class LogFileManagerThreaded(threading.Thread):
@@ -138,7 +157,7 @@ class LogFileManagerThreaded(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        self.log_file_manager.tail()
+        self.log_file_manager.start()
         
     def stop(self):
         self.log_file_manager.stop()

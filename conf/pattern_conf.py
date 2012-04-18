@@ -4,7 +4,7 @@
 """
 
 conf = [{
-           'log_filename': 'C:\inetpub\logs\LogFiles\W3SVC1\u_ex120416.log',
+           'log_filename': 'C:\inetpub\logs\LogFiles\W3SVC1\u_ex%y%m%d.log',
            'global_fields': { 
                'host': 'WebServer-VendasOnline',
                'log_type': 'apache-access-log',
