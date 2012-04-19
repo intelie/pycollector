@@ -18,10 +18,14 @@ setup(
     zipfile=None,
     options = {
         "py2exe": {
-            "unbuffered": True,
-            "optimize": 2,
-            "bundle_files": 1,
-            "dll_excludes": ["w9xpopen.exe"]
+            'unbuffered': True,
+            'optimize': 2,
+            'bundle_files': 1,
+            'excludes': ['_ssl',  # Exclude _ssl
+                   'pyreadline', 'difflib', 'doctest', 'locale',
+                  'optparse', 'calendar'],  # Exclude standard library
+            'dll_excludes': ['w9xpopen.exe'],  # Exclude msvcr71
+            'compressed': True,  # Compress library.zip
         }
     }
 )
