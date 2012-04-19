@@ -54,12 +54,6 @@ class LogFileManager:
         self.log_handler.setFormatter(formatter)
         self.logger.addHandler(self.log_handler)
 
-    def send_simple_event(self):
-        while True:
-            if (len(self.line_processor.event_queue) > 0):
-                event = self.line_processor.event_queue.pop(0)
-                self.send_2_activemq(event)
-
     def send_consolidated_event(self, conf_index):
         self.send_2_activemq(self.line_processor.consolidated[conf_index])
         field = self.conf['events_conf'][conf_index]['consolidation_conf']['field']
@@ -113,7 +107,9 @@ class LogFileManager:
         if self.to_log:
             self.logger.debug("Tasks for %s scheduled." % self.filename)
             self.logger.debug("Starting tailing for %s..." % self.filename)
+        i = 0
         while not self._stopped:
+            i+=1
             line = self.tail.nextline() 
             
             if line == None:
@@ -127,6 +123,7 @@ class LogFileManager:
                 if self.to_log:
                     self.logger.info("Couldn't process line.")
                     self.logger.debug(e)
+
 
     def stop(self):
         self._stopped = True

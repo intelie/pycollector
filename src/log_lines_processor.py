@@ -9,6 +9,7 @@
 
 import re
 import logging
+import time
 
 from exception import *
 from conf_util import *
@@ -22,7 +23,11 @@ class LogLinesProcessor:
         self.consolidated = {}
         self.init_counts()
         self.event_queue = []
-
+        
+        events_conf = self.conf['events_conf']
+        for event_conf in events_conf:
+            event_conf['compiled'] = map(re.compile, event_conf['regexps'])
+        
     def init_counts(self):
         events_conf = self.conf['events_conf']
         for (index, event_conf) in enumerate(events_conf):
@@ -61,10 +66,10 @@ class LogLinesProcessor:
         try:
             events_conf = self.conf['events_conf']
             for index, event_conf in enumerate(events_conf):
-                regexps = event_conf['regexps']
-                for regexp in regexps:
+                for regexp in event_conf['compiled']:
                     line = line.rstrip('\r\n')
-                    match = re.match(regexp, line)
+                    
+                    match = regexp.search(line)
                     if match:
                         if self.to_log:
                             self.logger.debug("Line: [%s] matching with regexp: %s" % (line, regexp))
@@ -78,7 +83,8 @@ class LogLinesProcessor:
         except Exception, e:
             if self.to_log:
                 self.logger.error(e)
-
+            
+                
+                
         if self.to_log:
             self.logger.debug("Line: [%s] didn't match with any regexp." % line)
-
