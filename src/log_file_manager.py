@@ -73,9 +73,13 @@ class LogFileManager:
         if new_filename != self.filename:
             old_tail = self.tail
             
-            self.tail = filetail.Tail(new_filename, only_new=False)
-            self.filename = new_filename
-            old_tail.stop()
+            try:
+                self.tail = filetail.Tail(new_filename, only_new=False)
+                self.filename = new_filename
+                old_tail.stop()
+            except IOError:
+                if self.to_log:
+                    self.logger.info('New file %s not ready yet', new_filename)
         
     def send_2_activemq(self, message_data):
         body = message_data.copy()
