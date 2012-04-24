@@ -52,14 +52,11 @@ class DBReader(Reader):
             return False
 
     def store_results(self):
-        messages = [Message(content={column: result[i] for i, column in enumerate(self.columns)})
-                    for result in self.results]
-
+        messages = [Message(content=dict(zip(self.columns, result))) for result in self.results]
         for message in messages: self.store(message)
 
     def setup(self):
         self.log = logging.getLogger()
-
         self.required_confs = ['columns', 'query', 'user',
                                'passwd', 'host', 'database']
         self.check_required_confs()
