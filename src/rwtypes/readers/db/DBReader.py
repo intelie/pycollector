@@ -44,6 +44,7 @@ class DBReader(Reader):
         try:
             self.start_session()
             self.results = self.session.query(*self.columns).from_statement(self.query).all()
+            self.results = zip(range(len(self.results)), self.results)
             self.close_session()
             return True
         except Exception, e:
@@ -52,7 +53,9 @@ class DBReader(Reader):
             return False
 
     def store_results(self):
-        messages = [Message(content=dict(zip(self.columns, result))) for result in self.results]
+        messages = [Message(checkpoint=result[0],
+                            content=dict(zip(self.columns, result[1])))
+                    for result in self.results]
         for message in messages: self.store(message)
 
     def setup(self):
