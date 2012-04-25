@@ -79,12 +79,15 @@ class TestDBReader(unittest.TestCase):
 
         message = q.get()
         self.assertEqual({'id': 0, 'name': 'spam'}, message.content)
+        self.assertEqual(0, message.checkpoint)
 
         message = q.get()
         self.assertEqual({'id': 1, 'name': 'egg'}, message.content)
+        self.assertEqual(1, message.checkpoint)
 
         message = q.get()
         self.assertEqual({'id': 2, 'name': 'bacon'}, message.content)
+        self.assertEqual(2, message.checkpoint)
 
 
 def suite():
