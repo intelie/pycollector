@@ -58,11 +58,16 @@ class DBReader(Reader):
                     for result in self.results]
         for message in messages: self.store(message)
 
+    def set_current_checkpoint(self):
+        self.current_checkpoint = self.last_checkpoint or {'pos': 0}
+
     def setup(self):
         self.log = logging.getLogger()
         self.required_confs = ['columns', 'query', 'user',
                                'passwd', 'host', 'database']
         self.check_required_confs()
+        if self.checkpoint_enabled:
+            self.set_current_checkpoint()
 
     def read(self):
         if self.period:
