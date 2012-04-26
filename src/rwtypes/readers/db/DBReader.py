@@ -53,7 +53,7 @@ class DBReader(Reader):
             return False
 
     def store_results(self):
-        messages = [Message(checkpoint=result[0],
+        messages = [Message(checkpoint={'pos': result[0]},
                             content=dict(zip(self.columns, result[1])))
                     for result in self.results]
         for message in messages: self.store(message)
