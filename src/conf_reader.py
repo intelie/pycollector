@@ -43,20 +43,12 @@ def has_checkpoint_path_if_checkpoint_enabled(conf):
          raise(ConfigurationError("Missing checkpoint_path for '%s' in conf.yaml" % conf['type']))
 
 
-def has_blockable_and_period(conf):
-    """Blockable and period, for a while, doesn't make sense"""
-    if 'blockable' in conf and \
-        conf['blockable'] and \
-        'period' in conf:
-        raise(ConfigurationError("'blockable' and 'period' are incompatibles for reader. Check your conf.yaml"))
-
-
 def has_checkpoint_and_blockable(conf):
     """If checkpoint is enabled, it must be blockable"""
     if 'checkpoint_enabled' in conf and \
         conf['checkpoint_enabled'] and \
         (not 'blockable' in conf or not conf['blockable']):
-        raise(ConfigurationError("If 'checkpoint is enabled, it must be 'blockable'. Check your conf.yaml'"))
+        raise(ConfigurationError("If checkpoint is enabled, it must be 'blockable'. Check your conf.yaml"))
 
 
 def has_checkpoint(conf):
@@ -96,7 +88,6 @@ def read_yaml_conf(file_conf=load_yaml_conf()):
         has_type(new_reader)
         has_known_type(new_reader)
         has_checkpoint_path_if_checkpoint_enabled(new_reader)
-        has_blockable_and_period(new_reader)
         has_checkpoint_and_blockable(new_reader)
 
         if 'spec' in writer:
