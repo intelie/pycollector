@@ -71,6 +71,7 @@ class Reader(threading.Thread):
         self.conf = conf
         self.processed = 0
         self.discarded = 0
+        self.busy = False
         self.queue = queue
         self.blocked = False
         self.period = period
@@ -189,7 +190,13 @@ class Reader(threading.Thread):
            in the case of a periodic task.
            Shouldn't be called by subclasses."""
         try:
+            if self.busy:
+                self.log.debug("Reader is busy with other reading. Skipping this scheduling.")
+                return
+
+            self.busy = True
             self.read()
+            self.busy = False
         except Exception, e:
             self.log.error("Error running read() method.")
             self.log.error(traceback.format_exc())
