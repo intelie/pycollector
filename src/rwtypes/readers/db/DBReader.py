@@ -49,7 +49,8 @@ class DBReader(Reader):
             self.start_session()
             self.results = self.session.query(*self.columns).from_statement(self.query).all()
             self.results = zip(range(len(self.results)), self.results)
-            self.results = self.skip(results)
+            if self.checkpoint_enabled:
+                self.results = self.skip(results)
             self.close_session()
             return True
         except Exception, e:
