@@ -40,11 +40,16 @@ class DBReader(Reader):
     def close_session(self):
         self.session.close()
 
+    def skip(self, results):
+        """Skips already delivered messages"""
+        return results[self.current_checkpoint['pos']:]
+
     def do_query(self):
         try:
             self.start_session()
             self.results = self.session.query(*self.columns).from_statement(self.query).all()
             self.results = zip(range(len(self.results)), self.results)
+            self.results = self.skip(results)
             self.close_session()
             return True
         except Exception, e:
@@ -56,10 +61,15 @@ class DBReader(Reader):
         messages = [Message(checkpoint={'pos': result[0]},
                             content=dict(zip(self.columns, result[1])))
                     for result in self.results]
-        for message in messages: self.store(message)
+        for message in messages: 
+            self.store(message)
+            self.set_current_checkpoint(message.checkpoint)
 
-    def set_current_checkpoint(self):
-        self.current_checkpoint = self.last_checkpoint or {'pos': 0}
+    def set_current_checkpoint(self, value=None):
+        if value != None:
+            self.current_checkpoint = value
+        else:
+            self.current_checkpoint = self.last_checkpoint or {'pos': 0}
 
     def setup(self):
         self.log = logging.getLogger()
