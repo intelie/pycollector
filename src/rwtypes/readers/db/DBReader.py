@@ -42,7 +42,7 @@ class DBReader(Reader):
 
     def skip(self, results):
         """Skips already delivered messages"""
-        return results[self.current_checkpoint['pos']:]
+        return results[self.current_checkpoint['pos']+1:]
 
     def do_query(self):
         try:
@@ -50,7 +50,7 @@ class DBReader(Reader):
             self.results = self.session.query(*self.columns).from_statement(self.query).all()
             self.results = zip(range(len(self.results)), self.results)
             if self.checkpoint_enabled:
-                self.results = self.skip(results)
+                self.results = self.skip(self.results)
             self.close_session()
             return True
         except Exception, e:
