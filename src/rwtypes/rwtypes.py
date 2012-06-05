@@ -34,6 +34,10 @@ reader_types = {
         'module' : 'readers.log_analytics.LogAnalytics',
         'class' : 'LogAnalytics'
         },
+    'mtr' : {
+        'module' : 'readers.mtr.MtrReader',
+        'class' : 'MtrReader'
+        },
     'gtalkr' : {
         'module' : 'readers.gtalk.GtalkReader',
         'class' : 'GtalkReader'
