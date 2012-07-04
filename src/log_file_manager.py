@@ -59,7 +59,7 @@ class LogFileManager:
     def send_consolidated_event(self, conf_index):
         self.send_2_activemq(self.line_processor.consolidated[conf_index])
         field = self.conf['events_conf'][conf_index]['consolidation_conf']['field']
-        self.line_processor.consolidated[conf_index][field] = 0
+        self.line_processor.reset_count(conf_index)
 
     def check_filename(self):
         new_filename = self.make_filename()

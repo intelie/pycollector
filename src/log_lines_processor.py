@@ -31,21 +31,25 @@ class LogLinesProcessor:
         
     def init_counts(self):
         events_conf = self.conf['events_conf']
-        for (index, event_conf) in enumerate(events_conf):
-            if is_consolidation_enabled(event_conf):
-                event = {'eventtype' : event_conf['eventtype'], 
-                         event_conf['consolidation_conf']['field'] : 0}
+        for index in range(len(events_conf)):
+            self.reset_count(index)
+            
+    def reset_count(self, index):
+        event_conf = self.conf['events_conf'][index]
+        if is_consolidation_enabled(event_conf):
+            event = {'eventtype' : event_conf['eventtype'], 
+                     event_conf['consolidation_conf']['field'] : 0}
 
-                if has_global_fields(self.conf):
-                    event.update(self.conf['global_fields'])
+            if has_global_fields(self.conf):
+                event.update(self.conf['global_fields'])
 
-                if event_conf['consolidation_conf'].has_key('user_defined_fields'):
-                    event.update(event_conf['consolidation_conf']['user_defined_fields'])
+            if event_conf['consolidation_conf'].has_key('user_defined_fields'):
+                event.update(event_conf['consolidation_conf']['user_defined_fields'])
 
-                for unique_field, precision in event_conf['consolidation_conf'].get('unique_fields', []):
-                    event[unique_field] = HyperLogLog(precision)
+            for unique_field, precision in event_conf['consolidation_conf'].get('unique_fields', []):
+                event[unique_field] = HyperLogLog(precision)
 
-                self.consolidated.update({index : event})
+            self.consolidated.update({index : event})
 
     def prepare_event(self, line, groups_matched, conf_index):
         conf = self.conf['events_conf'][conf_index]

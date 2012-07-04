@@ -13,10 +13,10 @@ conf = [{
                 'eventtype': 'Welcome',
                 'regexps': ['(?P<test>\\d+:\\d+:\\d+)'],
                 'consolidation_conf': {
-                    'period' : 5/60.0,
+                    'period' : 1/60.0,
                     'enable': True,
                     'field': 'acessos',
-                    'unique_fields': [['test', 6]],
+                    'unique_fields': [['test', 4]],
                     'user_defined_fields': {
                         'provedor': 'Oi'}
                 }
