@@ -6,15 +6,18 @@
 #PID SETTINGS-----------------------------------------------
 
 #PID_PATH: LogCollector pid path/filename
-PID_PATH="/home/kaiser/workspace/log-collector/collector.pid"
+PID_PATH="/home/juanplopes/collector.pid"
 
 #ACTIVEMQ SETTINGS-----------------------------------------------
 
 #ACTIVEMQ_SERVER: activemq stomp server
-ACTIVEMQ_SERVER="juanplopes"
+ACTIVEMQ_SERVER="localhost"
 
 #ACTIVEMQ_PORT: activemq stomp port
 ACTIVEMQ_PORT=61613
+
+#activemq queue name
+ACTIVEMQ_QUEUE="/queue/events"
 
 #APPLICATION LOG SETTINGS-----------------------------------------------
 

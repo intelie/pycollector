@@ -13,6 +13,7 @@ import time
 
 from exception import *
 from conf_util import *
+from hyperloglog import *
 
 
 class LogLinesProcessor:
@@ -41,6 +42,9 @@ class LogLinesProcessor:
                 if event_conf['consolidation_conf'].has_key('user_defined_fields'):
                     event.update(event_conf['consolidation_conf']['user_defined_fields'])
 
+                for unique_field, precision in event_conf['consolidation_conf'].get('unique_fields', []):
+                    event[unique_field] = HyperLogLog(precision)
+
                 self.consolidated.update({index : event})
 
     def prepare_event(self, line, groups_matched, conf_index):
@@ -54,6 +58,10 @@ class LogLinesProcessor:
 
         if is_consolidation_enabled(conf):
             self.consolidated[conf_index][conf['consolidation_conf']['field']] += 1
+            for unique_field, precision in conf['consolidation_conf'].get('unique_fields', []):
+                self.consolidated[conf_index][unique_field].offer(groups_matched[unique_field])
+                    
+                
         else:
             event.update({'line' : line})
 

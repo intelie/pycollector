@@ -4,18 +4,19 @@
 """
 
 conf = [{
-           'log_filename': 'C:\inetpub\logs\LogFiles\W3SVC1\u_ex%y%m%d.log',
+           'log_filename': '/var/log/syslog',
            'global_fields': { 
                'host': 'WebServer-VendasOnline',
                'log_type': 'apache-access-log',
            },
            'events_conf': [{
                 'eventtype': 'Welcome',
-                'regexps': ['^.*GET /welcome\.png.*$'],
+                'regexps': ['(?P<test>\\d+:\\d+:\\d+)'],
                 'consolidation_conf': {
                     'period' : 5/60.0,
                     'enable': True,
                     'field': 'acessos',
+                    'unique_fields': [['test', 6]],
                     'user_defined_fields': {
                         'provedor': 'Oi'}
                 }

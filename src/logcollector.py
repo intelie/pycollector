@@ -12,7 +12,7 @@ __email__ = "ronald at intelie dot com dot br"
 import logging, logging.config
 from conf_util import *
 from log_file_manager import LogFileManagerThreaded
-import sys
+import sys, os, time
 
 class LogCollector:
     def __init__(self, conf, logging_conf=None, to_log=False):
@@ -42,6 +42,7 @@ class LogCollector:
             except Exception, e:
                 if to_log:
                     self.logger.error(e)
+                raise
 
         if to_log:
             self.logger.info("LogCollector instantiated with success.")
@@ -73,3 +74,19 @@ class LogCollector:
         for thread in self.log_threads:
             thread.stop()
            
+if __name__ == '__main__':
+    sys.path.append(os.path.join(os.path.dirname(__file__), "../src"))  
+    sys.path.append(os.path.join(os.path.dirname(__file__), "../conf"))  
+    print os.path.join(os.path.dirname(__file__), "../conf")
+
+    import daemon_conf
+    from pattern_conf import conf
+    from logcollector import LogCollector
+
+    collector = LogCollector(conf, daemon_conf, daemon_conf.TO_LOG)
+    collector.start()
+    try: 
+        time.sleep(1000000)
+    except KeyboardInterrupt:
+        collector.stop()
+

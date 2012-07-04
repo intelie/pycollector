@@ -19,7 +19,7 @@ from helpers.stomp_sender import send_message_via_stomp
 import helpers.simplejson as json
 
 from conf_util import *
-from daemon_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT
+from daemon_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT, ACTIVEMQ_QUEUE
 from log_lines_processor import LogLinesProcessor
 import os
 from datetime import datetime
@@ -52,7 +52,9 @@ class LogFileManager:
                                                                      when=self.logging_conf.ROTATING)
         formatter = logging.Formatter(self.logging_conf.FORMATTER)
         self.log_handler.setFormatter(formatter)
+        self.logger.addHandler(logging.StreamHandler(sys.stdout))
         self.logger.addHandler(self.log_handler)
+        
 
     def send_consolidated_event(self, conf_index):
         self.send_2_activemq(self.line_processor.consolidated[conf_index])
@@ -75,13 +77,20 @@ class LogFileManager:
                 if self.to_log:
                     self.logger.info('New file %s not ready yet', new_filename)
         
+    def convert_to_builtin_type(self, obj):
+        d = { '__class__':obj.__class__.__name__, 
+              '__module__':obj.__module__,
+              }
+        d.update(obj.__dict__)
+        return d
+        
     def send_2_activemq(self, message_data):
         body = message_data.copy()
-        header = { 'destination' : '/queue/events',
+        header = { 'destination' : ACTIVEMQ_QUEUE,
                    'timestamp': int(time.time() * 1000),
                    'eventtype' : body['eventtype']}
         del body['eventtype']
-        body = json.dumps(body)
+        body = json.dumps(body, default=self.convert_to_builtin_type)
         try:
             if self.to_log:
                 self.logger.info("Sending message:")
