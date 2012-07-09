@@ -1,30 +1,32 @@
 #!/bin/bash
 #
 # File: pycollectord
-# Description: pycollector service wrapper 
+# chkconfig: 2345 64 36
+# description: pycollector service wrapper 
 # 
 
 
 PYCOLLECTOR_BIN="/opt/intelie/pycollector/bin/pycollector"
 USER="pycollector"
+PYTHON_VERSION="python2.7"
 
 
 case "$1" in 
     start)
-        su -m $USER -c "python $PYCOLLECTOR_BIN --start"
+        su -m $USER -c "$PYTHON_VERSION $PYCOLLECTOR_BIN --start"
         ;;
     stop)
-        su -m $USER -c "python $PYCOLLECTOR_BIN --stop"
+        su -m $USER -c "$PYTHON_VERSION $PYCOLLECTOR_BIN --stop"
         ;;
     forcestop)
-        su -m $USER -c "python $PYCOLLECTOR_BIN --forcestop"
+        su -m $USER -c "$PYTHON_VERSION $PYCOLLECTOR_BIN --forcestop"
         ;;
     restart)
         $0 stop
         $1 start
         ;;
     status)
-        su -m $USER -c "python $PYCOLLECTOR_BIN --status"
+        su -m $USER -c "$PYTHON_VERSION $PYCOLLECTOR_BIN --status"
         ;;
     *)
         echo "$0 {start|stop|forcestop|restart|status}"
