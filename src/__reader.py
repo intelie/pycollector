@@ -129,11 +129,12 @@ class Reader(threading.Thread):
         try:
             for item in conf:
                 if isinstance(conf[item], str):
-                    exec("self.%s = '%s'" % (item, conf[item]))
+                    exec("self.%s = \"\"\"%s\"\"\"" % (item, conf[item]))
                 else:
                     exec("self.%s = %s" % (item, conf[item]))
             self.log.info("Configuration settings added with success into reader.")
         except Exception, e:
+            self.log.error("Stack trace: %s" % traceback.format_exc())
             raise(ConfigurationError("Invalid configuration item: %s" % item))
 
     def _write_checkpoint(self):
