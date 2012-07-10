@@ -173,6 +173,7 @@ class Reader(threading.Thread):
             self.queue.put(msg, block=self.blockable, timeout=self.retry_timeout)
             self.processed += 1
             success = True
+            self.log.debug("Message read: %s" % msg)
         except Queue.Full:
             self.discarded += 1
             self.log.info("Discarded message: %s, due to full queue" % msg)

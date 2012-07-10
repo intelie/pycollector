@@ -73,7 +73,7 @@ class DBReader(Reader):
             self.current_checkpoint = self.last_checkpoint or {'pos': 0}
 
     def setup(self):
-        self.log = logging.getLogger()
+        self.log = logging.getLogger('pycollector')
         self.required_confs = ['columns', 'query', 'user',
                                'passwd', 'host', 'database']
         self.check_required_confs()
