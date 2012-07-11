@@ -46,8 +46,8 @@ class LogLinesProcessor:
             if event_conf['consolidation_conf'].has_key('user_defined_fields'):
                 event.update(event_conf['consolidation_conf']['user_defined_fields'])
 
-            for unique_field, precision in event_conf['consolidation_conf'].get('unique_fields', []):
-                event[unique_field] = HyperLogLog(precision)
+            for unique_name, definition in event_conf['consolidation_conf'].get('unique_fields', {}).items():
+                event[unique_name] = HyperLogLog(definition['log2m'])
 
             self.consolidated.update({index : event})
 
@@ -62,8 +62,8 @@ class LogLinesProcessor:
 
         if is_consolidation_enabled(conf):
             self.consolidated[conf_index][conf['consolidation_conf']['field']] += 1
-            for unique_field, precision in conf['consolidation_conf'].get('unique_fields', []):
-                self.consolidated[conf_index][unique_field].offer(groups_matched[unique_field])
+            for unique_name, definition in conf['consolidation_conf'].get('unique_fields', {}).items():
+                self.consolidated[conf_index][unique_name].offer([groups_matched[x] for x in definition['fields']])
                     
                 
         else:
