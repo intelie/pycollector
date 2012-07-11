@@ -63,7 +63,7 @@ class LogLinesProcessor:
         if is_consolidation_enabled(conf):
             self.consolidated[conf_index][conf['consolidation_conf']['field']] += 1
             for unique_name, definition in conf['consolidation_conf'].get('unique_fields', {}).items():
-                self.consolidated[conf_index][unique_name].offer([groups_matched[x] for x in definition['fields']])
+                self.consolidated[conf_index][unique_name].offer([groups_matched.get(x, None) for x in definition['fields']])
                     
                 
         else:

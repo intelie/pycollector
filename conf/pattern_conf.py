@@ -11,12 +11,12 @@ conf = [{
            },
            'events_conf': [{
                 'eventtype': 'Welcome',
-                'regexps': ['^(?P<test>.*)$'],
+                'regexps': ['^(?P<test>.{10})(?P<abc>.*)$'],
                 'consolidation_conf': {
                     'period' : 1/60.0,
                     'enable': True,
                     'field': 'acessos',
-                    'unique_fields': [['test', 14]],
+                    'unique_fields': {'aaa': { 'fields': ['test', 'abc'], 'log2m': 14 } },
                     'user_defined_fields': {
                         'provedor': 'Oi'}
                 }
