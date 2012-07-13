@@ -3,7 +3,11 @@
 # Description: shortcut to waf packaging.
 #
 
-
-waf distclean configure build dist distclean
+rm -r build
+mkdir build
+cp -r src build/
+cp -r conf build/
+mv build/src build/bin
+find build -name '*.pyc' -exec rm {} \;
 
 

@@ -1,3 +1,4 @@
+.lock-wscript
 *.e4p
 logs/**
 *.pid
