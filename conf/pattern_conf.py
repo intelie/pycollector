@@ -1,24 +1,27 @@
 """
     File: pattern_conf.py
-    Description: example of log configuration.
+    Description: log configuration for "Vendas Online".
 """
 
-conf = [{
-           'log_filename': '/var/log/syslog',
-           'global_fields': { 
-               'host': 'WebServer-VendasOnline',
-               'log_type': 'apache-access-log',
+conf = [
+{
+           'log_filename': '/var/log/syslog', 
+           'global_fields': {
+               'host': 'crm-web-1.adm.infra',
+               'log_type': 'ApacheAccess',
            },
            'events_conf': [{
-                'eventtype': 'Welcome',
-                'regexps': ['^(?P<test>.{10})(?P<abc>.*)$'],
+                'eventtype': 'VendasOnline',
+                'regexps': ['^(?P<test>.*)$'],
                 'consolidation_conf': {
-                    'period' : 1/60.0,
+                    'period' : 1.0/60,
                     'enable': True,
-                    'field': 'acessos',
-                    'unique_fields': {'aaa': { 'fields': ['test', 'abc'], 'log2m': 14 } },
+                    'field': 'accesses',
+                    'unique_fields': {'users': { 'fields': ['test'], 'log2m': 16 } },
                     'user_defined_fields': {
-                        'provedor': 'Oi'}
-                }
-            }],
-}]
+                        'provider': 'iG',
+                        'step': 'Passo 1'}
+                },
+           }]
+},
+]

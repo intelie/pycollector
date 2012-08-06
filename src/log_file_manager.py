@@ -13,6 +13,7 @@ import threading
 import logging, logging.config
 import sys; sys.path.append('../conf')
 
+from hyperloglog import *
 import helpers.filetail as filetail
 import helpers.kronos as kronos 
 from helpers.stomp_sender import send_message_via_stomp
@@ -78,6 +79,9 @@ class LogFileManager:
                     self.logger.info('New file %s not ready yet', new_filename)
         
     def convert_to_builtin_type(self, obj):
+        if isinstance(obj, HyperLogLog):
+            return obj.datastr()
+
         d = { '__class__':obj.__class__.__name__, 
               '__module__':obj.__module__,
               }

@@ -24,7 +24,7 @@ ACTIVEMQ_QUEUE="/queue/events"
 TO_LOG=True
 
 #LOGGING_PATH: sets where the logs will be located.
-LOGGING_PATH="./"
+LOGGING_PATH="../logs/"
 
 #SEVERITY: changes the level of severity for all application logs created.
 #Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
