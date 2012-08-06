@@ -7,3 +7,7 @@ http://sourceforge.net/projects/pywin32/files/pywin32/Build%20217/pywin32-217.wi
 ##Py2Exe
 
 http://sourceforge.net/projects/py2exe/files/py2exe/0.6.9/py2exe-0.6.9.win32-py2.7.exe/download
+
+To Build
+
+./setup.py py2exe
