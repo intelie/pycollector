@@ -37,7 +37,7 @@ class LogLinesProcessor:
     def reset_count(self, index):
         event_conf = self.conf['events_conf'][index]
         if is_consolidation_enabled(event_conf):
-            event = {'eventtype' : event_conf['eventtype'], '_ignore' : [], 
+            event = {'eventtype' : event_conf['eventtype'], '_control' : { 'doNotStore': [] }, 
                      event_conf['consolidation_conf']['field'] : 0}
 
             if has_global_fields(self.conf):
@@ -47,7 +47,7 @@ class LogLinesProcessor:
                 event.update(event_conf['consolidation_conf']['user_defined_fields'])
 
             for unique_name, definition in event_conf['consolidation_conf'].get('unique_fields', {}).items():
-                event['_ignore'].append(unique_name)
+                event['_control']['doNotStore'].append(unique_name)
                 event[unique_name] = HyperLogLog(definition['log2m'])
 
             self.consolidated.update({index : event})

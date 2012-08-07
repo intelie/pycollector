@@ -17,7 +17,7 @@ conf = [
                     'period' : 1.0/60,
                     'enable': True,
                     'field': 'accesses',
-                    'unique_fields': {'users': { 'fields': ['test'], 'log2m': 16 } },
+                    'unique_fields': {'users': { 'fields': ['test'], 'log2m': 10 } },
                     'user_defined_fields': {
                         'provider': 'iG',
                         'step': 'Passo 1'}
