@@ -30,6 +30,10 @@ specs:
     passwd: ''
     connection: 'mysql+mysqldb://%s:%s@%s/%s'
 
+#MTR
+  mtr:
+    type: mtr
+
 #Sqlserver example
   sqlserverdb:
     type: db
@@ -42,7 +46,7 @@ specs:
 #Activemq example
   activemq:
    type: activemq
-   host: localhost 
+   host: localhost
    port: 61613
    destination: '/queue/events'
 
@@ -63,9 +67,9 @@ specs:
 conf:
 #Reading from stdin and writing to stdout
 #- reader:
-#    type: stdin
-#  writer:
-#    type: stdout
+    #type: stdin
+  #writer:
+    #type: stdout
 
 # Reading from an nginx log and delivering to activemq
 #- reader:
@@ -242,6 +246,47 @@ conf:
 #    host: localhost
 #    port: 61613
 #    destination: '/queue/events'
+
+- reader:
+    type: custom_log
+    logpath: /var/log/nginx/azion/sa/AZ.0058b.log
+    delimiter: \t
+    columns: [request_time, host, remote_addr, time_local, request, status, request_method, bytes_sent, request_uri, http_user_agent, http_referer, upstream_cache_status]
+    datetime_column: time_local
+    counts:
+        - column: request_method
+          match: 'GET'
+          period: 1
+          groupby:
+            column: host
+            match: '(.*)'
+    sums:
+        - column: bytes_sent
+          period: 1
+          groupby:
+            column: host
+            match: '(.*)'
+    checkpoint_enabled: True
+    checkpoint_path: /tmp/AZ.0058b.reader.checkpoint
+    checkpoint_period: 20
+    blockable: True
+  writer:
+    spec: activemq
+    eventtype: nginx
+    checkpoint_enabled: True
+    checkpoint_path: /tmp/AZ.0058b.writer.checkpoint
+    checkpoint_period: 20
+    blockable: True
+
+- reader:
+    type: mtr
+    host: 8.8.8.8
+  writer:
+    type: activemq
+    eventtype: mtr
+    host: localhost
+    port: 61613
+    destination: '/queue/events'
 
 #Reading from a log file and writing to activemq
 #- reader:

@@ -49,7 +49,7 @@ def kill_pids(pids):
     return call(shlex.split("kill -9 %s" % ' '.join(pids)))
 
 
-def is_running(ps="""ps aux --cols=1000 |
+def is_running(ps="""ps aux |
                      grep -E '[0-9] python.*pycollector .*start' |
                      grep -v 'grep' | awk '{print $2}'"""):
 
