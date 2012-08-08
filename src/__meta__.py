@@ -20,7 +20,7 @@ try:
         'THIRD_PATH' : os.path.join(BASE_PATH, "src", "third"),
         'RWTYPES_PATH' : os.path.join(BASE_PATH, "src", "rwtypes"),}
     DEFAULTS = {
-        'LOGS_PATH' : os.path.join(BASE_PATH, "logs"),
+        'LOGS_PATH' : "/var/log/",
         'PID_FILE_PATH': os.path.join(BASE_PATH, "pycollector.pid"),
         'LOG_SEVERITY' : "DEBUG",
         'LOG_ROTATING' : 'midnight',
