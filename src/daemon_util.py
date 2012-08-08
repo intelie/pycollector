@@ -130,12 +130,18 @@ def start(collector_clazz, to_daemon=True, enable_server=True, server_port=8442)
         log = set_logging()
         log.info(ascii.ascii)
         log.info("Starting collector...")
-
+        
         try:
             collector = collector_clazz(conf_reader.read_yaml_conf(),
                                         conf_reader.read_daemon_conf(),
                                         enable_server=enable_server,
                                         server_port=server_port)
+            # write pid.
+            write_pid(collector.daemon_conf['PID_FILE_PATH'])
+
+            # read configurations.
+            collector.prepare_readers_writers()
+
         except ConfigurationError, e:
             log.error(e.msg)
             sys.exit(-1)
@@ -146,7 +152,6 @@ def start(collector_clazz, to_daemon=True, enable_server=True, server_port=8442)
         log.info("conf.yaml settings:\n %s" %
                  pprint.pformat(collector.conf))
 
-        write_pid(collector.daemon_conf['PID_FILE_PATH'])
         collector.start()
     except Exception, e:
         log.error(traceback.format_exc())

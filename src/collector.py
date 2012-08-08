@@ -42,7 +42,6 @@ class Collector:
         self.enable_server = enable_server
         self.server = web.Server(daemon_conf['LOGS_PATH'], self, self.server_port)
         self.default_queue_maxsize = default_queue_maxsize
-        self.prepare_readers_writers()
 
     def instantiate(self, queue, pair_id, conf, last_checkpoint=''):
         """Instantiate a reader or writer"""
