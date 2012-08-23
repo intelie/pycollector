@@ -1,19 +1,20 @@
-import os
-import re
-import copy
-import time
-import logging
-import calendar
-import datetime
-import traceback
-
-from third import filetail
-
-from __reader import Reader
-from __message import Message
-from __exceptions import ParsingError
 from LogConfReader import LogConfReader
 from LogUtils import LogUtils
+from __exceptions import ParsingError
+from __message import Message
+from __reader import Reader
+from third import filetail
+import calendar
+import copy
+import datetime
+import logging
+import os
+import re
+import time
+import traceback
+import errno
+
+
 
 
 class LogReader(Reader):
@@ -248,18 +249,15 @@ class LogReader(Reader):
             self.current_counts = LogUtils.initialize_counts(self.counts)
 
     def check_file_existence(self):
-        self.log_not_found = True
-        while not os.path.exists(self.logpath):
+        self.log.debug("Trying to open log file: %s ..." % self.logpath)
+        if not os.path.exists(self.logpath):
             self.clean_sums()
             self.clean_counts()
-            self.log.debug("Log file: %s not found." % self.logpath)
-            self.log.debug("Trying to reopen log file: %s ..." % self.logpath)
-            if hasattr(self, 'retry_open_file_period'):
-                time.sleep(self.retry_open_file_period)
-            else:
-                time.sleep(60)
-        self.log.debug("Log file: %s found." % self.logpath)
-        self.log_not_found = False
+            self.log_not_found = True
+            self.log.warn("Log file: %s not found." % self.logpath)
+        else:
+            self.log.info("Log file: %s found." % self.logpath)
+            self.log_not_found = False
 
     def setup(self):
         # starts the logger
@@ -272,16 +270,11 @@ class LogReader(Reader):
         self.required_confs = ['logpath']
         self.check_required_confs()
 
-        # checks if log file exists
-        self.check_file_existence()
-
-        # starts tail
-        self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
-
-        # failure recovering from checkpoint
-        if self.checkpoint_enabled: self.recover_checkpoint()
-
         # initializations
+        self.first_read = True 
+        self.log_not_found = True
+        if not hasattr(self, 'retry_open_file_period'):
+            self.retry_open_file_period = 60
         self.additional_fields = self.to_add()
         self.to_split = True if hasattr(self, 'delimiter') else False
         self.to_dictify = True if hasattr(self, 'columns') else False
@@ -328,6 +321,7 @@ class LogReader(Reader):
     def get_line(self):
         """Returns a boolean indicating whether the log line
            was successfully read or not"""
+
         try:
             self.bytes_read, self.current_line = self.tail.nextline()
             if self.checkpoint_enabled:
@@ -343,13 +337,35 @@ class LogReader(Reader):
         except ParsingError, e:
             self.log.error(e.msg)
             return False
+        except (IOError, OSError) as e:
+            if e.errno not in [errno.ENOENT]:
+                self.log.error(traceback.format_exc())
+            else:
+                self.check_file_existence() # file may not exist anymore
+            return False
         except Exception, e:
             self.log.error(traceback.format_exc())
-            self.check_file_existence()
             return False
         return True
 
-    def read(self):
+    def read(self):           
+        # checks if log file exists
+        while self.log_not_found:
+            self.check_file_existence()
+            if self.log_not_found:
+                time.sleep(self.retry_open_file_period)
+        
+        if self.first_read:    
+            # starts tail
+            try:
+                self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True) 
+            except Exception, e:
+                self.log.error(traceback.format_exc())
+                return 
+            # failure recovering from checkpoint
+            if self.checkpoint_enabled: self.recover_checkpoint()
+            self.first_read = False
+        
         if self.period:
             self.get_line() and self.process_line()
             return

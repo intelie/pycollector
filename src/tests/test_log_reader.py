@@ -309,29 +309,6 @@ class TestLogReader(unittest.TestCase):
         msg = q.get()
         self.assertEqual(12, msg.checkpoint['bytes_read'])
 
-    def test_file_not_found_should_set_a_blocked_flag(self):
-        q = get_queue()
-        retry_log = '/tmp/retry.log'
-        conf = {'logpath': retry_log,
-                'checkpoint_path': self.reader_checkpoint,
-                'retry_open_file_period': 1,
-                'checkpoint_enabled': True}
-
-        # creating the file
-        def create_file():
-            if os.path.exists(retry_log):
-                os.remove(retry_log)
-            open(retry_log, 'w').close()
-
-        threading.Timer(1, create_file).start()
-
-        myreader = LogReader(q, conf=conf)
-
-        # waiting retry open file period
-        time.sleep(1.1)
-
-        # asserting file was found
-        self.assertEqual(False, myreader.log_not_found)
 
     def test_removing_log_file_during_reading(self):
         q = get_queue()
@@ -339,6 +316,7 @@ class TestLogReader(unittest.TestCase):
         conf = {'logpath': retry_log,
                 'checkpoint_path': self.reader_checkpoint,
                 'retry_open_file_period': 1,
+                'period': 1,
                 'checkpoint_enabled': True}
 
         def remove_file():
