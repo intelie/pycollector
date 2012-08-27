@@ -7,3 +7,4 @@ logs/**
 .project
 .pydevproject
 .settings
+packaging/rpm/rpmbuild
