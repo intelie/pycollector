@@ -56,7 +56,7 @@ class LogReader(Reader):
            Output: side effect in cache structure"""
         current_value = self.current_line[cache['column_name']]
         if kind == 'sums':
-            current_value = int(current_value)
+            current_value = float(current_value)
         to_sum = self.sum_filter(cache)
         groupby_value = self.current_line[cache['groupby']['column']]
         matched = re.match(cache['groupby']['match'], groupby_value)

@@ -64,7 +64,7 @@ def log_to_sum_with_groupby(g):
         logpath = '/tmp/sum.log'
         f = open(logpath, 'w')
         f.write('host1\tbar\t[30/Jan/2012:18:07:09 +0000]\t5\n')
-        f.write('host2\tbar\t[30/Jan/2012:18:07:29 +0000]\t3\n')
+        f.write('host2\tbar\t[30/Jan/2012:18:07:29 +0000]\t3.1\n')
         f.write('host2\tbar\t[30/Jan/2012:18:07:39 +0000]\t2\n')
         f.write('host1\tbar\t[30/Jan/2012:18:10:39 +0000]\t42\n')
         f.write('host3\tbar\t[30/Jan/2012:18:11:39 +0000]\t2\n')
@@ -486,7 +486,7 @@ class TestLogReader(unittest.TestCase):
         self.assertIn(("host1", 9, "sum", 0), result)
         self.assertIn(("host1", 10, "sum", 42), result)
         self.assertIn(("host1", 11, "sum", 0), result)
-        self.assertIn(("host2", 7, "sum", 5), result)
+        self.assertIn(("host2", 7, "sum", 5.1), result)
         self.assertIn(("host2", 8, "sum", 0), result)
         self.assertIn(("host2", 9, "sum", 0), result)
         self.assertIn(("host2", 10, "sum", 0), result)
