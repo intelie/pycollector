@@ -219,8 +219,7 @@ class TestWriter(unittest.TestCase):
         conf = {'checkpoint_enabled' : True,
                 'remove_corrupted_checkpoint_file': False,
                 'checkpoint_path' : self.checkpoint_path}
-        mywriter = MyWriter(q, conf=conf)
-        self.assertEqual('', mywriter.last_checkpoint)
+        self.assertRaises(SystemExit, MyWriter, q, conf)
         self.assertTrue(os.path.exists(self.checkpoint_path), 'Checkpoint file exists')        
 
     def test_store_discarded_messages_due_to_some_fail(self):

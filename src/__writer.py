@@ -166,7 +166,8 @@ class Writer(threading.Thread):
                 self.log.info('Removing corrupted checkpoint file %s.' % self.checkpoint_path)
                 f.close()
                 os.remove(self.checkpoint_path)
-            return ''
+                return ''
+            sys.exit(-1)
 
     def _write_checkpoint(self):
         """Write checkpoint in disk."""
