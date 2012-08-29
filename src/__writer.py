@@ -57,17 +57,18 @@ from __exceptions import ConfigurationError
 
 class Writer(threading.Thread):
     def __init__(self,
-                 queue,                   # source of messages to be written
-                 conf={},                 # additional configurations
-                 blockable=True,          # stops if a message was not delivered
-                 period=None,             # period to read from queue
-                 retry_period=1,          # retry period (in seconds) to writing
-                 retry_timeout=None,      # if timeout is reached, discard message
-                 checkpoint_enabled=False,# deafult is to not deal with checkpoints
-                 checkpoint_period=60,    # period of checkpoint writing
-                 health_check_period=300, # period to log status
-                 thread_name="Writer",    # thread name to easily recognize in log
-                 last_checkpoint=''       # may have an initial checkpoint
+                 queue,                                 # source of messages to be written
+                 conf={},                               # additional configurations
+                 blockable=True,                        # stops if a message was not delivered
+                 period=None,                           # period to read from queue
+                 retry_period=1,                        # retry period (in seconds) to writing
+                 retry_timeout=None,                    # if timeout is reached, discard message
+                 checkpoint_enabled=False,              # default is to not deal with checkpoints
+                 checkpoint_period=60,                  # period of checkpoint writing
+                 health_check_period=300,               # period to log status
+                 thread_name="Writer",                  # thread name to easily recognize in log
+                 last_checkpoint='',                    # may have an initial checkpoint
+                 remove_corrupted_checkpoint_file=True, # default it automatic removal
                  ):
         self.log = logging.getLogger('pycollector')
         self.conf = conf
@@ -83,6 +84,7 @@ class Writer(threading.Thread):
         self.checkpoint_period = checkpoint_period
         self.checkpoint_enabled = checkpoint_enabled
         self.health_check_period = health_check_period
+        self.remove_corrupted_checkpoint_file = remove_corrupted_checkpoint_file
         self.set_conf(conf)
 
         if self.checkpoint_enabled:
@@ -159,9 +161,12 @@ class Writer(threading.Thread):
             return ''
         except Exception, e:
             self.log.error('Error reading checkpoint in %s.' % self.checkpoint_path)
-            self.log.error('It may be the case to remove it manually.')
             self.log.error(traceback.format_exc())
-            sys.exit(-1)
+            if self.remove_corrupted_checkpoint_file:
+                self.log.info('Removing corrupted checkpoint file %s.' % self.checkpoint_path)
+                f.close()
+                os.remove(self.checkpoint_path)
+            return ''
 
     def _write_checkpoint(self):
         """Write checkpoint in disk."""

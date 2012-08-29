@@ -752,12 +752,10 @@ class TestLogReader(unittest.TestCase):
         self.assertIn(("host2", "count", 11, 0), result)
         self.assertIn(("host3", "count", 11, 1), result)
 
-
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestLogReader))
     return suite
-
 
 if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(suite())

@@ -254,9 +254,9 @@ class LogReader(Reader):
             self.clean_sums()
             self.clean_counts()
             self.log_not_found = True
-            self.log.warn("Log file: %s not found." % self.logpath)
+            self.log.warn("Log file %s not found." % self.logpath)
         else:
-            self.log.info("Log file: %s found." % self.logpath)
+            self.log.info("Log file %s found." % self.logpath)
             self.log_not_found = False
 
     def setup(self):
