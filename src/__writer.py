@@ -68,7 +68,7 @@ class Writer(threading.Thread):
                  health_check_period=300,               # period to log status
                  thread_name="Writer",                  # thread name to easily recognize in log
                  last_checkpoint='',                    # may have an initial checkpoint
-                 remove_corrupted_checkpoint_file=True, # default it automatic removal
+                 remove_corrupted_checkpoint_file=True, # default is automatic removal
                  ):
         self.log = logging.getLogger('pycollector')
         self.conf = conf
