@@ -146,7 +146,7 @@ class Writer(threading.Thread):
         if not os.path.exists(self.checkpoint_path):
             self.log.info('No checkpoint found in %s.' % self.checkpoint_path)
             open(self.checkpoint_path, 'w').close()
-            self.log.info('Created checkpoint file in %s.' % self.checkpoint_path)
+            self.log.debug('Created checkpoint file in %s.' % self.checkpoint_path)
             return ''
         try:
             f = open(self.checkpoint_path, 'rb')
@@ -156,7 +156,7 @@ class Writer(threading.Thread):
                 return read
             else:
                 return ''
-            self.log.info("Checkpoint read from %s" % self.checkpoint_path)
+            self.log.debug("Checkpoint read from %s" % self.checkpoint_path)
         except EOFError:
             return ''
         except Exception, e:
@@ -176,7 +176,7 @@ class Writer(threading.Thread):
             f = open(self.checkpoint_path, 'w')
             pickle.dump(lc, f)
             f.close()
-            self.log.info('Checkpoint written: %s' % lc)
+            self.log.debug('Checkpoint written: %s' % lc)
         except Exception, e:
             self.log.error('Error writing checkpoint in %s' % self.checkpoint_path)
             self.log.error(traceback.format_exc())
@@ -189,25 +189,25 @@ class Writer(threading.Thread):
             self.schedule_single_task()
         if self.checkpoint_enabled:
             self.schedule_checkpoint_writing()
-        self.log.info("Tasks scheduled with success")
+        self.log.debug("Tasks scheduled with success")
 
     def retry_writing(self, msg):
         """Blocks writer till a message is written or a timeout is reached"""
         wrote = False
         time_passed = 0
         while True:
-            self.log.info("Trying to rewrite message...")
+            self.log.debug("Trying to rewrite message...")
             if self._write(msg.content):
                 wrote = True
                 self.processed += 1
                 self.log.debug("Message written: %s" % msg)
-                self.log.info("Rewriting done with success.")
+                self.log.debug("Rewriting done with success.")
                 break
             elif self.retry_timeout and \
                  time_passed > self.retry_timeout:
                  self.discarded += 1
                  self.log.debug("Message: %s discarded due to timeout" % msg)
-                 self.log.info("Retry timeout reached. Discarding message...")
+                 self.log.warn("Retry timeout reached. Discarding message...")
                  break
             time.sleep(self.retry_period)
             time_passed += self.retry_period
@@ -234,7 +234,7 @@ class Writer(threading.Thread):
                         self.log.info("Writer unblocked.")
                     else:
                         self.discarded += 1
-                        self.log.info("Discarding message: %s" % msg)
+                        self.log.warn("Discarding message: %s" % msg)
                 if wrote and self.checkpoint_enabled:
                     self._set_checkpoint(msg.checkpoint)
             except Exception, e:
@@ -269,7 +269,7 @@ class Writer(threading.Thread):
                      self.log.info("Writer unblocked.")
                 else:
                     self.discarded += 1
-                    self.log.info("Discarding message: %s" % msg)
+                    self.log.warn("Discarding message: %s" % msg)
             if wrote and self.checkpoint_enabled:
                 self._set_checkpoint(msg.checkpoint)
         except Exception, e:

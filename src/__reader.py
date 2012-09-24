@@ -144,7 +144,7 @@ class Reader(threading.Thread):
             f = open(self.checkpoint_path, 'w')
             pickle.dump(lc, f)
             f.close()
-            self.log.info('Checkpoint written: %s' % lc)
+            self.log.debug('Checkpoint written: %s' % lc)
         except Exception, e:
             self.log.error('Error writing checkpoint in %s' % self.checkpoint_path)
 
@@ -163,7 +163,7 @@ class Reader(threading.Thread):
             self.schedule_single_task()
         if self.checkpoint_enabled:
             self.schedule_checkpoint_writing()
-        self.log.info("Tasks scheduled with success")
+        self.log.debug("Tasks scheduled with success")
 
     def _store(self, msg):
         """Internal method to store read messages.

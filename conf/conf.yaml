@@ -46,7 +46,7 @@ specs:
 #Activemq example
   activemq:
    type: activemq
-   host: localhost
+   host: '127.0.0.1'
    port: 61613
    destination: '/queue/events'
 
@@ -249,7 +249,7 @@ conf:
 
 - reader:
     type: custom_log
-    logpath: /var/log/nginx/azion/sa/AZ.0058b.log
+    logpath: /tmp/log/nginx/azion/sa/AZ.0058b.log
     delimiter: \t
     columns: [request_time, host, remote_addr, time_local, request, status, request_method, bytes_sent, request_uri, http_user_agent, http_referer, upstream_cache_status]
     datetime_column: time_local
@@ -281,12 +281,11 @@ conf:
 - reader:
     type: mtr
     host: 8.8.8.8
+    period: 10
   writer:
-    type: activemq
+    spec: activemq
     eventtype: mtr
-    host: localhost
-    port: 61613
-    destination: '/queue/events'
+    period: 0
 
 #Reading from a log file and writing to activemq
 #- reader:

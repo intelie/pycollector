@@ -1,76 +1,5 @@
 #!/usr/bin/env python
-#-*- coding:utf-8 -*-
 
-"""
-    File: stomp.py
-    Description: stomp modified in order to work with python 2.4
-"""
-
-
-"""Stomp Protocol Connectivity
-
-    This provides basic connectivity to a message broker supporting the 'stomp' protocol.
-    At the moment ACK, SEND, SUBSCRIBE, UNSUBSCRIBE, BEGIN, ABORT, COMMIT, CONNECT and DISCONNECT operations
-    are supported.
-    
-    This changes the previous version which required a listener per subscription -- now a listener object
-    just calls the 'addlistener' method and will receive all messages sent in response to all/any subscriptions.
-    (The reason for the change is that the handling of an 'ack' becomes problematic unless the listener mechanism
-    is decoupled from subscriptions).
-    
-    Note that you must 'start' an instance of Connection to begin receiving messages.  For example:
-    
-        conn = stomp.Connection([('localhost', 62003)], 'myuser', 'mypass')
-        conn.start()
-
-    Meta-Data
-    ---------
-    Author: Jason R Briggs
-    License: http://www.apache.org/licenses/LICENSE-2.0
-    Start Date: 2005/12/01
-    Last Revision Date: $Date: 2008/09/11 00:16 $
-    
-    Notes/Attribution
-    -----------------
-    * uuid method courtesy of Carl Free Jr:
-      http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/213761
-    * patch from Andreas Schobel
-    * patches from Julian Scheid of Rising Sun Pictures (http://open.rsp.com.au)
-    * patch from Fernando
-    * patches from Eugene Strulyov
-      
-    Updates
-    -------
-    * 2007/03/31 : (Andreas Schobel) patch to fix newlines problem in ActiveMQ 4.1
-    * 2007/09    : (JRB) updated to get stomp.py working in Jython as well as Python
-    * 2007/09/05 : (Julian Scheid) patch to allow sending custom headers
-    * 2007/09/18 : (JRB) changed code to use logging instead of just print. added logger for jython to work
-    * 2007/09/18 : (Julian Scheid) various updates, including:
-       - change incoming message handling so that callbacks are invoked on the listener not only for MESSAGE, but also for 
-            CONNECTED, RECEIPT and ERROR frames.
-       - callbacks now get not only the payload but any headers specified by the server
-       - all outgoing messages now sent via a single method
-       - only one connection used 
-       - change to use thread instead of threading
-       - sends performed on the calling thread
-       - receiver loop now deals with multiple messages in one received chunk of data
-       - added reconnection attempts and connection fail-over
-       - changed defaults for "user" and "passcode" to None instead of empty string (fixed transmission of those values)
-       - added readline support
-    * 2008/03/26 : (Fernando) added cStringIO for faster performance on large messages 
-    * 2008/09/10 : (Eugene) remove lower() on headers to support case-sensitive header names
-    * 2008/09/11 : (JRB) fix incompatibilities with RabbitMQ, add wait for socket-connect
-    * 2008/10/28 : (Eugene) add jms map (from stomp1.1 ideas)
-    * 2008/11/25 : (Eugene) remove superfluous (incorrect) locking code
-    * 2009/02/05 : (JRB) remove code to replace underscores with dashes in header names (causes a problem in rabbit-mq)
-    * 2009/03/29 : (JRB) minor change to add logging config file
-                   (JRB) minor change to add socket timeout, suggested by Israel
-    * 2009/04/01 : (Gavin) patch to change md5 to hashlib (for 2.6 compatibility)
-    * 2009/04/02 : (Fernando Ciciliati) fix overflow bug when waiting too long to connect to the broker
-
-"""
-
-import md5
 import math
 import random
 import re
@@ -83,169 +12,67 @@ import types
 import xml.dom.minidom
 from cStringIO import StringIO
 
-#
-# stomp.py version number
-#
-_version = 1.8
-
-
-def _uuid( *args ):
-    """
-    uuid courtesy of Carl Free Jr:
-    (http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/213761)
-    """
-    
-    t = long( time.time() * 1000 )
-    r = long( random.random() * 100000000000000000L )
-  
-    try:
-        a = socket.gethostbyname( socket.gethostname() )
-    except:
-        # if we can't get a network address, just imagine one
-        a = random.random() * 100000000000000000L
-    data = str(t) + ' ' + str(r) + ' ' + str(a) + ' ' + str(args)
-    md5 = md5.md5()
-    md5.update(data)
-    data = md5.hexdigest()
-    return data
-    
-
-class DevNullLogger(object):
-    """
-    dummy logging class for environments without the logging module
-    """
-    def log(self, msg):
-        print msg
-        
-    def devnull(self, msg):
+try:
+    import ssl
+    from ssl import SSLError
+except ImportError: # python version < 2.6 without the backported ssl module
+    ssl = None
+    class SSLError:
         pass
     
-    debug = devnull
-    info = devnull
-    warning = devnull
-    error = devnull
-    critical = devnull
-    exception = devnull
-        
-    def isEnabledFor(self, lvl):
-        return False
+from exception import *
+from listener import *
+from utils import *
 
-
-#
-# add logging if available
-#
-#try:
-#    import logging
-#    import logging.config
-#    logging.config.fileConfig("stomp.log.conf")
-#    log = logging.getLogger('root')
-#except:
-#    log = DevNullLogger()
-
-#No logging!
-log = DevNullLogger()
-
-    
-class ConnectionClosedException(Exception):
-    """
-    Raised in the receiver thread when the connection has been closed
-    by the server.
-    """
-    pass
-
-
-class NotConnectedException(Exception):
-    """
-    Raised by Connection.__send_frame when there is currently no server
-    connection.
-    """
-    pass
-
-
-class ConnectionListener(object):
-    """
-    This class should be used as a base class for objects registered
-    using Connection.add_listener().
-    """
-    def on_connecting(self, host_and_port):
-        """
-        Called by the STOMP connection once a TCP/IP connection to the
-        STOMP server has been established or re-established. Note that
-        at this point, no connection has been established on the STOMP
-        protocol level. For this, you need to invoke the "connect"
-        method on the connection.
-
-        \param host_and_port a tuple containing the host name and port
-        number to which the connection has been established.
-        """
-        pass
-
-    def on_connected(self, headers, body):
-        """
-        Called by the STOMP connection when a CONNECTED frame is
-        received, that is after a connection has been established or
-        re-established.
-
-        \param headers a dictionary containing all headers sent by the
-        server as key/value pairs.
-
-        \param body the frame's payload. This is usually empty for
-        CONNECTED frames.
-        """
-        pass
-
-    def on_disconnected(self):
-        """
-        Called by the STOMP connection when a TCP/IP connection to the
-        STOMP server has been lost.  No messages should be sent via
-        the connection until it has been reestablished.
-        """
-        pass
-
-    def on_message(self, headers, body):
-        """
-        Called by the STOMP connection when a MESSAGE frame is
-        received.
-
-        \param headers a dictionary containing all headers sent by the
-        server as key/value pairs.
-
-        \param body the frame's payload - the message body.
-        """
-        pass
-
-    def on_receipt(self, headers, body):
-        """
-        Called by the STOMP connection when a RECEIPT frame is
-        received, sent by the server if requested by the client using
-        the 'receipt' header.
-
-        \param headers a dictionary containing all headers sent by the
-        server as key/value pairs.
-
-        \param body the frame's payload. This is usually empty for
-        RECEIPT frames.
-        """
-        pass
-
-    def on_error(self, headers, body):
-        """
-        Called by the STOMP connection when an ERROR frame is
-        received.
-
-        \param headers a dictionary containing all headers sent by the
-        server as key/value pairs.
-
-        \param body the frame's payload - usually a detailed error
-        description.
-        """
-        pass
+import logging
+import logging.config
+try:
+    logging.config.fileConfig('stomp.log.conf')
+except:
+    pass      
+log = logging.getLogger('stomp.py')
+if not log:
+    log = DevNullLogger()
 
 
 class Connection(object):
     """
     Represents a STOMP client connection.
     """
+
+    # ========= PRIVATE MEMBERS =========
+
+    # List of all host names (unqualified, fully-qualified, and IP
+    # addresses) that refer to the local host (both loopback interface
+    # and external interfaces).  This is used for determining
+    # preferred targets.
+    __localhost_names = [ "localhost", "127.0.0.1" ]
+    
+    try:
+        __localhost_names.append(socket.gethostbyname(socket.gethostname()))
+    except:
+        pass
+        
+    try:
+        __localhost_names.append(socket.gethostname())
+    except:
+        pass
+        
+    try:
+        __localhost_names.append(socket.getfqdn(socket.gethostname()))
+    except:
+        pass
+
+    #
+    # Used to parse STOMP header lines in the format "key:value",
+    #
+    __header_line_re = re.compile('(?P<key>[^:]+)[:](?P<value>.*)')
+
+    #
+    # Used to parse the STOMP "content-length" header lines,
+    #
+    __content_length_re = re.compile('^content-length[:]\\s*(?P<value>[0-9]+)', re.MULTILINE)
+    
 
     def __init__(self, 
                  host_and_ports = [ ('localhost', 61613) ], 
@@ -256,7 +83,12 @@ class Connection(object):
                  reconnect_sleep_initial = 0.1,
                  reconnect_sleep_increase = 0.5,
                  reconnect_sleep_jitter = 0.1,
-                 reconnect_sleep_max = 60.0):
+                 reconnect_sleep_max = 60.0,
+                 use_ssl = False,
+                 ssl_key_file = None,
+                 ssl_cert_file = None,
+                 ssl_ca_certs = None,
+                 ssl_cert_validator = None):
         """
         Initialize and start this connection.
 
@@ -299,6 +131,41 @@ class Connection(object):
                  stampeding. For example, a value of 0.1 means to wait
                  an extra 0%-10% (randomly determined) of the delay
                  calculated using the previous three parameters.
+
+        \param use_ssl
+
+                 connect using SSL to the socket.  This wraps the 
+                 socket in a SSL connection.  The constructor will 
+                 raise an exception if you ask for SSL, but it can't
+                 find the SSL module.
+
+        \param ssl_cert_file
+
+                 The path to a X509 certificate 
+
+        \param ssl_key_file
+
+                 The path to a X509 key file
+
+        \param ssl_ca_certs
+
+                 The path to the a file containing CA certificates
+                 to validate the server against.  If this is not set,
+                 server side certificate validation is not done. 
+
+        \param ssl_cert_validator
+
+                 Function which performs extra validation on the client
+                 certificate, for example checking the returned
+                 certificate has a commonName attribute equal to the
+                 hostname (to avoid man in the middle attacks)
+
+                 The signature is:
+                     (OK, err_msg) = validation_function(cert, hostname)
+
+                 where OK is a boolean, and cert is a certificate structure
+                 as returned by ssl.SSLSocket.getpeercert()
+
         """
 
         sorted_host_and_ports = []
@@ -333,7 +200,7 @@ class Connection(object):
 
         self.__recvbuf = ''
 
-        self.__listeners = [ ]
+        self.__listeners = {}
 
         self.__reconnect_sleep_initial = reconnect_sleep_initial
         self.__reconnect_sleep_increase = reconnect_sleep_increase
@@ -346,10 +213,20 @@ class Connection(object):
             self.__connect_headers['passcode'] = passcode
 
         self.__socket = None
+        self.__socket_semaphore = threading.BoundedSemaphore(1)
         self.__current_host_and_port = None
 
         self.__receiver_thread_exit_condition = threading.Condition()
         self.__receiver_thread_exited = False
+
+        if use_ssl and not ssl:
+            print "Raising exception ..."
+            raise Exception("SSL connection requested, but SSL library not found.")
+        self.__ssl = use_ssl
+        self.__ssl_cert_file = ssl_cert_file
+        self.__ssl_key_file = ssl_key_file
+        self.__ssl_ca_certs = ssl_ca_certs
+        self.__ssl_cert_validator = ssl_cert_validator
 
     #
     # Manage the connection
@@ -396,11 +273,17 @@ class Connection(object):
     # Manage objects listening to incoming frames
     #
 
-    def add_listener(self, listener):
-        self.__listeners.append(listener)
+    def set_listener(self, name, listener):
+        self.__listeners[name] = listener
         
-    def remove_listener(self, listener):
-        self.__listeners.remove(listener)
+    def remove_listener(self, name):
+        del self.__listeners[name]
+
+    def get_listener(self, name):
+        if self.__listeners.has_key(name):
+            return self.__listeners[name]
+        else:
+            return None
 
     #
     # STOMP transmissions
@@ -420,6 +303,7 @@ class Connection(object):
         self.__send_frame_helper('SEND', message, self.__merge_headers([headers, 
                                                                         keyword_headers,
                                                                         content_length_headers]), [ 'destination' ])
+        self.__notify('send', headers, message)
     
     def ack(self, headers={}, **keyword_headers):
         self.__send_frame_helper('ACK', '', self.__merge_headers([headers, keyword_headers]), [ 'message-id' ])
@@ -446,39 +330,20 @@ class Connection(object):
     def disconnect(self, headers={}, **keyword_headers):
         self.__send_frame_helper('DISCONNECT', '', self.__merge_headers([self.__connect_headers, headers, keyword_headers]), [ ])
         self.__running = False
-        if hasattr(socket, 'SHUT_RDWR'):
-            self.__socket.shutdown(socket.SHUT_RDWR)
-        if self.__socket:
-            self.__socket.close()
+        
+        if self.__socket is not None:
+            if self.__ssl:
+                # Even though we don't want to use the socket, unwrap is the only API method which does a proper SSL shutdown
+                self.__socket = self.__socket.unwrap()
+            elif hasattr(socket, 'SHUT_RDWR'):
+                    self.__socket.shutdown(socket.SHUT_RDWR)
+            if self.__socket is not None:
+                self.__socket.close()
         self.__current_host_and_port = None
-
-    # ========= PRIVATE MEMBERS =========
-
-
-    # List of all host names (unqualified, fully-qualified, and IP
-    # addresses) that refer to the local host (both loopback interface
-    # and external interfaces).  This is used for determining
-    # preferred targets.
-    __localhost_names = [ "localhost",
-                          "127.0.0.1",
-                          socket.gethostbyname(socket.gethostname()),
-                          socket.gethostname(),
-                          socket.getfqdn(socket.gethostname()) ]
-    #
-    # Used to parse STOMP header lines in the format "key:value",
-    #
-    __header_line_re = re.compile('(?P<key>[^:]+)[:](?P<value>.*)')    
-
-    #
-    # Used to parse the STOMP "content-length" header lines,
-    #
-    __content_length_re = re.compile('^content-length[:]\\s*(?P<value>[0-9]+)', re.MULTILINE)
 
     def __merge_headers(self, header_map_list):
         """
         Helper function for combining multiple header maps into one.
-
-        Any underscores ('_') in header names (keys) will be replaced by dashes ('-').
         """
         headers = {}
         for header_map in header_map_list:
@@ -490,7 +355,6 @@ class Connection(object):
         """
         Encode python dictionary as <map>...</map> structure.
         """
-
         xmlStr = "<map>\n"
         for key in payload:
             xmlStr += "<entry>\n"
@@ -544,10 +408,33 @@ class Connection(object):
             frame = '%s\n%s\n%s\x00' % (command,
                                         reduce(lambda accu, key: accu + ('%s:%s\n' % (key, headers[key])), headers.keys(), ''),
                                         payload)  
-            self.__socket.sendall(frame)
+            self.__socket_semaphore.acquire()
+            try:
+                self.__socket.sendall(frame)
+            finally:
+                self.__socket_semaphore.release()
             log.debug("Sent frame: type=%s, headers=%r, body=%r" % (command, headers, payload))
         else:
             raise NotConnectedException()
+
+    def __notify(self, frame_type, headers=None, body=None):
+        for listener in self.__listeners.values():
+            if not hasattr(listener, 'on_%s' % frame_type):
+                log.debug('listener %s has no method on_%s' % (listener, frame_type))
+                continue
+
+            if frame_type == 'connecting':
+                listener.on_connecting(self.__current_host_and_port)
+                continue
+
+            notify_func = getattr(listener, 'on_%s' % frame_type)
+            params = len(notify_func.func_code.co_varnames)
+            if params >= 2:
+                notify_func(headers, body)
+            elif params == 1:
+                notify_func(headers)
+            else:
+                notify_func()
 
     def __receiver_loop(self):
         """
@@ -564,9 +451,7 @@ class Connection(object):
 
                     try:
                         try:
-                            for listener in self.__listeners:
-                                if hasattr(listener, 'on_connecting'):
-                                    listener.on_connecting(self.__current_host_and_port)
+                            self.__notify('connecting')
                             
                             while self.__running:
                                 frames = self.__read()
@@ -575,15 +460,9 @@ class Connection(object):
                                     (frame_type, headers, body) = self.__parse_frame(frame)
                                     log.debug("Received frame: result=%r, headers=%r, body=%r" % (frame_type, headers, body))
                                     frame_type = frame_type.lower()
-                                    if frame_type in [ 'connected', 
-                                                       'message', 
-                                                       'receipt', 
-                                                       'error' ]:
-                                        for listener in self.__listeners:
-                                            if hasattr(listener, 'on_%s' % frame_type):
-                                                eval('listener.on_%s(headers, body)' % frame_type)
-                                            else:
-                                                log.debug('listener %s has no such method on_%s' % (listener, frame_type)) 
+                                    
+                                    if frame_type in [ 'connected', 'message', 'receipt', 'error' ]:
+                                        self.__notify(frame_type, headers, body)
                                     else:
                                         log.warning('Unknown response frame type: "%s" (frame length was %d)' % (frame_type, len(frame)))
                         finally:
@@ -596,10 +475,7 @@ class Connection(object):
                     except ConnectionClosedException:
                         if self.__running:
                             log.error("Lost connection")
-                            # Notify listeners
-                            for listener in self.__listeners:
-                                if hasattr(listener, 'on_disconnected'):
-                                    listener.on_disconnected()
+                            self.__notify('disconnected')
                             # Clear out any half-received messages after losing connection
                             self.__recvbuf = ''
                             continue
@@ -747,20 +623,36 @@ class Connection(object):
                 try:
                     log.debug("Attempting connection to host %s, port %s" % host_and_port)
                     self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    self.__socket.settimeout(0.5)
+                    if self.__ssl: # wrap socket
+                        if self.__ssl_ca_certs:
+                            cert_validation = ssl.CERT_REQUIRED
+                        else:
+                            cert_validation = ssl.CERT_NONE
+                        self.__socket = ssl.wrap_socket(self.__socket, 
+                                keyfile=self.__ssl_key_file,
+                                certfile=self.__ssl_cert_file,
+                                cert_reqs=cert_validation, ca_certs=self.__ssl_ca_certs,
+                                ssl_version=ssl.PROTOCOL_SSLv3
+                                )
+                    self.__socket.settimeout(None)
                     self.__socket.connect(host_and_port)
+                    if self.__ssl and self.__ssl_cert_validator: # Validate server cert
+                        cert = self.__socket.getpeercert()
+                        (ok, errmsg) = apply(self.__ssl_cert_validator, (cert, host_and_port[0]))
+                        if not ok:
+                            raise SSLError("Server certificate validation failed: %s"%errmsg)
                     self.__current_host_and_port = host_and_port
                     log.info("Established connection to host %s, port %s" % host_and_port)
                     break
+                except SSLError:
+                    raise
                 except socket.error:
                     self.__socket = None
-                    self.__running = False
                     if type(sys.exc_info()[1]) == types.TupleType:
                         exc = sys.exc_info()[1][1]
                     else:
                         exc = sys.exc_info()[1]
                     log.warning("Could not connect to host %s, port %s: %s" % (host_and_port[0], host_and_port[1], exc))
-                    raise
 
             if self.__socket is None:
                 sleep_duration = (min(self.__reconnect_sleep_max, 
@@ -775,154 +667,10 @@ class Connection(object):
                 if sleep_duration < self.__reconnect_sleep_max:
                     sleep_exp += 1
 
+
 #
 # command line testing
 #
 if __name__ == '__main__':
-
-    # If the readline module is available, make command input easier
-    try:
-        import readline
-        def stomp_completer(text, state):
-            commands = [ 'subscribe', 'unsubscribe', 
-                         'send',  'ack', 
-                         'begin', 'abort', 'commit', 
-                         'connect', 'disconnect'
-                       ]
-            for command in commands[state:]:
-                if command.startswith(text):
-                    return "%s " % command
-            return None
-
-        readline.parse_and_bind("tab: complete")
-        readline.set_completer(stomp_completer)
-        readline.set_completer_delims("")
-    except ImportError:
-        pass # ignore unavailable readline module
-
-    class StompTester(object):
-        def __init__(self, host='localhost', port=61613, user='', passcode=''):
-            self.c = Connection([(host, port)], user, passcode)
-            self.c.add_listener(self)
-            self.c.start()
-
-        def __print_async(self, frame_type, headers, body):
-            print "\r  \r",
-            print frame_type
-            for header_key in headers.keys():
-                print '%s: %s' % (header_key, headers[header_key])
-            print
-            print body
-            print '> ',
-            sys.stdout.flush()
-
-        def on_connecting(self, host_and_port):
-            self.c.connect(wait=True)
-
-        def on_disconnected(self):
-            print "lost connection"
-
-        def on_message(self, headers, body):
-            self.__print_async("MESSAGE", headers, body)
-
-        def on_error(self, headers, body):
-            self.__print_async("ERROR", headers, body)
-
-        def on_receipt(self, headers, body):
-            self.__print_async("RECEIPT", headers, body)
-
-        def on_connected(self, headers, body):
-            self.__print_async("CONNECTED", headers, body)
-            
-        def ack(self, args):
-            if len(args) < 3:
-                self.c.ack(message_id=args[1])
-            else:
-                self.c.ack(message_id=args[1], transaction=args[2])
-            
-        def abort(self, args):
-            self.c.abort(transaction=args[1])
-            
-        def begin(self, args):
-            print 'transaction id: %s' % self.c.begin()
-            
-        def commit(self, args):
-            if len(args) < 2:
-                print 'expecting: commit <transid>'
-            else:
-                print 'committing %s' % args[1]
-                self.c.commit(transaction=args[1])
-       
-        def disconnect(self, args):
-            try:
-                self.c.disconnect()
-            except NotConnectedException:
-                pass # ignore if no longer connected
-            
-        def send(self, args):
-            if len(args) < 3:
-                print 'expecting: send <destination> <message>'
-            else:
-                self.c.send(destination=args[1], message=' '.join(args[2:]))
-            
-        def sendtrans(self, args):
-            if len(args) < 3:
-                print 'expecting: sendtrans <destination> <transid> <message>'
-            else:
-                self.c.send(destination=args[1], message="%s\n" % ' '.join(args[3:]), transaction=args[2])
-            
-        def subscribe(self, args):
-            if len(args) < 2:
-                print 'expecting: subscribe <destination> [ack]'
-            elif len(args) > 2:
-                print 'subscribing to "%s" with acknowledge set to "%s"' % (args[1], args[2])
-                self.c.subscribe(destination=args[1], ack=args[2])
-            else:
-                print 'subscribing to "%s" with auto acknowledge' % args[1]
-                self.c.subscribe(destination=args[1], ack='auto')
-            
-        def unsubscribe(self, args):
-            if len(args) < 2:
-                print 'expecting: unsubscribe <destination>'
-            else:
-                print 'unsubscribing from "%s"' % args[1]
-                self.c.unsubscribe(destination=args[1])
-
-    if len(sys.argv) > 5:
-        print 'USAGE: stomp.py [host] [port] [user] [passcode]'
-        sys.exit(1)
-
-    if len(sys.argv) >= 2:
-        host = sys.argv[1]
-    else:
-        host = "localhost"
-    if len(sys.argv) >= 3:
-        port = int(sys.argv[2])
-    else:
-        port = 61613
-    
-    if len(sys.argv) >= 5:
-        user = sys.argv[3]
-        passcode = sys.argv[4]
-    else:
-        user = None
-        passcode = None
-    
-    st = StompTester(host, port, user, passcode)
-    try:
-        while True:
-            line = raw_input("\r> ")
-            if not line or line.lstrip().rstrip() == '':
-                continue
-            elif 'quit' in line or 'disconnect' in line:
-                break
-            split = line.split()
-            command = split[0]
-            if not command.startswith("on_") and hasattr(st, command):
-                getattr(st, command)(split)
-            else:
-                print 'unrecognized command'
-    finally:
-        st.disconnect(None)
-
-
+    import cli
+    cli.main()

@@ -1,12 +1,11 @@
 import time
 import json
 import socket
-import datetime
 import logging
-import calendar
+import traceback
 
-
-from third.stomp import stomp_sender
+import connection_adapter 
+from third import stomp
 from __writer import Writer
 
 
@@ -22,6 +21,7 @@ class ActivemqWriter(Writer):
     def setup(self):
         self.log = logging.getLogger('pycollector')
         self.check_conf(['host', 'port', 'destination', 'eventtype'])
+        self.conn = connection_adapter.ConnectionAdapter([(self.host, self.port)])
 
     def check_conf(self, items):
         for item in items:
@@ -50,9 +50,21 @@ class ActivemqWriter(Writer):
 
             body = json.dumps(msg)
 
-            stomp_sender.send_message_via_stomp([(self.host, self.port)], headers, body)
+            if self.conn.connection is None or not self.conn.is_connected():
+                self.log.debug('Connecting to STOMP server %s on port %s.' % (self.host, self.port))
+                self.conn.connect()
+                      
+            self.conn.send(body, headers,
+                                 destination=headers['destination'])
+            
             return True
+        except stomp.exception.NotConnectedException, e:
+            self.log.debug('Not connected to STOMP server %s on port %s.' % (self.host, self.port))
+            self.conn.try_to_reconnect()
+            return False
+        except socket.error, e:
+            self.log.warn('Socket error while trying to send message to STOMP server %s on port %s: %s.' % (self.host, self.port, e))
+            return False
         except Exception, e:
-            self.log.error("Can't write")
-            self.log.error(e)
+            self.log.error('Error while trying to send message to STOMP server %s on port %s.\n%s' % (self.host, self.port, traceback.format_exc()))
             return False
