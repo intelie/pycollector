@@ -63,3 +63,4 @@ class DBWriter(Writer):
             self.log.error('error inserting on database')
             self.log.error(traceback.format_exc())
             return False
+
