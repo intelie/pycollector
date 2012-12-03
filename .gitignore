@@ -2,6 +2,7 @@
 logs/**
 *.pid
 *.swp
+*.swo
 *.pyc
 .svn/**
 .project
