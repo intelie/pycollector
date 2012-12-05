@@ -24,7 +24,7 @@ specs:
 #Mysql example
   mysqldb:
     type: db
-    database: mydb 
+    database: mydb
     host: localhost
     user: root
     passwd: ''
@@ -59,9 +59,9 @@ specs:
 #Gtalk example
   gtalkbot:
     type: gtalk
-    login: gmailusername 
+    login: gmailusername
     passwd: gmailpassword
-    destination: destination@gmail.com 
+    destination: destination@gmail.com
 
 
 conf:
@@ -99,7 +99,7 @@ conf:
 #            match: '(.*)'
 #        - column: status
 #          match: 500
-#          period: 1 
+#          period: 1
 #          groupby:
 #            column: host
 #            match: '(.*)'
@@ -151,7 +151,7 @@ conf:
 #    checkpoint_path: /tmp/wwowzacheckpoint
 #    checkpoint_period: 20
 #    blockable: True
-                
+
 
 
 #Reading from an nginx/wowza log and writing to activemq
@@ -166,7 +166,7 @@ conf:
 #      status: ['200', 1]
 #    sums:
 #      #column : period (in minutes)
-#      bytes_sent: 1 
+#      bytes_sent: 1
 #    checkpoint_enabled: True
 #    checkpoint_path: /tmp/rAZ.0058b.log
 #    checkpoint_period: 10
@@ -187,7 +187,7 @@ conf:
 #    columns: [x-severity, x-category, x-event, tz, date, time, c-client-id, c-ip, c-port, cs-bytes, sc-bytes, x-duration, x-sname, x-stream-id, x-spos, sc-stream-bytes, sc-stream-bytes, x-file-size, x-file-length, x-ctx, x-comment, c_proto, c_referrer, c_user_agent, x-app, x-suri]
 #    sums:
 #        #column : period (in minutes)
-#        cs-bytes : 1 
+#        cs-bytes : 1
 #        sc-bytes : 1
 #    checkpoint_enabled: True
 #    checkpoint_path: /tmp/rAZ.0041b.log
@@ -241,7 +241,7 @@ conf:
 #    period: 5
 #    query: select display_name, email from web_user
 #    columns: [display_name, email]
-#  writer: 
+#  writer:
 #    type: activemq
 #    host: localhost
 #    port: 61613
@@ -311,6 +311,6 @@ conf:
 #  writer:
 #    type: gtalk
 #    login: montypythonfoo
-#    passwd: replace_with_your_password 
+#    passwd: replace_with_your_password
 #    destination: user@gmail.com
 

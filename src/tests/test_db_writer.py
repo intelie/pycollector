@@ -1,11 +1,11 @@
 import Queue
-import Queue
-import sys; sys.path.append('..')
-import __meta__; __meta__.load_paths()
+import os
+import sys; sys.path.append(os.getcwd())
+
 from rwtypes.writers.db.DBWriter import DBWriter
 from rwtypes.writers.db.MessageEntity import MessageEntity
-from third.sqlalchemy import create_engine
-from third.sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from dateutil.tz import tzlocal
 import datetime
 import logging
@@ -35,19 +35,19 @@ for message in test_messages:
     writer.write(message)
 
 
-#engine = create_engine(conf['connection'] % (conf['user'],
-#                                                conf['passwd'],
-#                                                conf['host'],
-#                                                conf['database']),
-#                                                echo=False)
+engine = create_engine(conf['connection'] % (conf['user'],
+                                                conf['passwd'],
+                                                conf['host'],
+                                                conf['database']),
+                                                echo=False)
 
-#Session = sessionmaker(bind=engine)
-#session = Session()
+Session = sessionmaker(bind=engine)
+session = Session()
 
-#get_messages = session.query(writer.message_class).all()
+get_messages = session.query(MessageEntity).all()
 
-#for msg in get_messages:
-#    print msg
+for msg in get_messages:
+    print msg
 
-#[session.delete(x) for x in session.query(MessageEntity).all()]
-#session.commit()
+[session.delete(x) for x in session.query(MessageEntity).all()]
+session.commit()
