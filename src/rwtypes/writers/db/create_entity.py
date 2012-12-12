@@ -1,3 +1,4 @@
+# coding: utf-8
 import sys; sys.path.append('..')
 import __meta__; __meta__.load_paths()
 from third.sqlalchemy import create_engine
