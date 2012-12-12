@@ -23,11 +23,11 @@
 specs:
 #Mysql example
   mysqldb:
-    type: db
-    database: mydb
+    type: dbwriter
+    database: test
     host: localhost
     user: root
-    passwd: ''
+    passwd: 'root'
     connection: 'mysql+mysqldb://%s:%s@%s/%s'
 
 #MTR
@@ -248,8 +248,8 @@ conf:
 #    destination: '/queue/events'
 
 - reader:
-    type: custom_log
-    logpath: /tmp/log/nginx/azion/sa/AZ.0058b.log
+    type: log
+    logpath: /tmp/log/nginx/azion/sa/AZ.0055b.log.1.12-06-11-21
     delimiter: \t
     columns: [request_time, host, remote_addr, time_local, request, status, request_method, bytes_sent, request_uri, http_user_agent, http_referer, upstream_cache_status]
     datetime_column: time_local
@@ -271,21 +271,20 @@ conf:
     checkpoint_period: 20
     blockable: True
   writer:
-    spec: activemq
-    eventtype: nginx
+    spec: mysqldb
     checkpoint_enabled: True
     checkpoint_path: /tmp/AZ.0058b.writer.checkpoint
     checkpoint_period: 20
     blockable: True
 
-- reader:
-    type: mtr
-    host: 8.8.8.8
-    period: 10
-  writer:
-    spec: activemq
-    eventtype: mtr
-    period: 0
+#- reader:
+#    type: mtr
+#    host: 8.8.8.8
+#    period: 10
+#  writer:
+#    spec: activemq
+#    eventtype: mtr
+#    period: 0
 
 #Reading from a log file and writing to activemq
 #- reader:

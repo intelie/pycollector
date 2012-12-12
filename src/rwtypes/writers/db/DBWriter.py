@@ -22,27 +22,37 @@ class DBWriter(Writer):
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
+
+    def set_current_checkpoint(self, value=None):
+        if value != None:
+            self.current_checkpoint = value
+        else:
+            self.current_checkpoint = self.last_checkpoint or {'pos': 0}
+
+
     def do_insert(self, msg):
 
         try:
-            self.start_session()
-
             message = MessageEntity(msg)
 
             self.session.add(message)
             self.session.commit()
-        except Exception:
-            self.log.error('Error during database insertion')
+
+        except Exception as e:
+            self.log.error('Error during database insertion: %s' % e)
             self.log.error(traceback.format_exc())
 
     def setup(self):
         self.log = logging.getLogger('pycollector')
 
+        self.start_session()
+
         self.required_confs = ['user', 'passwd', 'host', 'database']
         self.check_required_confs()
 
         if self.checkpoint_enabled:
-            relf.set_current_checkpoint()
+            self.set_current_checkpoint()
+            pass
 
     def write(self, msg):
         try:
@@ -53,4 +63,10 @@ class DBWriter(Writer):
             self.log.error('error inserting on database')
             self.log.error(traceback.format_exc())
             return False
+
+    def __del__(self):
+        try:
+            self.session.close()
+        except Exception:
+            pass
 

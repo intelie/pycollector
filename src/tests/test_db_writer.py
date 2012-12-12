@@ -1,6 +1,6 @@
 import Queue
 import os
-import sys; sys.path.append(os.getcwd())
+import sys; sys.path.append('..')
 
 from rwtypes.writers.db.DBWriter import DBWriter
 from rwtypes.writers.db.MessageEntity import MessageEntity
@@ -28,7 +28,7 @@ conf = {'database': 'test',
         'passwd': 'root',
         'connection': 'mysql://%s:%s@%s/%s'}
 
-writer = DBWriter(get_queue(), conf=conf)
+writer = DBWriter(get_queue())
 writer.log.addHandler(logging.StreamHandler())
 
 for message in test_messages:
