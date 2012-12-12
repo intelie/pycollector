@@ -271,7 +271,7 @@ class LogReader(Reader):
         self.check_required_confs()
 
         # initializations
-        self.first_read = True 
+        self.first_read = True
         self.log_not_found = True
         if not hasattr(self, 'retry_open_file_period'):
             self.retry_open_file_period = 60
@@ -348,24 +348,24 @@ class LogReader(Reader):
             return False
         return True
 
-    def read(self):           
+    def read(self):
         # checks if log file exists
         while self.log_not_found:
             self.check_file_existence()
             if self.log_not_found:
                 time.sleep(self.retry_open_file_period)
-        
-        if self.first_read:    
+
+        if self.first_read:
             # starts tail
             try:
-                self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True) 
+                self.tail = filetail.Tail(self.logpath, max_sleep=1, store_pos=True)
             except Exception, e:
                 self.log.error(traceback.format_exc())
-                return 
+                return
             # failure recovering from checkpoint
             if self.checkpoint_enabled: self.recover_checkpoint()
             self.first_read = False
-        
+
         if self.period:
             self.get_line() and self.process_line()
             return

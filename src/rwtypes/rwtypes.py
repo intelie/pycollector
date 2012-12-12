@@ -50,7 +50,7 @@ writer_types = {
         'module' : 'writers.activemq.ActivemqWriter',
         'class' : 'ActivemqWriter'
         },
-    'db' : {
+    'dbwriter' : {
         'module' : 'writers.db.DBWriter',
         'class' : 'DBWriter'
     },
