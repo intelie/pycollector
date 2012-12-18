@@ -1,1 +1,1 @@
-../../../../../share/pyshared/MySQLdb/constants/__init__.py
+__all__ = ['CR', 'FIELD_TYPE','CLIENT','REFRESH','ER','FLAG']
