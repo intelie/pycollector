@@ -49,7 +49,7 @@ class MySQLDBConnector(Connector):
     @classmethod
     def dbapi(cls):
         # is overridden when pymysql is used
-        return __import__('MySQLdb')
+        return __import__('third.MySQLdb').MySQLdb
 
     def do_executemany(self, cursor, statement, parameters, context=None):
         rowcount = cursor.executemany(statement, parameters)
