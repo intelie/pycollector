@@ -13,10 +13,10 @@ MySQLdb.converters module.
 
 """
 
-__revision__ = """$Revision: 603 $"""[11:-2]
-from release import __version__, version_info, __author__
+__revision__ = """$Revision$"""[11:-2]
+from MySQLdb.release import __version__, version_info, __author__
 
-import third._mysql as _mysql
+import _mysql
 
 if version_info != _mysql.version_info:
     raise ImportError("this is MySQLdb version %s, but _mysql is version %r" %
@@ -26,9 +26,9 @@ threadsafety = 1
 apilevel = "2.0"
 paramstyle = "format"
 
-from third._mysql import *
-from third.MySQLdb.constants import FIELD_TYPE
-from third.MySQLdb.times import Date, Time, Timestamp, \
+from _mysql import *
+from MySQLdb.constants import FIELD_TYPE
+from MySQLdb.times import Date, Time, Timestamp, \
     DateFromTicks, TimeFromTicks, TimestampFromTicks
 
 try:
@@ -77,7 +77,7 @@ def Binary(x):
 
 def Connect(*args, **kwargs):
     """Factory function for connections.Connection."""
-    from connections import Connection
+    from MySQLdb.connections import Connection
     return Connection(*args, **kwargs)
 
 connect = Connection = Connect

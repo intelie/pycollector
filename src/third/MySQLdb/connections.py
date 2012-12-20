@@ -6,7 +6,7 @@ want to make your own subclasses. In most cases, you will probably
 override Connection.default_cursor with a non-standard Cursor class.
 
 """
-import cursors
+from MySQLdb import cursors
 from _mysql_exceptions import Warning, Error, InterfaceError, DataError, \
      DatabaseError, OperationalError, IntegrityError, InternalError, \
      NotSupportedError, ProgrammingError
@@ -143,15 +143,15 @@ class Connection(_mysql.connection):
         documentation for the MySQL C API for some hints on what they do.
 
         """
-        from constants import CLIENT, FIELD_TYPE
-        from converters import conversions
+        from MySQLdb.constants import CLIENT, FIELD_TYPE
+        from MySQLdb.converters import conversions
         from weakref import proxy, WeakValueDictionary
         
         import types
 
         kwargs2 = kwargs.copy()
         
-        if kwargs.has_key('conv'):
+        if 'conv' in kwargs:
             conv = kwargs['conv']
         else:
             conv = conversions
@@ -164,7 +164,7 @@ class Connection(_mysql.connection):
                 conv2[k] = v
         kwargs2['conv'] = conv2
 
-        self.cursorclass = kwargs2.pop('cursorclass', self.default_cursor)
+        cursorclass = kwargs2.pop('cursorclass', self.default_cursor)
         charset = kwargs2.pop('charset', '')
 
         if charset:
@@ -185,7 +185,7 @@ class Connection(_mysql.connection):
         kwargs2['client_flag'] = client_flag
 
         super(Connection, self).__init__(*args, **kwargs2)
-
+        self.cursorclass = cursorclass
         self.encoders = dict([ (k, v) for k, v in conv.items()
                                if type(k) is not int ])
         
@@ -289,6 +289,10 @@ class Connection(_mysql.connection):
         set can only be changed in MySQL-4.1 and newer. If you try
         to change the character set from the current value in an
         older version, NotSupportedError will be raised."""
+        if charset == "utf8mb4":
+            py_charset = "utf8"
+        else:
+            py_charset = charset
         if self.character_set_name() != charset:
             try:
                 super(Connection, self).set_character_set(charset)
@@ -297,8 +301,8 @@ class Connection(_mysql.connection):
                     raise NotSupportedError("server is too old to set charset")
                 self.query('SET NAMES %s' % charset)
                 self.store_result()
-        self.string_decoder.charset = charset
-        self.unicode_literal.charset = charset
+        self.string_decoder.charset = py_charset
+        self.unicode_literal.charset = py_charset
 
     def set_sql_mode(self, sql_mode):
         """Set the connection sql_mode. See MySQL documentation for

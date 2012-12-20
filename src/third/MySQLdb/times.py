@@ -7,7 +7,7 @@ Use Python datetime module to handle date and time columns."""
 import math
 from time import localtime
 from datetime import date, datetime, time, timedelta
-from third._mysql import string_literal
+from _mysql import string_literal
 
 Date = date
 Time = time
@@ -38,7 +38,7 @@ def format_TIMEDELTA(v):
     return '%d %d:%d:%d' % (v.days, hours, minutes, seconds)
 
 def format_TIMESTAMP(d):
-    return d.strftime("%Y-%m-%d %H:%M:%S")
+    return d.isoformat(" ")
 
 
 def DateTime_or_None(s):
@@ -52,6 +52,8 @@ def DateTime_or_None(s):
     try:
         d, t = s.split(sep, 1)
         return datetime(*[ int(x) for x in d.split('-')+t.split(':') ])
+    except (SystemExit, KeyboardInterrupt):
+        raise
     except:
         return Date_or_None(s)
 
@@ -79,8 +81,12 @@ def Time_or_None(s):
         return None
 
 def Date_or_None(s):
-    try: return date(*[ int(x) for x in s.split('-',2)])
-    except: return None
+    try:
+        return date(*[ int(x) for x in s.split('-',2)])
+    except (SystemExit, KeyboardInterrupt):
+        raise
+    except:
+        return None
 
 def DateTime2literal(d, c):
     """Format a DateTime object as an ISO timestamp."""
@@ -97,5 +103,9 @@ def mysql_timestamp_converter(s):
     s = s + "0"*(14-len(s)) # padding
     parts = map(int, filter(None, (s[:4],s[4:6],s[6:8],
                                    s[8:10],s[10:12],s[12:14])))
-    try: return Timestamp(*parts)
-    except: return None
+    try:
+        return Timestamp(*parts)
+    except (SystemExit, KeyboardInterrupt):
+        raise
+    except:
+        return None
