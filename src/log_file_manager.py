@@ -24,6 +24,7 @@ from daemon_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT, ACTIVEMQ_QUEUE
 from log_lines_processor import LogLinesProcessor
 import os
 from datetime import datetime
+from glob import glob
 
 
 class LogFileManager:
@@ -42,7 +43,7 @@ class LogFileManager:
         self.default_task_period = 1 #minute
 
     def make_filename(self):
-        return datetime.now().strftime(self.conf['log_filename'])
+        return sorted(glob(datetime.now().strftime(self.conf['log_filename'])))[-1]
         
     def set_logging(self):
         logger = self.filename.split(os.sep)[-1].split('.log')[0] + '.lc.log'
