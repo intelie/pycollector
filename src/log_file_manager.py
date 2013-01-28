@@ -43,7 +43,9 @@ class LogFileManager:
         self.default_task_period = 1 #minute
 
     def make_filename(self):
-        return sorted(glob(datetime.now().strftime(self.conf['log_filename'])))[-1]
+        filename = datetime.now().strftime(self.conf['log_filename'])
+        globbed = glob(filename)
+        return sorted(globbed)[-1]
         
     def set_logging(self):
         logger = self.filename.split(os.sep)[-1].split('.log')[0] + '.lc.log'

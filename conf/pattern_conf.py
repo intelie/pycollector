@@ -5,7 +5,7 @@
 
 conf = [
 {
-           'log_filename': '/var/log/syslog', 
+           'log_filename': 'c:\\test*.txt', 
            'global_fields': {
                'host': 'crm-web-1.adm.infra',
                'log_type': 'ApacheAccess',
