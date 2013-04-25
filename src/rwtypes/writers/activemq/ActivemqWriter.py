@@ -21,7 +21,9 @@ class ActivemqWriter(Writer):
     def setup(self):
         self.log = logging.getLogger('pycollector')
         self.check_conf(['host', 'port', 'destination', 'eventtype'])
-        self.conn = connection_adapter.ConnectionAdapter([(self.host, self.port)])
+        self.conn = connection_adapter.ConnectionAdapter([(self.host, self.port)], 
+                getattr(self, 'user', None), getattr(self, 'passcode', None), 
+                getattr(self, 'use_ssl', None), getattr(self, 'ssl_ca_certs', None))
 
     def check_conf(self, items):
         for item in items:

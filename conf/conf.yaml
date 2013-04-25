@@ -49,6 +49,18 @@ specs:
    host: '127.0.0.1'
    port: 61613
    destination: '/queue/events'
+   user: 'system'
+   passcode: 'manager'
+
+  activemqssl:
+   type: activemq
+   host: '127.0.0.1'
+   port: 61612
+   user: 'system'
+   passcode: 'manager'
+   use_ssl: true
+   ssl_trust: '/home/juanplopes/Downloads/client.pem'
+   destination: '/queue/events'
 
 #Log example
   log:
@@ -185,7 +197,7 @@ conf:
 #    logpath: /var/log/wowza/ls/AZ.0041b.log
 #    delimiter: \t
 #    columns: [x-severity, x-category, x-event, tz, date, time, c-client-id, c-ip, c-port, cs-bytes, sc-bytes, x-duration, x-sname, x-stream-id, x-spos, sc-stream-bytes, sc-stream-bytes, x-file-size, x-file-length, x-ctx, x-comment, c_proto, c_referrer, c_user_agent, x-app, x-suri]
-#    sums:
+#    sums:Tá escrito :P 
 #        #column : period (in minutes)
 #        cs-bytes : 1
 #        sc-bytes : 1
@@ -248,34 +260,10 @@ conf:
 #    destination: '/queue/events'
 
 - reader:
-    type: log
-    logpath: /tmp/log/nginx/azion/sa/AZ.0055b.log.1.12-06-11-21
-    delimiter: \t
-    columns: [request_time, host, remote_addr, time_local, request, status, request_method, bytes_sent, request_uri, http_user_agent, http_referer, upstream_cache_status]
-    datetime_column: time_local
-    counts:
-        - column: request_method
-          match: 'GET'
-          period: 1
-          groupby:
-            column: host
-            match: '(.*)'
-    sums:
-        - column: bytes_sent
-          period: 1
-          groupby:
-            column: host
-            match: '(.*)'
-    checkpoint_enabled: True
-    checkpoint_path: /tmp/AZ.0058b.reader.checkpoint
-    checkpoint_period: 20
-    blockable: True
+    type: stdin
   writer:
-    spec: mysqldb
-    checkpoint_enabled: True
-    checkpoint_path: /tmp/AZ.0058b.writer.checkpoint
-    checkpoint_period: 20
-    blockable: True
+    spec: activemqssl
+    eventtype: 'AAA'
 
 #- reader:
 #    type: mtr
