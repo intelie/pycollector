@@ -20,7 +20,7 @@ from helpers.stomp_sender import send_message_via_stomp
 import helpers.simplejson as json
 
 from conf_util import *
-from daemon_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT, ACTIVEMQ_QUEUE
+from daemon_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT, ACTIVEMQ_QUEUE, ACTIVEMQ_USER, ACTIVEMQ_PASS, ACTIVEMQ_SSL, ACTIVEMQ_TRUST
 from log_lines_processor import LogLinesProcessor
 import os
 from datetime import datetime
@@ -103,7 +103,8 @@ class LogFileManager:
                 self.logger.info("Sending message:")
                 self.logger.debug("Header: %s." % header)
                 self.logger.debug("Body: %s." % body)
-            send_message_via_stomp([(ACTIVEMQ_SERVER, ACTIVEMQ_PORT )], header, body)
+            send_message_via_stomp([(ACTIVEMQ_SERVER, ACTIVEMQ_PORT )], ACTIVEMQ_USER, ACTIVEMQ_PASS, 
+								   ACTIVEMQ_SSL, ACTIVEMQ_TRUST, header, body)
             if self.to_log:
                 self.logger.info("Message sent.")
         except Exception, e:

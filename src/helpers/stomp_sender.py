@@ -48,10 +48,11 @@ def process_params(params):
     return key_value
 
 
-def send_message_via_stomp(brokers, headers, params):
+def send_message_via_stomp(brokers, user, passcode, use_ssl, ssl_ca_certs, headers, params):
     exception = None
     for broker in brokers:
-        amq = stomp.Connection([broker], reconnect_sleep_max=0)
+        amq = stomp.Connection([broker], reconnect_sleep_max=0, 
+					user=user, passcode=passcode, use_ssl=use_ssl, ssl_ca_certs=ssl_ca_certs)
         try:
             amq.start()
             amq.connect()
