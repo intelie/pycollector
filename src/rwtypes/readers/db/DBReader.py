@@ -29,16 +29,17 @@ class DBReader(Reader):
         Note: if checkpoint is used, query must ensure sorted data"""
 
     def start_session(self):
-        engine = create_engine(self.connection % (self.user,
+        self.engine = create_engine(self.connection % (self.user,
                                                   self.passwd,
                                                   self.host,
                                                   self.database),
                                                   echo=False)
-        Session = sessionmaker(bind=engine)
+        Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
     def close_session(self):
         self.session.close()
+        self.engine.dispose()
 
     def skip(self, results):
         """Skips already delivered messages"""
