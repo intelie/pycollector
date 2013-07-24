@@ -14,15 +14,15 @@ PID_PATH="/home/juanplopes/collector.pid"
 ACTIVEMQ_SERVER="juanplopes"
 
 #ACTIVEMQ_PORT: activemq stomp port
-ACTIVEMQ_PORT=61612
+ACTIVEMQ_PORT=61613
 
-ACTIVEMQ_USER="system"
+#ACTIVEMQ_USER="system"
 
-ACTIVEMQ_PASS="manager"
+#ACTIVEMQ_PASS="manager"
 
-ACTIVEMQ_SSL=True
+#ACTIVEMQ_SSL=False
 
-ACTIVEMQ_TRUST=None
+#ACTIVEMQ_TRUST=None
 
 #activemq queue name
 ACTIVEMQ_QUEUE="/queue/events"

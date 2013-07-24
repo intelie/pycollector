@@ -20,7 +20,14 @@ from helpers.stomp_sender import send_message_via_stomp
 import helpers.simplejson as json
 
 from conf_util import *
-from daemon_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT, ACTIVEMQ_QUEUE, ACTIVEMQ_USER, ACTIVEMQ_PASS, ACTIVEMQ_SSL, ACTIVEMQ_TRUST
+from daemon_conf import ACTIVEMQ_SERVER, ACTIVEMQ_PORT, ACTIVEMQ_QUEUE
+try:
+	from daemon_conf import ACTIVEMQ_USER, ACTIVEMQ_PASS, ACTIVEMQ_SSL, ACTIVEMQ_TRUST
+except:
+	ACTIVEMQ_USER = None
+	ACTIVEMQ_PASS = None
+	ACTIVEMQ_SSL = None
+	ACTIVEMQ_TRUST = None
 from log_lines_processor import LogLinesProcessor
 import os
 from datetime import datetime
