@@ -67,7 +67,7 @@ def send_message_via_stomp(brokers, user, passcode, use_ssl, ssl_ca_certs, heade
         except:
             exception = StompMessageException('Exception when trying to send message to STOMP server %s.' % str(broker))
             continue
-		time.sleep(0.001)
+        time.sleep(0.001)
         amq.stop() #close connection in a clean way
         return
     raise exception
